@@ -264,15 +264,70 @@ def mainGameAnimationRendererManager():
 		#For each ennemy group :
 		for eg_id,eg in ennemies.ListofEnnemies.items():
 			for e in eg.ListofPositions:
-				mainWindow.blit(spriteManager.ListofEnnemiesSurface[eg.surface_id],(e[1],e[2]))
+				draw_ennemy = spriteManager.ListofEnnemiesSurface[eg.surface_id]
+				
+				#Convert orientation to degrees :
+				if e[3] == 0:
+					angle = 0
+				elif e[3] == 1:
+					angle = -45
+				elif e[3] == 2:
+					angle = -90
+				elif e[3] == 3:
+					angle = -135
+				elif e[3] == 4:
+					angle = -180
+				elif e[3] == 5:
+					angle = -225
+				elif e[3] == 6:
+					angle = -270
+				elif e[3] == 7:
+					angle = -315
+				elif e[3] == 8:
+					angle = -360
+			
+				#Apply rotation before the final draw call :
+				if not angle == 0:
+					draw_ennemy = spriteManager.rot_center(draw_ennemy,angle)
+				
+				#The Final draw call:
+				mainWindow.blit(draw_ennemy,(e[1],e[2]))
 		
 		#Draw the shots after drawing the ennemies. This way, the shots are overwritting the ennemies sprites/surface and lets the player knows what happen to the shot :
 		for shot_id,shot in player.ListofFireShot.items():
+			#Final draw call
 			mainWindow.blit(spriteManager.ListofFireShotSurface[shot.type],(shot.x,shot.y))
-
+		
+		#Draw each ennemy with a rotation which is the same as the shot angle :
 		for eg_id,eg in ennemies.ListofEnnemies.items():
 			for shot_id,shot in eg.ListofFireShot.items():
-				mainWindow.blit(spriteManager.ListofFireShotSurface[shot.type],(shot.x,shot.y))
+				draw_shot = spriteManager.ListofFireShotSurface[shot.type]
+				
+				#Convert orientation to degrees :
+				if shot.orientation == 0:
+					angle = 0
+				elif shot.orientation == 1:
+					angle = -45
+				elif shot.orientation == 2:
+					angle = -90
+				elif shot.orientation == 3:
+					angle = -135
+				elif shot.orientation == 4:
+					angle = -180
+				elif shot.orientation == 5:
+					angle = -225
+				elif shot.orientation == 6:
+					angle = -270
+				elif shot.orientation == 7:
+					angle = -315
+				elif shot.orientation == 8:
+					angle = -360
+			
+				#Apply rotation before the final draw call :
+				draw_shot = spriteManager.rot_center(draw_shot,angle)
+				
+				#The final draw call :
+				mainWindow.blit(draw_shot,(shot.x,shot.y))
 		
 		#Draw the explosions :
 		makingExplosions()

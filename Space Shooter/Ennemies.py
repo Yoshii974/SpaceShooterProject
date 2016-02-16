@@ -50,7 +50,7 @@ class Ennemies:
 	def animateFireShots(self):
 		"""This function calls the animateFireShots() method of each group of ennmies."""
 		for eg_id,eg in self.ListofEnnemies.items():
-			eg.animateFireShots(4)
+			eg.animateFireShots()
 	
 	#Triggers fireshots from the ennemy
 	def fire(self):
@@ -84,7 +84,7 @@ class Ennemies:
 		#Wave 1:
 		EnnemyWave1 = []
 		EnnemyWave1.append(self.createEnnemyGroup(1,70,100))
-		EnnemyWave1.append(self.createEnnemyGroup(2,140,200))
+		EnnemyWave1.append(self.createEnnemyGroup(1,140,200))
 		self.ListofEnnemiesWave[1] = EnnemyWave1
 		
 		#Wave 2:
@@ -112,7 +112,11 @@ class Ennemies:
 		EnnemyWave4.append(self.createEnnemyGroup(1,175,20))
 		self.ListofEnnemiesWave[4] = EnnemyWave4
 
-	
+		#Wave 5:
+		EnnemyWave5 = []
+		EnnemyWave5.append(self.createEnnemyGroup(3,50,70))
+		self.ListofEnnemiesWave[5] = EnnemyWave5
+		
 	#Create ennemy group:
 	def createEnnemyGroup(self,num,center_X,center_Y):
 		"""This method creates a group of ennemy."""
@@ -123,6 +127,8 @@ class Ennemies:
 			ennemy_group = Ennemy_Group_1(center_X,center_Y)
 		elif num == 2:
 			ennemy_group = Ennemy_Group_2(center_X,center_Y)
+		elif num == 3:
+			ennemy_group = Ennemy_Group_3(center_X,center_Y)
 		
 		#Set the attributes of the ennemy group:
 		ennemy_group.surface_id = random.choice(self.SpriteManager.ListofEnnemiesSurfaceKeys)
@@ -150,7 +156,7 @@ class Ennemies:
 class Ennemy_Group:
 	"""This class is the abstract class which defines anything a group of ennemies should have. This should not be instantiate !"""
 	#Init
-	#ListofPosition contains --->[['ennemy_id',ennemy_x,ennemy_y]]
+	#ListofPosition contains --->[['ennemy_id',ennemy_x,ennemy_y],ennemy_orientation]
 	def __init__(self):
 		self.ListofPositions = []
 		self.ListofFireShot = {}
@@ -161,6 +167,7 @@ class Ennemy_Group:
 		self.currentEnnemyNumber = 0
 		self.surface_id = ""
 		self.fire_rate = FIRE_RATE
+		self.fire_rate_group = FIRE_RATE
 		self.shot_id = 0
 		self.endStartMove = False
 
@@ -174,8 +181,8 @@ class Ennemy_Group:
 		""""""
 	
 	#Animate the fire shots if any
-	def animateFireShots(self,direction):
-		"""Move all fireshots from this ennemy group. The direction is used to define in which direction the fireshot are moving. Here is the diagramm:
+	def animateFireShots(self):
+		"""Move all fireshots from this ennemy group. The direction is used to define in which direction the fireshots are moving. Here is the diagramm:
 		0
 	7		1
 6				2
@@ -185,26 +192,26 @@ class Ennemy_Group:
 		
 		#Move the fire shots :
 		for shot_id,shot in self.ListofFireShot.items():
-			if direction == 0:
-				shot.y -= 4
-			elif direction == 1:
-				shot.x += 4
-				shot.y -= 4
-			elif direction == 2:
-				shot.x += 4
-			elif direction == 3:
-				shot.x += 4
-				shot.y += 4
-			elif direction == 4:
-				shot.y += 4
-			elif direction == 5:
-				shot.x -= 4
-				shot.y += 4
-			elif direction == 6:
-				shot.x -= 4
-			elif direction == 7:
-				shot.x -= 4
-				shot.y -= 4
+			if shot.orientation == 0:
+				shot.y -= 2
+			elif shot.orientation == 1:
+				shot.x += 2
+				shot.y -= 2
+			elif shot.orientation == 2:
+				shot.x += 2
+			elif shot.orientation == 3:
+				shot.x += 2
+				shot.y += 2
+			elif shot.orientation == 4:
+				shot.y += 2
+			elif shot.orientation == 5:
+				shot.x -= 2
+				shot.y += 2
+			elif shot.orientation == 6:
+				shot.x -= 2
+			elif shot.orientation == 7:
+				shot.x -= 2
+				shot.y -= 2
 	
 	
 	#Shoots laser
@@ -212,10 +219,10 @@ class Ennemy_Group:
 		"""This function triggers fire shots from each ennemy included in this group."""
 		if self.fire_rate == 0:
 			for e in self.ListofPositions:
-				shot = FireShot(e[1],e[2],"fire1",self.shot_id,"player")
+				shot = FireShot(e[1],e[2],"fire1",self.shot_id,"player",4)
 				self.ListofFireShot[self.shot_id] = shot
 				self.shot_id += 1
-			self.fire_rate = FIRE_RATE
+			self.fire_rate = self.fire_rate_group
 		else:
 			self.fire_rate -= 1
 	
@@ -245,12 +252,13 @@ class Ennemy_Group_1(Ennemy_Group):
 		self.center_y = center_Y
 		self.center_dx = 0
 		self.center_dy = 1
-		self.ListofPositions = [['ennemy_1',self.center_x,-MAIN_WINDOW_SIZE],
-					['ennemy_2',self.center_x,-MAIN_WINDOW_SIZE + GAME_ELEMENT_ENNEMY_SIZE + 3],
-					['ennemy_3',self.center_x,-MAIN_WINDOW_SIZE + 2*GAME_ELEMENT_ENNEMY_SIZE + 3]]
+		self.ListofPositions = [['ennemy_1',self.center_x,-MAIN_WINDOW_SIZE,0],
+					['ennemy_2',self.center_x,-MAIN_WINDOW_SIZE + GAME_ELEMENT_ENNEMY_SIZE + 3,0],
+					['ennemy_3',self.center_x,-MAIN_WINDOW_SIZE + 2*GAME_ELEMENT_ENNEMY_SIZE + 3,0]]
 		self.currentEnnemyNumber = 3
 		self.ListofFireShot = {}
-		self.fire_rate = FIRE_RATE * 3
+		self.fire_rate = FIRE_RATE
+		self.fire_rate_group = FIRE_RATE * 3
 		self.shot_id = 0
 		self.endStartMove = False
 
@@ -292,13 +300,14 @@ class Ennemy_Group_2(Ennemy_Group):
 		self.center_y = center_Y
 		self.center_dx = 1
 		self.center_dy = 0
-		self.ListofPositions = [['ennemy_1',MAIN_WINDOW_SIZE,self.center_y],
-					['ennemy_2',MAIN_WINDOW_SIZE + GAME_ELEMENT_ENNEMY_SIZE + 3,self.center_y],
-					['ennemy_3',MAIN_WINDOW_SIZE + 2*GAME_ELEMENT_ENNEMY_SIZE + 3,self.center_y],
-					['ennemy_4',MAIN_WINDOW_SIZE + 3*GAME_ELEMENT_ENNEMY_SIZE + 3,self.center_y]]
+		self.ListofPositions = [['ennemy_1',MAIN_WINDOW_SIZE,self.center_y,0],
+					['ennemy_2',MAIN_WINDOW_SIZE + GAME_ELEMENT_ENNEMY_SIZE + 3,self.center_y,0],
+					['ennemy_3',MAIN_WINDOW_SIZE + 2*GAME_ELEMENT_ENNEMY_SIZE + 3,self.center_y,0],
+					['ennemy_4',MAIN_WINDOW_SIZE + 3*GAME_ELEMENT_ENNEMY_SIZE + 3,self.center_y,0]]
 		self.currentEnnemyNumber = 4
 		self.ListofFireShot = {}
-		self.fire_rate = FIRE_RATE * 4
+		self.fire_rate = FIRE_RATE
+		self.fire_rate_group = FIRE_RATE * 4
 		self.shot_id = 0
 		self.endStartMove = False
 	
@@ -320,10 +329,103 @@ class Ennemy_Group_2(Ennemy_Group):
 		for i,e in enumerate(self.ListofPositions):
 			e_current_index = int(e[0][-1])
 			e[1] = self.center_x + e_current_index*GAME_ELEMENT_ENNEMY_SIZE + 3
-			e[2] = self.center_y
+			#e[2] = self.center_y
 		
 		#Once the y position reach a certain edge, we change the direction of the movement :
 		if self.center_x == 410:
 			self.center_dx = -1
 		elif self.center_x == 50:
 			self.center_dx = 1
+
+			
+			
+			
+class Ennemy_Group_3(Ennemy_Group):
+	"""This ennemy group contains ennemies which are able to shoots with a predefine rotation."""
+	
+	#Init
+	def __init__(self,center_X,center_Y):
+		"""This group of ennemy consist of a 4 ennemies. The first one is on the left, the second one is at the top, the third one is on the right and the last one is at the bottom."""
+		self.center_x = center_X
+		self.center_y = center_Y
+		self.center_dx = 1
+		self.center_dy = 0
+		self.ListofPositions = [['ennemy_1',MAIN_WINDOW_SIZE,self.center_y,0],
+					['ennemy_2',MAIN_WINDOW_SIZE + GAME_ELEMENT_ENNEMY_SIZE + 3,self.center_y + GAME_ELEMENT_ENNEMY_SIZE + 3,1],
+					['ennemy_3',MAIN_WINDOW_SIZE + 2*GAME_ELEMENT_ENNEMY_SIZE + 3,self.center_y,2],
+					['ennemy_4',MAIN_WINDOW_SIZE + GAME_ELEMENT_ENNEMY_SIZE + 3,self.center_y - GAME_ELEMENT_ENNEMY_SIZE + 3,3]]
+		self.currentEnnemyNumber = 4
+		self.ListofFireShot = {}
+		self.fire_rate = FIRE_RATE
+		self.fire_rate_group = FIRE_RATE * 8
+		self.shot_id = 0
+		self.endStartMove = False
+		self.orientation_counter_ennemy_1 = 0
+		self.orientation_counter_ennemy_2 = 1
+		self.orientation_counter_ennemy_3 = 2
+		self.orientation_counter_ennemy_4 = 3
+	
+	#Move the group of ennemy in a specific way :
+	def animateStart(self):
+		"""This moves the group of ennemy for their arrival in the display screen."""
+		for i,e in enumerate(self.ListofPositions):
+			e[1] -= 2
+		if self.ListofPositions[0][1] == self.center_x:
+			self.endStartMove = True
+	
+	#Move the group the usual way:
+	#def animate(self):
+	#	""""""
+	#	#set x and y of center group :
+	#	self.center_x = self.center_x + self.center_dx
+
+	#	#update each ennemy's position :
+	#	for i,e in enumerate(self.ListofPositions):
+	#		e_current_index = int(e[0][-1])
+	#		if i == 3:
+	#			e[1] = self.center_x + 2*GAME_ELEMENT_ENNEMY_SIZE + 3
+	#		else:
+	#			e[1] = self.center_x + e_current_index*GAME_ELEMENT_ENNEMY_SIZE + 3
+			
+		
+	#	#Once the y position reach a certain edge, we change the direction of the movement :
+	#	if self.center_x == 410:
+	#		self.center_dx = -1
+	#	elif self.center_x == 50:
+	#		self.center_dx = 1
+	
+	#Shoots laser
+	def fire(self):
+		"""This function triggers fire shots from each ennemy included in this group."""
+		if self.fire_rate == 0:
+			for e in self.ListofPositions:
+				e_current_index = int(e[0][-1])
+				
+				if e_current_index == 1:
+					#Convert orientation to angle :
+					e[3] = self.orientation_counter_ennemy_1%8
+					shot = FireShot(e[1],e[2],"fire2",self.shot_id,"player",e[3])
+					self.orientation_counter_ennemy_1 += 1
+				elif e_current_index == 2:
+					#Convert orientation to angle :
+					e[3] = self.orientation_counter_ennemy_2%8
+					shot = FireShot(e[1],e[2],"fire2",self.shot_id,"player",e[3])
+					self.orientation_counter_ennemy_2 += 1
+				elif e_current_index == 3:
+					#Convert orientation to angle :
+					e[3] = self.orientation_counter_ennemy_3%8
+					shot = FireShot(e[1],e[2],"fire2",self.shot_id,"player",e[3])
+					self.orientation_counter_ennemy_3 += 1
+				elif e_current_index == 4:
+					#Convert orientation to angle :
+					e[3] = self.orientation_counter_ennemy_4%8
+					shot = FireShot(e[1],e[2],"fire2",self.shot_id,"player",e[3])
+					self.orientation_counter_ennemy_4 += 1
+				
+				self.ListofFireShot[self.shot_id] = shot
+				self.shot_id += 1
+			
+			self.fire_rate = self.fire_rate_group
+		
+		else:
+			self.fire_rate -= 1

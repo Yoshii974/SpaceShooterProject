@@ -84,7 +84,7 @@ class Player:
 		global SHOT_ID
 		
 		#Create a fire shot tuple :
-		fireShot = FireShot(self.x,self.y,self.currentWeapon,SHOT_ID,"ennemy")
+		fireShot = FireShot(self.x,self.y,self.currentWeapon,SHOT_ID,"ennemy",0)
 
 		#Insert the fire shot into the list of fire shot tuple :
 		self.ListofFireShot[SHOT_ID] = fireShot

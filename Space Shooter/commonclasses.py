@@ -181,15 +181,17 @@ class FireShot:
 		self.id = 0
 		self.target = ""
 		self.lifespan = 200
+		self.orientation = 4
 
 	#Parametric Constructor:
-	def __init__(self,X,Y,Type,Id,Target):
+	def __init__(self,X,Y,Type,Id,Target,Orientation):
 		self.x = X
 		self.y = Y
 		self.type = Type
 		self.id = Id
 		self.target = Target
 		self.lifespan = 200
+		self.orientation = Orientation
 
 
 
