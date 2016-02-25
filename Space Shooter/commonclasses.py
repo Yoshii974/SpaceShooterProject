@@ -25,6 +25,7 @@ class SpriteManager():
 		self.ListofEnnemiesSurfaceKeys = []
 		self.ListofSysFonts = {}
 		self.HealthBar = ""
+		self.Boss = ""
 
 	#loads Sprites:
 	def initialization(self):
@@ -34,6 +35,7 @@ class SpriteManager():
 		self.loadFireShotSprites()
 		self.loadExplosionSprites()
 		self.loadHealthBarSprites()
+		self.loadBossSprites()
 		self.loadSysFonts()
 
 	#Player's Sprites:
@@ -118,6 +120,11 @@ class SpriteManager():
 		"""Load every useful system fonts to be used in the game This way, all this fonts are load only once and not each time the game loop begin again."""
 		self.ListofSysFonts["Times New Roman"] = pygame.font.SysFont("Times New Roman",16)
 		self.ListofSysFonts["Arial"] = pygame.font.SysFont("Arial",12)
+		
+	#The Boss's Sprite :
+	def loadBossSprites(self):
+		"""Load the sprite of the Boss."""
+		self.Boss  pygame.image.load(pathfile.mainGameBoss).convert_alpha()
 
 	#Source of this code [http://www.pygame.org/wiki/RotateCenter]
 	def rot_center(self,image,angle):
@@ -207,6 +214,20 @@ class Explosion:
 		self.hasSoundBeenPlayed = 0
 
 
+class Boss:
+	"""This class describe the Boss of the game."""
+	#Default Constructor:
+	def __init__(self):
+		self.x = X
+		self.y = Y
+		self.shot_id = 0
+		self.endStartMove = False
+		
+	def animate(self):
+		"""Here is defined the movement of the Boss"""
+		
+	def fire(self):
+		""""""
 
 
 class Score:
