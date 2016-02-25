@@ -117,6 +117,11 @@ class Ennemies:
 		EnnemyWave5.append(self.createEnnemyGroup(3,50,70))
 		self.ListofEnnemiesWave[5] = EnnemyWave5
 		
+		#Final Wave :
+		EnnemyWave6 = []
+		EnnemyWave6.append(self.createBoss(240,125))
+		self.ListofEnnemiesWave[6] = EnnemyWave6
+		
 	#Create ennemy group:
 	def createEnnemyGroup(self,num,center_X,center_Y):
 		"""This method creates a group of ennemy."""
@@ -151,6 +156,24 @@ class Ennemies:
 			e_sum += eg.currentEnnemyNumber
 		if e_sum == 0:
 			self.currentEnnemyWave += 1
+			
+	def createBoss(self,center_X,center_Y):
+		"""Create the Boss of the game."""
+		global ENNEMY_GROUP_ID
+		
+		#Create the Boss :
+		boss = Boss(center_X,center_Y)
+		
+		#Set the attributes of the Boss :
+		boss.surface_id = self.SpriteManager.Boss #ne devrait servir a rien...
+		ENNEMY_GROUP_ID += 1
+		self.ListofEnnemies[ENNEMY_GROUP_ID] = boss
+		self.currentGroupNumber += 1
+		self.currentEnnemyNumber += 1
+		
+		#Return the D of the Boss :
+		return ENNEMY_GROUP_ID
+
 
 
 class Ennemy_Group:
@@ -429,3 +452,28 @@ class Ennemy_Group_3(Ennemy_Group):
 		
 		else:
 			self.fire_rate -= 1
+			
+			
+			
+class Boss(Ennemy_Group):
+	"""This class describe the Boss of the game."""
+	#Default Constructor:
+	def __init__(self,center_X,center_Y):
+		self.center_x = center_X
+		self.center_y = center_Y
+		self.center_dx = 1
+		self.center_dy = 0
+		self.ListofPositions = [['ennemy_1',self.center_x,self.center_y,0]]
+		self.currentEnnemyNumber = 1
+		self.ListofFireShot = {}
+		self.fire_rate = FIRE_RATE
+		self.fire_rate_group = FIRE_RATE * 4
+		self.shot_id = 0
+		self.endStartMove = False
+		
+	
+	def animate(self):
+		"""Here is defined the movement of the Boss"""
+		
+	def fire(self):
+		""""""

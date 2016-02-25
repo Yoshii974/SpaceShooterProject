@@ -17,7 +17,7 @@ mainGameFire = "Sprites/fire.png"
 mainGameExplosions = "Sprites/explosions.png"
 mainGameHealthBar = "Sprites/life_bar_small.png"
 mainGameShield =  "Sprites/shield.png"
-mainGameBoss  "Sprites/boss.png"
+mainGameBoss = "Sprites/boss.png"
 
 ###Sounds paths###
 mainWindowMusic = "Sounds/intro.ogg"

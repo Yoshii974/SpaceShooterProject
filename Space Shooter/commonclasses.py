@@ -124,7 +124,7 @@ class SpriteManager():
 	#The Boss's Sprite :
 	def loadBossSprites(self):
 		"""Load the sprite of the Boss."""
-		self.Boss  pygame.image.load(pathfile.mainGameBoss).convert_alpha()
+		self.Boss = pygame.image.load(pathfile.mainGameBoss).convert_alpha()
 
 	#Source of this code [http://www.pygame.org/wiki/RotateCenter]
 	def rot_center(self,image,angle):
@@ -202,7 +202,6 @@ class FireShot:
 
 
 
-
 class Explosion:
 	"""This class describes an explosion."""
 	#Default Constructor:
@@ -213,21 +212,6 @@ class Explosion:
 		self.lifespan2 = 30
 		self.hasSoundBeenPlayed = 0
 
-
-class Boss:
-	"""This class describe the Boss of the game."""
-	#Default Constructor:
-	def __init__(self):
-		self.x = X
-		self.y = Y
-		self.shot_id = 0
-		self.endStartMove = False
-		
-	def animate(self):
-		"""Here is defined the movement of the Boss"""
-		
-	def fire(self):
-		""""""
 
 
 class Score:
