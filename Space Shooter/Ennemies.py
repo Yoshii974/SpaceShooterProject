@@ -119,7 +119,7 @@ class Ennemies:
 		
 		#Final Wave :
 		EnnemyWave6 = []
-		EnnemyWave6.append(self.createBoss(240,125))
+		EnnemyWave6.append(self.createBoss(240,126))
 		self.ListofEnnemiesWave[6] = EnnemyWave6
 		
 	#Create ennemy group:
@@ -165,13 +165,13 @@ class Ennemies:
 		boss = Boss(center_X,center_Y)
 		
 		#Set the attributes of the Boss :
-		boss.surface_id = self.SpriteManager.Boss #ne devrait servir a rien...
+		boss.surface_id = "boss"
 		ENNEMY_GROUP_ID += 1
 		self.ListofEnnemies[ENNEMY_GROUP_ID] = boss
 		self.currentGroupNumber += 1
 		self.currentEnnemyNumber += 1
 		
-		#Return the D of the Boss :
+		#Return the ID of the Boss :
 		return ENNEMY_GROUP_ID
 
 
@@ -463,14 +463,21 @@ class Boss(Ennemy_Group):
 		self.center_y = center_Y
 		self.center_dx = 1
 		self.center_dy = 0
-		self.ListofPositions = [['ennemy_1',self.center_x,self.center_y,0]]
+		self.ListofPositions = [['ennemy_1',self.center_x,-MAIN_WINDOW_SIZE,0]]
 		self.currentEnnemyNumber = 1
 		self.ListofFireShot = {}
 		self.fire_rate = FIRE_RATE
 		self.fire_rate_group = FIRE_RATE * 4
 		self.shot_id = 0
 		self.endStartMove = False
-		
+	
+	#Move the boss in a specific way :
+	def animateStart(self):
+		"""This moves the boss for its arrival in the display screen."""
+		for i,e in enumerate(self.ListofPositions):
+			e[2] += 2 #The boss come from the top
+		if self.ListofPositions[0][2] == self.center_y:
+			self.endStartMove = True
 	
 	def animate(self):
 		"""Here is defined the movement of the Boss"""

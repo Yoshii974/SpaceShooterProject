@@ -124,7 +124,8 @@ class SpriteManager():
 	#The Boss's Sprite :
 	def loadBossSprites(self):
 		"""Load the sprite of the Boss."""
-		self.Boss = pygame.image.load(pathfile.mainGameBoss).convert_alpha()
+		key = "boss"
+		self.ListofEnnemiesSurface[key] = pygame.image.load(pathfile.mainGameBoss).convert_alpha()
 
 	#Source of this code [http://www.pygame.org/wiki/RotateCenter]
 	def rot_center(self,image,angle):
