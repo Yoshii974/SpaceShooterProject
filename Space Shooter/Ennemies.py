@@ -82,45 +82,45 @@ class Ennemies:
 	def createEnnemyWave(self):
 		"""This method create a group of ennemy and put it in a wave ennemy list."""
 		#Wave 1:
-		EnnemyWave1 = []
-		EnnemyWave1.append(self.createEnnemyGroup(1,70,100))
-		EnnemyWave1.append(self.createEnnemyGroup(1,140,200))
-		self.ListofEnnemiesWave[1] = EnnemyWave1
+		#EnnemyWave1 = []
+		#EnnemyWave1.append(self.createEnnemyGroup(1,70,100))
+		#EnnemyWave1.append(self.createEnnemyGroup(1,140,200))
+		#self.ListofEnnemiesWave[1] = EnnemyWave1
 		
 		#Wave 2:
-		EnnemyWave2 = []
-		EnnemyWave2.append(self.createEnnemyGroup(2,100,200))
-		EnnemyWave2.append(self.createEnnemyGroup(2,150,250))
-		EnnemyWave2.append(self.createEnnemyGroup(2,200,300))
-		self.ListofEnnemiesWave[2] = EnnemyWave2
+		#EnnemyWave2 = []
+		#EnnemyWave2.append(self.createEnnemyGroup(2,100,200))
+		#EnnemyWave2.append(self.createEnnemyGroup(2,150,250))
+		#EnnemyWave2.append(self.createEnnemyGroup(2,200,300))
+		#self.ListofEnnemiesWave[2] = EnnemyWave2
 
 		#Wave 3:
-		EnnemyWave3 = []
-		EnnemyWave3.append(self.createEnnemyGroup(2,70,40))
-		EnnemyWave3.append(self.createEnnemyGroup(2,220,75))
-		EnnemyWave3.append(self.createEnnemyGroup(2,160,105))
-		EnnemyWave3.append(self.createEnnemyGroup(2,340,140))
-		EnnemyWave3.append(self.createEnnemyGroup(2,20,175))
-		self.ListofEnnemiesWave[3] = EnnemyWave3
+		#EnnemyWave3 = []
+		#EnnemyWave3.append(self.createEnnemyGroup(2,70,40))
+		#EnnemyWave3.append(self.createEnnemyGroup(2,220,75))
+		#EnnemyWave3.append(self.createEnnemyGroup(2,160,105))
+		#EnnemyWave3.append(self.createEnnemyGroup(2,340,140))
+		#EnnemyWave3.append(self.createEnnemyGroup(2,20,175))
+		#self.ListofEnnemiesWave[3] = EnnemyWave3
 
 		#Wave 4:
-		EnnemyWave4 = []
-		EnnemyWave4.append(self.createEnnemyGroup(1,40,70))
-		EnnemyWave4.append(self.createEnnemyGroup(1,75,220))
-		EnnemyWave4.append(self.createEnnemyGroup(1,105,160))
-		EnnemyWave4.append(self.createEnnemyGroup(1,140,340))
-		EnnemyWave4.append(self.createEnnemyGroup(1,175,20))
-		self.ListofEnnemiesWave[4] = EnnemyWave4
+		#EnnemyWave4 = []
+		#EnnemyWave4.append(self.createEnnemyGroup(1,40,70))
+		#EnnemyWave4.append(self.createEnnemyGroup(1,75,220))
+		#EnnemyWave4.append(self.createEnnemyGroup(1,105,160))
+		#EnnemyWave4.append(self.createEnnemyGroup(1,140,340))
+		#EnnemyWave4.append(self.createEnnemyGroup(1,175,20))
+		#self.ListofEnnemiesWave[4] = EnnemyWave4
 
 		#Wave 5:
-		EnnemyWave5 = []
-		EnnemyWave5.append(self.createEnnemyGroup(3,50,70))
-		self.ListofEnnemiesWave[5] = EnnemyWave5
+		#EnnemyWave5 = []
+		#EnnemyWave5.append(self.createEnnemyGroup(3,50,70))
+		#self.ListofEnnemiesWave[5] = EnnemyWave5
 		
 		#Final Wave :
 		EnnemyWave6 = []
-		EnnemyWave6.append(self.createBoss(240,126))
-		self.ListofEnnemiesWave[6] = EnnemyWave6
+		EnnemyWave6.append(self.createBoss(120,180)) #240,126
+		self.ListofEnnemiesWave[1] = EnnemyWave6
 		
 	#Create ennemy group:
 	def createEnnemyGroup(self,num,center_X,center_Y):
@@ -470,6 +470,8 @@ class Boss(Ennemy_Group):
 		self.fire_rate_group = FIRE_RATE * 4
 		self.shot_id = 0
 		self.endStartMove = False
+		self.mouvementPatternCountDown = 0
+		self.mouvementSquare = 1
 	
 	#Move the boss in a specific way :
 	def animateStart(self):
@@ -481,6 +483,27 @@ class Boss(Ennemy_Group):
 	
 	def animate(self):
 		"""Here is defined the movement of the Boss"""
+		#Set the center X :
+		self.center_x = self.center_x + self.center_dx
+		self.center_y = self.center_y + self.center_dy
 		
-	def fire(self):
-		""""""
+		#update the boss position :
+		for i,e in enumerate(self.ListofPositions):
+			e_current_index = int(e[0][-1])
+			e[1] = self.center_x
+			e[2] = self.center_y
+		
+		#Mouvment pattern of the boss :
+		if self.mouvementSquare == 1:
+			if self.center_x >= 120 and self.center_x <= 250 and self.center_y == 180:
+				self.center_dx = 1
+			elif self.center_x == 250 and self.center_y <= 180 and self.center_y >= 70:
+				self.center_dy = -1
+			elif self.center_x >= 120 and self.center_x <= 250 and self.center_y == 70:
+				self.center_dx = -1
+			elif self.center_x == 120 and self.center_y <= 180 and self.center_y >= 70:
+				self.center_dy = 1
+			
+			
+	#def fire(self):
+	#	""""""
