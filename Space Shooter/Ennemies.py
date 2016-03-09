@@ -461,7 +461,7 @@ class Boss(Ennemy_Group):
 	def __init__(self,center_X,center_Y):
 		self.center_x = center_X
 		self.center_y = center_Y
-		self.center_dx = 1
+		self.center_dx = 0
 		self.center_dy = 0
 		self.ListofPositions = [['ennemy_1',self.center_x,-MAIN_WINDOW_SIZE,0]]
 		self.currentEnnemyNumber = 1
@@ -493,16 +493,32 @@ class Boss(Ennemy_Group):
 			e[1] = self.center_x
 			e[2] = self.center_y
 		
-		#Mouvment pattern of the boss :
+		#Mouvment pattern of the boss : SQUARE
 		if self.mouvementSquare == 1:
-			if self.center_x >= 120 and self.center_x <= 250 and self.center_y == 180:
+			if self.center_x >= 119 and self.center_x <= 200 and self.center_y == 180:
 				self.center_dx = 1
-			elif self.center_x == 250 and self.center_y <= 180 and self.center_y >= 70:
+				self.center_dy = 0
+				#print("Partie 1")
+				#print("Self center X : " + str(self.center_x))
+				#print("Self center Y : " + str(self.center_y))
+			elif self.center_x == 201 and self.center_y <= 180 and self.center_y > 70:
+				self.center_dx = 0
 				self.center_dy = -1
-			elif self.center_x >= 120 and self.center_x <= 250 and self.center_y == 70:
+				#print("Partie 2")
+				#print("Self center X : " + str(self.center_x))
+				#print("Self center Y : " + str(self.center_y))
+			elif self.center_x >= 120 and self.center_x <= 201 and self.center_y == 70:
 				self.center_dx = -1
-			elif self.center_x == 120 and self.center_y <= 180 and self.center_y >= 70:
+				self.center_dy = 0
+				#print("Partie 3")
+				#print("Self center X : " + str(self.center_x))
+				#print("Self center Y : " + str(self.center_y))
+			elif self.center_x == 119 and self.center_y <= 180 and self.center_y >= 70:
+				self.center_dx = 0
 				self.center_dy = 1
+				#print("Partie 4")
+				#print("Self center X : " + str(self.center_x))
+				#print("Self center Y : " + str(self.center_y))
 			
 			
 	#def fire(self):
