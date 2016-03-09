@@ -467,7 +467,7 @@ class Boss(Ennemy_Group):
 		self.currentEnnemyNumber = 1
 		self.ListofFireShot = {}
 		self.fire_rate = FIRE_RATE
-		self.fire_rate_group = FIRE_RATE * 4
+		self.fire_rate_group = FIRE_RATE * 3
 		self.shot_id = 0
 		self.endStartMove = False
 		self.mouvementPatternCountDown = 0
@@ -521,5 +521,24 @@ class Boss(Ennemy_Group):
 				#print("Self center Y : " + str(self.center_y))
 			
 			
-	#def fire(self):
-	#	""""""
+	#Shoots laser
+	def fire(self):
+		"""This function triggers fire shots from each ennemy included in this group."""
+		if self.fire_rate == 0:
+			shot1 = FireShot(self.center_x,self.center_y,"fire2",self.shot_id,"player",4)
+			shot2 = FireShot(self.center_x,self.center_y + 132,"fire3",self.shot_id,"player",5)
+			shot3 = FireShot(self.center_x + 113,self.center_y + 132,"fire3",self.shot_id,"player",3)
+			shot4 = FireShot(self.center_x + 113,self.center_y,"fire2",self.shot_id,"player",4)
+			
+			self.ListofFireShot[self.shot_id] = shot1
+			self.shot_id += 1
+			self.ListofFireShot[self.shot_id] = shot2
+			self.shot_id += 1
+			self.ListofFireShot[self.shot_id] = shot3
+			self.shot_id += 1
+			self.ListofFireShot[self.shot_id] = shot4
+			self.shot_id += 1
+			
+			self.fire_rate = self.fire_rate_group
+		else:
+			self.fire_rate -= 1
