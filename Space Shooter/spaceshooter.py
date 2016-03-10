@@ -25,11 +25,12 @@ GAME_ELEMENT_SIZE = 32
 #Size in pixels of the player element :
 GAME_ELEMENT_PLAYER_SIZE = 50
 
-#These lists contains respectively the ennemies and the differents weapons available for the player :
-ennemies = Ennemies()
-
 #Player's space shuttle :
 player = Player(256,452)
+
+#These lists contains respectively the ennemies and the differents weapons available for the player :
+ennemies = Ennemies()
+ennemies.PlayerObject = player
 
 #Joysticks ID :
 JOYSTICK_ID = 0

@@ -29,6 +29,7 @@ class Ennemies:
 		self.currentEnnemyWave = 1
 		self.SpriteManager = ""
 		self.MusicAndSoundManager = ""
+		self.PlayerObject = ""
 	
 	#Initialize the ennemy class:
 	def initialization(self):
@@ -163,6 +164,7 @@ class Ennemies:
 		
 		#Create the Boss :
 		boss = Boss(center_X,center_Y)
+		boss.PlayerObject = self.PlayerObject
 		
 		#Set the attributes of the Boss :
 		boss.surface_id = "boss"
@@ -470,8 +472,11 @@ class Boss(Ennemy_Group):
 		self.fire_rate_group = FIRE_RATE * 3
 		self.shot_id = 0
 		self.endStartMove = False
-		self.mouvementPatternCountDown = 0
-		self.mouvementSquare = 1
+		self.mouvementCountDown = 0
+		self.mouvementPattern = 0
+		self.firePattern = 0
+		self.fireCountDown = 0
+		self.PlayerObject = ""
 	
 	#Move the boss in a specific way :
 	def animateStart(self):
@@ -494,7 +499,7 @@ class Boss(Ennemy_Group):
 			e[2] = self.center_y
 		
 		#Mouvment pattern of the boss : SQUARE
-		if self.mouvementSquare == 1:
+		if self.mouvementPattern == 0:
 			if self.center_x >= 119 and self.center_x <= 200 and self.center_y == 180:
 				self.center_dx = 1
 				self.center_dy = 0
@@ -519,17 +524,54 @@ class Boss(Ennemy_Group):
 				#print("Partie 4")
 				#print("Self center X : " + str(self.center_x))
 				#print("Self center Y : " + str(self.center_y))
+				
+			#Increase the Pattern Countdown :
+			self.mouvementCountDown += 1
 			
+			#If the countdown has reached its maximum :
+			if self.mouvementCountDown == 40:
+				self.mouvementPattern = 1
+				self.mouvementCountDown = 0
+		
+		#Mouvement pattern of the boss : RUSHING TO THE PLAYER
+		elif self.mouvementPattern == 1:
+			#Knows the current player's positions, mark a point at these coordinates and then go straight to that point :
+			#Player_Current_Location_X = PlayerObject.x
+			#Player_Current_Location_Y = PlayerObject.y
+			
+			#Change dx and dy depending on player's positions :
+			if self.center_x > self.PlayerObject.x:
+				self.center_dx = -2
+			if self.center_x <= self.PlayerObject.x:
+				self.center_dx = +2
+			if self.center_y > self.PlayerObject.y:
+				self.center_dy = -2
+			if self.center_y <= self.PlayerObject.y:
+				self.center_dy = +2
+			
+			#Increase the countdown :
+			self.mouvementCountDown += 1
+			print("Value of mouvementCountDown : " + str(self.mouvementCountDown))
+			
+			#If the countdown has reached its maximum :
+			if self.mouvementCountDown == 5:
+				self.mouvementPattern = 0
+				self.mouvementCountDown = 0
+				
+				print("Inside the IF Statement, Value of mouvementCountDown : " + str(self.mouvementCountDown))
+				print("Inside the IF Statement, Value of mouvementPattern : " + str(self.mouvementPattern))
 			
 	#Shoots laser
 	def fire(self):
 		"""This function triggers fire shots from each ennemy included in this group."""
-		if self.fire_rate == 0:
+		if self.fire_rate == 0 and self.firePattern == 0:
+			#This mode allows the boss to shoot 4 lasers in different directions and with different angle :
 			shot1 = FireShot(self.center_x,self.center_y,"fire2",self.shot_id,"player",4)
 			shot2 = FireShot(self.center_x,self.center_y + 132,"fire3",self.shot_id,"player",5)
 			shot3 = FireShot(self.center_x + 113,self.center_y + 132,"fire3",self.shot_id,"player",3)
 			shot4 = FireShot(self.center_x + 113,self.center_y,"fire2",self.shot_id,"player",4)
 			
+			#Adds the shots to the FireShot List :
 			self.ListofFireShot[self.shot_id] = shot1
 			self.shot_id += 1
 			self.ListofFireShot[self.shot_id] = shot2
@@ -539,6 +581,31 @@ class Boss(Ennemy_Group):
 			self.ListofFireShot[self.shot_id] = shot4
 			self.shot_id += 1
 			
+			#Reset the Fire rate :
 			self.fire_rate = self.fire_rate_group
+			self.fireCountDown += 1
+			
+			#This lets us know when it should change its fire mode :
+			if self.fireCountDown == 15:
+				self.firePattern = 1
+				self.fireCountDown = 0
+		
+		elif self.fire_rate == 0 and self.firePattern == 1:
+			#In this mode, the boss shoots many laser really fast and in a single direction :
+			shot1 = FireShot(self.center_x + 90,self.center_y + 15,"fire3",self.shot_id,"player",4)
+			
+			#Adds the shots to the FireShot List :
+			self.ListofFireShot[self.shot_id] = shot1
+			self.shot_id += 1
+			
+			#Reset the Fire rate :
+			self.fire_rate = 12#self.fire_rate_group / 6
+			self.fireCountDown += 1
+			
+			#Reset countdown :
+			if self.fireCountDown == 60:
+				self.firePattern = 0
+				self.fireCountDown = 0
+			
 		else:
 			self.fire_rate -= 1
