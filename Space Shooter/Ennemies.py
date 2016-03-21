@@ -473,10 +473,11 @@ class Boss(Ennemy_Group):
 		self.shot_id = 0
 		self.endStartMove = False
 		self.mouvementCountDown = 0
-		self.mouvementPattern = 0
+		self.mouvementPattern = "SQUARE"
 		self.firePattern = 0
 		self.fireCountDown = 0
 		self.PlayerObject = ""
+		self.SQUARECountDown = 0
 	
 	#Move the boss in a specific way :
 	def animateStart(self):
@@ -488,57 +489,38 @@ class Boss(Ennemy_Group):
 	
 	def animate(self):
 		"""Here is defined the movement of the Boss"""
-		#Set the center X :
-		self.center_x = self.center_x + self.center_dx
-		self.center_y = self.center_y + self.center_dy
-		
-		#update the boss position :
-		for i,e in enumerate(self.ListofPositions):
-			e_current_index = int(e[0][-1])
-			e[1] = self.center_x
-			e[2] = self.center_y
-		
 		#Mouvment pattern of the boss : SQUARE
-		if self.mouvementPattern == 0:
-			if self.center_x >= 119 and self.center_x <= 200 and self.center_y == 180:
+		if self.mouvementPattern == "SQUARE":
+			if self.SQUARECountDown >= 0 and self.SQUARECountDown < 100:
 				self.center_dx = 1
 				self.center_dy = 0
-				#print("Partie 1")
-				#print("Self center X : " + str(self.center_x))
-				#print("Self center Y : " + str(self.center_y))
-			elif self.center_x == 201 and self.center_y <= 180 and self.center_y > 70:
+				self.SQUARECountDown += 1
+			elif self.SQUARECountDown >= 100 and self.SQUARECountDown < 200:
 				self.center_dx = 0
 				self.center_dy = -1
-				#print("Partie 2")
-				#print("Self center X : " + str(self.center_x))
-				#print("Self center Y : " + str(self.center_y))
-			elif self.center_x >= 120 and self.center_x <= 201 and self.center_y == 70:
+				self.SQUARECountDown += 1
+			elif self.SQUARECountDown >= 200 and self.SQUARECountDown < 300:
 				self.center_dx = -1
 				self.center_dy = 0
-				#print("Partie 3")
-				#print("Self center X : " + str(self.center_x))
-				#print("Self center Y : " + str(self.center_y))
-			elif self.center_x == 119 and self.center_y <= 180 and self.center_y >= 70:
+				self.SQUARECountDown += 1
+			elif self.SQUARECountDown >= 300 and self.SQUARECountDown < 400:
 				self.center_dx = 0
 				self.center_dy = 1
-				#print("Partie 4")
-				#print("Self center X : " + str(self.center_x))
-				#print("Self center Y : " + str(self.center_y))
+				self.SQUARECountDown += 1
+				if self.SQUARECountDown == 400:
+					self.SQUARECountDown = 0
 				
 			#Increase the Pattern Countdown :
 			self.mouvementCountDown += 1
 			
 			#If the countdown has reached its maximum :
-			if self.mouvementCountDown == 40:
-				self.mouvementPattern = 1
+			if self.mouvementCountDown == 4000:#40
+				self.mouvementPattern = "PLAYER_RUSH"
 				self.mouvementCountDown = 0
 		
 		#Mouvement pattern of the boss : RUSHING TO THE PLAYER
-		elif self.mouvementPattern == 1:
+		elif self.mouvementPattern == "PLAYER_RUSH":
 			#Knows the current player's positions, mark a point at these coordinates and then go straight to that point :
-			#Player_Current_Location_X = PlayerObject.x
-			#Player_Current_Location_Y = PlayerObject.y
-			
 			#Change dx and dy depending on player's positions :
 			if self.center_x > self.PlayerObject.x:
 				self.center_dx = -2
@@ -551,15 +533,24 @@ class Boss(Ennemy_Group):
 			
 			#Increase the countdown :
 			self.mouvementCountDown += 1
-			print("Value of mouvementCountDown : " + str(self.mouvementCountDown))
 			
 			#If the countdown has reached its maximum :
-			if self.mouvementCountDown == 5:
-				self.mouvementPattern = 0
+			if self.mouvementCountDown == 150:
+				self.mouvementPattern = "SQUARE"
 				self.mouvementCountDown = 0
+				self.center_x = random.randrange(20,130)#120
+				self.center_y = random.randrange(60,200)#180
 				
-				print("Inside the IF Statement, Value of mouvementCountDown : " + str(self.mouvementCountDown))
-				print("Inside the IF Statement, Value of mouvementPattern : " + str(self.mouvementPattern))
+
+		#Set the center X :
+		self.center_x = self.center_x + self.center_dx
+		self.center_y = self.center_y + self.center_dy
+		
+		#update the boss position :
+		for i,e in enumerate(self.ListofPositions):
+			e_current_index = int(e[0][-1])
+			e[1] = self.center_x
+			e[2] = self.center_y
 			
 	#Shoots laser
 	def fire(self):
