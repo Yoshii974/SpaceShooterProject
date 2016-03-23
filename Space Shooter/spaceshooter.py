@@ -58,7 +58,8 @@ animatedMainGameBackGround2 = pygame.image.load(pathfile.mainGameBackGround2)
 animatedMainGameBackGround2Compensation = pygame.image.load(pathfile.mainGameBackGround2)
 
 #This is used to make the background scroll :
-current_background_position = 0
+current_background_position_1 = 0
+current_background_position_2 = 0
 
 #List of selected option from the main menu :
 ListSelectedOptions = [1,0]
@@ -101,7 +102,7 @@ def mainWindowOptionsRenderer():
 	#Credits :
 	creditsFont = spriteManager.ListofSysFonts["Arial"]
 	creditsFont.set_italic(True)
-	creditsText = "Space Shooter, v1.0.1, author : Yoshii_974, all right reserved.TM"
+	creditsText = "Space Shooter, v1.0.2, author : Yoshii_974, all right reserved.TM"
 	creditsImg = creditsFont.render(creditsText,1,(255,255,0))
 	mainWindow.blit(creditsImg,(200,495))
 
@@ -225,7 +226,7 @@ def mainGameAnimationRendererManager():
 	elif CURRENT_GAME_STATE == "GAME":
 
 		#Animate the background :
-		mainGameBackGroundAnimationRenderer("NORMAL")
+		mainGameBackGroundAnimationRenderer(ennemies.GAME_STATUS)
 		
 		#Destroy the player's fireshot which lifespan has been reached:
 		player.destroyFireShots()
@@ -349,29 +350,47 @@ def mainGameAnimationRendererManager():
 
 
 def mainGameBackGroundAnimationRenderer(mode):
-	"""This function animates the background. It allows the background to be scrolled each timew this funciton it's called."""
+	"""This function animates the background. It allows the background to be scrolled each time this function it's called."""
 	global animatedMainGameBackGround1
 	global animatedMainGameBackGround1Compensation
-	global current_background_position
-
-	#The current position of the main game background and the position of the duplicate :
-	current_background_position = current_background_position + 2
-
-	#Get the rect from the background in order to know and use the height :
-	background_rect = animatedMainGameBackGround1.get_rect()
-	background_height = background_rect.height
+	global animatedMainGameBackGround2
+	global animatedMainGameBackGround2Compensation
+	global current_background_position_1
+	global current_background_position_2
 
 	if mode == "NORMAL":
+		#The current position of the main game background and the position of the duplicate :
+		current_background_position_1 += 2
+
+		#Get the rect from the background in order to know and use the height :
+		background_rect_1 = animatedMainGameBackGround1.get_rect()
+		background_height_1 = background_rect_1.height
+		
 		#Scroll the background by 2 pixels:
-		mainWindow.blit(animatedMainGameBackGround1,(0,current_background_position))
-		mainWindow.blit(animatedMainGameBackGround1Compensation,(0,current_background_position - background_height))
+		mainWindow.blit(animatedMainGameBackGround1,(0,current_background_position_1))
+		mainWindow.blit(animatedMainGameBackGround1Compensation,(0,current_background_position_1 - background_height_1))
+		
+		#If the background y position has reached the size of the screen, we reset the position :
+		if current_background_position_1 == background_height_1:
+			current_background_position_1 = 0
+		
 	elif mode == "BOSS":
+		#The current position of the main game background and the position of the duplicate :
+		current_background_position_2 += 1
+
+		#Get the rect from the background in order to know and use the height :
+		background_rect_2 = animatedMainGameBackGround2.get_rect()
+		background_height_2 = background_rect_2.height
+		
 		#TODO: Find out an algorithm to have the background moving in each directions during fight against the boss :
-		animatedMainGameBackGround1.scroll(0,2)
+		#animatedMainGameBackGround1.scroll(0,2)
+		mainWindow.blit(animatedMainGameBackGround2,(0,current_background_position_2))
+		mainWindow.blit(animatedMainGameBackGround2Compensation,(0,current_background_position_2 - background_height_2))
+		
+		#If the background y position has reached the size of the screen, we reset the position :
+		if current_background_position_2 == background_height_2:
+			current_background_position_2 = 0
 	
-	#If the background y position has reached the size of the screen, we reset the position :
-	if current_background_position == background_height:
-		current_background_position = 0
 
 
 def mainGameInitialization():

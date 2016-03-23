@@ -30,6 +30,7 @@ class Ennemies:
 		self.SpriteManager = ""
 		self.MusicAndSoundManager = ""
 		self.PlayerObject = ""
+		self.GAME_STATUS = "NORMAL"
 	
 	#Initialize the ennemy class:
 	def initialization(self):
@@ -83,45 +84,45 @@ class Ennemies:
 	def createEnnemyWave(self):
 		"""This method create a group of ennemy and put it in a wave ennemy list."""
 		#Wave 1:
-		#EnnemyWave1 = []
-		#EnnemyWave1.append(self.createEnnemyGroup(1,70,100))
-		#EnnemyWave1.append(self.createEnnemyGroup(1,140,200))
-		#self.ListofEnnemiesWave[1] = EnnemyWave1
+		EnnemyWave1 = []
+		EnnemyWave1.append(self.createEnnemyGroup(1,70,100))
+		EnnemyWave1.append(self.createEnnemyGroup(1,140,200))
+		self.ListofEnnemiesWave[1] = EnnemyWave1
 		
 		#Wave 2:
-		#EnnemyWave2 = []
-		#EnnemyWave2.append(self.createEnnemyGroup(2,100,200))
-		#EnnemyWave2.append(self.createEnnemyGroup(2,150,250))
-		#EnnemyWave2.append(self.createEnnemyGroup(2,200,300))
-		#self.ListofEnnemiesWave[2] = EnnemyWave2
+		EnnemyWave2 = []
+		EnnemyWave2.append(self.createEnnemyGroup(2,100,200))
+		EnnemyWave2.append(self.createEnnemyGroup(2,150,250))
+		EnnemyWave2.append(self.createEnnemyGroup(2,200,300))
+		self.ListofEnnemiesWave[2] = EnnemyWave2
 
 		#Wave 3:
-		#EnnemyWave3 = []
-		#EnnemyWave3.append(self.createEnnemyGroup(2,70,40))
-		#EnnemyWave3.append(self.createEnnemyGroup(2,220,75))
-		#EnnemyWave3.append(self.createEnnemyGroup(2,160,105))
-		#EnnemyWave3.append(self.createEnnemyGroup(2,340,140))
-		#EnnemyWave3.append(self.createEnnemyGroup(2,20,175))
-		#self.ListofEnnemiesWave[3] = EnnemyWave3
+		EnnemyWave3 = []
+		EnnemyWave3.append(self.createEnnemyGroup(2,70,40))
+		EnnemyWave3.append(self.createEnnemyGroup(2,220,75))
+		EnnemyWave3.append(self.createEnnemyGroup(2,160,105))
+		EnnemyWave3.append(self.createEnnemyGroup(2,340,140))
+		EnnemyWave3.append(self.createEnnemyGroup(2,20,175))
+		self.ListofEnnemiesWave[3] = EnnemyWave3
 
 		#Wave 4:
-		#EnnemyWave4 = []
-		#EnnemyWave4.append(self.createEnnemyGroup(1,40,70))
-		#EnnemyWave4.append(self.createEnnemyGroup(1,75,220))
-		#EnnemyWave4.append(self.createEnnemyGroup(1,105,160))
-		#EnnemyWave4.append(self.createEnnemyGroup(1,140,340))
-		#EnnemyWave4.append(self.createEnnemyGroup(1,175,20))
-		#self.ListofEnnemiesWave[4] = EnnemyWave4
+		EnnemyWave4 = []
+		EnnemyWave4.append(self.createEnnemyGroup(1,40,70))
+		EnnemyWave4.append(self.createEnnemyGroup(1,75,220))
+		EnnemyWave4.append(self.createEnnemyGroup(1,105,160))
+		EnnemyWave4.append(self.createEnnemyGroup(1,140,340))
+		EnnemyWave4.append(self.createEnnemyGroup(1,175,20))
+		self.ListofEnnemiesWave[4] = EnnemyWave4
 
 		#Wave 5:
-		#EnnemyWave5 = []
-		#EnnemyWave5.append(self.createEnnemyGroup(3,50,70))
-		#self.ListofEnnemiesWave[5] = EnnemyWave5
+		EnnemyWave5 = []
+		EnnemyWave5.append(self.createEnnemyGroup(3,50,70))
+		self.ListofEnnemiesWave[5] = EnnemyWave5
 		
 		#Final Wave :
 		EnnemyWave6 = []
 		EnnemyWave6.append(self.createBoss(120,180)) #240,126
-		self.ListofEnnemiesWave[1] = EnnemyWave6
+		self.ListofEnnemiesWave[6] = EnnemyWave6
 		
 	#Create ennemy group:
 	def createEnnemyGroup(self,num,center_X,center_Y):
@@ -152,12 +153,19 @@ class Ennemies:
 		"""Update the current ennemy wave."""
 		wave = self.ListofEnnemiesWave[self.currentEnnemyWave]
 		e_sum = 0
+		
 		for eg_id in wave:
 			eg = self.ListofEnnemies[eg_id]
+			
+			#Check if we are at the end of the game :
+			if eg.TYPE == "BOSS":
+				self.GAME_STATUS = "BOSS"
+			
 			e_sum += eg.currentEnnemyNumber
+			
 		if e_sum == 0:
 			self.currentEnnemyWave += 1
-			
+		
 	def createBoss(self,center_X,center_Y):
 		"""Create the Boss of the game."""
 		global ENNEMY_GROUP_ID
@@ -195,6 +203,7 @@ class Ennemy_Group:
 		self.fire_rate_group = FIRE_RATE
 		self.shot_id = 0
 		self.endStartMove = False
+		self.TYPE = "ENNEMY_WAVE"
 
 	#Initialization
 	def initialization(self):
@@ -286,6 +295,7 @@ class Ennemy_Group_1(Ennemy_Group):
 		self.fire_rate_group = FIRE_RATE * 3
 		self.shot_id = 0
 		self.endStartMove = False
+		self.TYPE = "ENNEMY_WAVE"
 
 	#Move the group of ennemy in a start wat :
 	def animateStart(self):
@@ -335,6 +345,7 @@ class Ennemy_Group_2(Ennemy_Group):
 		self.fire_rate_group = FIRE_RATE * 4
 		self.shot_id = 0
 		self.endStartMove = False
+		self.TYPE = "ENNEMY_WAVE"
 	
 	#Move the group of ennemy in a specific way :
 	def animateStart(self):
@@ -389,6 +400,7 @@ class Ennemy_Group_3(Ennemy_Group):
 		self.orientation_counter_ennemy_2 = 1
 		self.orientation_counter_ennemy_3 = 2
 		self.orientation_counter_ennemy_4 = 3
+		self.TYPE = "ENNEMY_WAVE"
 	
 	#Move the group of ennemy in a specific way :
 	def animateStart(self):
@@ -478,6 +490,7 @@ class Boss(Ennemy_Group):
 		self.fireCountDown = 0
 		self.PlayerObject = ""
 		self.SQUARECountDown = 0
+		self.TYPE = "BOSS"
 	
 	#Move the boss in a specific way :
 	def animateStart(self):
@@ -538,6 +551,8 @@ class Boss(Ennemy_Group):
 			if self.mouvementCountDown == 150:
 				self.mouvementPattern = "SQUARE"
 				self.mouvementCountDown = 0
+				
+				#The Boss reappears at a random position :
 				self.center_x = random.randrange(20,130)#120
 				self.center_y = random.randrange(60,200)#180
 				
