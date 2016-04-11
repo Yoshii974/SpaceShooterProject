@@ -55,11 +55,17 @@ animatedSpaceShuttleRect = animatedSpaceShuttle.get_rect()
 animatedMainGameBackGround1 = pygame.image.load(pathfile.mainGameBackGround1)
 animatedMainGameBackGround1Compensation = pygame.image.load(pathfile.mainGameBackGround1)
 animatedMainGameBackGround2 = pygame.image.load(pathfile.mainGameBackGround2)
-animatedMainGameBackGround2Compensation = pygame.image.load(pathfile.mainGameBackGround2)
+animatedMainGameBackGround2Compensation1 = pygame.image.load(pathfile.mainGameBackGround2)
+animatedMainGameBackGround2Compensation2 = pygame.image.load(pathfile.mainGameBackGround2)
 
 #This is used to make the background scroll :
 current_background_position_1 = 0
-current_background_position_2 = 0
+current_background_position_2 = [0,0]
+
+#The countdown for the background :
+backgroundCountDown = 0
+#The background Pattern :
+backgroundPattern = random.choice([0,2,4,6])#0
 
 #List of selected option from the main menu :
 ListSelectedOptions = [1,0]
@@ -354,10 +360,13 @@ def mainGameBackGroundAnimationRenderer(mode):
 	global animatedMainGameBackGround1
 	global animatedMainGameBackGround1Compensation
 	global animatedMainGameBackGround2
-	global animatedMainGameBackGround2Compensation
+	global animatedMainGameBackGround2Compensation1
+	global animatedMainGameBackGround2Compensation2
 	global current_background_position_1
 	global current_background_position_2
-
+	global backgroundCountDown
+	global backgroundPattern
+	
 	if mode == "NORMAL":
 		#The current position of the main game background and the position of the duplicate :
 		current_background_position_1 += 2
@@ -376,21 +385,73 @@ def mainGameBackGroundAnimationRenderer(mode):
 		
 	elif mode == "BOSS":
 		#The current position of the main game background and the position of the duplicate :
-		current_background_position_2 += 1
-
-		#Get the rect from the background in order to know and use the height :
-		background_rect_2 = animatedMainGameBackGround2.get_rect()
-		background_height_2 = background_rect_2.height
+		#backgroundCountDown += 1
 		
-		#TODO: Find out an algorithm to have the background moving in each directions during fight against the boss :
-		#animatedMainGameBackGround1.scroll(0,2)
-		mainWindow.blit(animatedMainGameBackGround2,(0,current_background_position_2))
-		mainWindow.blit(animatedMainGameBackGround2Compensation,(0,current_background_position_2 - background_height_2))
+		#Increase the countdown :
+		#if backgroundCountDown == 800:
+		#	backgroundPattern += 2
+		#	backgroundCountDown = 0
 		
-		#If the background y position has reached the size of the screen, we reset the position :
-		if current_background_position_2 == background_height_2:
-			current_background_position_2 = 0
-	
+		#Check current value of backgroundPattern :
+		#if backgroundPattern == 8:
+		#	backgroundPattern = 0
+		
+		#Change the scroll x and y, of the background :
+		if backgroundPattern == 0:
+			current_background_position_2[0] += 0
+			current_background_position_2[1] -= 1
+			
+			mainWindow.blit(animatedMainGameBackGround2,(0,current_background_position_2[1]))
+			mainWindow.blit(animatedMainGameBackGround2Compensation1,(0,MAIN_WINDOW_SIZE + current_background_position_2[1]))
+		
+			if current_background_position_2[1] == -MAIN_WINDOW_SIZE:
+				current_background_position_2[1] = 0
+			
+		#elif backgroundPattern == 1:
+		#	current_background_position_2[0] += 1
+		#	current_background_position_2[1] -= 1
+		elif backgroundPattern == 2:
+			current_background_position_2[0] += 1
+			current_background_position_2[1] += 0
+			
+			mainWindow.blit(animatedMainGameBackGround2,(current_background_position_2[0],0))
+			mainWindow.blit(animatedMainGameBackGround2Compensation1,(-MAIN_WINDOW_SIZE + current_background_position_2[0],0))
+		
+			if current_background_position_2[0] == MAIN_WINDOW_SIZE:
+				current_background_position_2[0] = 0
+		
+		#elif backgroundPattern == 3:
+		#	current_background_position_2[0] += 1
+		#	current_background_position_2[1] += 1
+		
+		elif backgroundPattern == 4:
+			current_background_position_2[0] += 0
+			current_background_position_2[1] += 1
+			
+			mainWindow.blit(animatedMainGameBackGround2,(0,current_background_position_2[1]))
+			mainWindow.blit(animatedMainGameBackGround2Compensation1,(0,-MAIN_WINDOW_SIZE + current_background_position_2[1]))
+		
+			if current_background_position_2[1] == MAIN_WINDOW_SIZE:
+				current_background_position_2[1] = 0
+		
+		#elif backgroundPattern == 5:
+		#	current_background_position_2[0] -= 1
+		#	current_background_position_2[1] += 1
+		
+		
+		elif backgroundPattern == 6:
+			current_background_position_2[0] -= 1
+			current_background_position_2[1] += 0
+			
+			mainWindow.blit(animatedMainGameBackGround2,(current_background_position_2[0],0))
+			mainWindow.blit(animatedMainGameBackGround2Compensation1,(MAIN_WINDOW_SIZE + current_background_position_2[0],0))
+		
+			if current_background_position_2[0] == -MAIN_WINDOW_SIZE:
+				current_background_position_2[0] = 0
+		
+		#elif backgroundPattern == 7:
+		#	current_background_position_2[0] -= 1
+		#	current_background_position_2[1] -= 1
 
 
 def mainGameInitialization():
