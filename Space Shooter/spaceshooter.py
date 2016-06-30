@@ -47,6 +47,9 @@ ListofExplosions = []
 #player score :
 score = Score()
 
+#player number of shield left :
+nb_player_shield = 3
+
 #The space shuttle and its position as global variables :
 animatedSpaceShuttle = pygame.Surface((0,0)) 
 animatedSpaceShuttleRect = animatedSpaceShuttle.get_rect()
@@ -345,6 +348,9 @@ def mainGameAnimationRendererManager():
 
 		#Update the player score :
 		updatePlayerScore()
+		
+		#Update the number of remaining shields :
+		updatePlayerShield()
 
 		#TEST:
 		if player.activateShield > 0:
@@ -569,7 +575,17 @@ def updatePlayerScore():
 	ScoreSurface = policeFont.render(score_sentence,0,(0,255,0))
 	mainWindow.blit(ScoreSurface,(20,20))
 
-
+	
+def updatePlayerShield():
+	"""Update the number of shield which remain for the player"""
+	global nb_player_shield
+	global spriteManager
+	
+	#Draw the number of remaining shields
+	policeFont = spriteManager.ListofSysFonts["Times New Roman"]
+	shield_sentence = "REMAINING SHIELDS : " + str(nb_player_shield)
+	ShieldSurface = policeFont.render(shield_sentence,0,(0,255,0));
+	mainWindow.blit(ShieldSurface,(20,40))
 
 
 def activatePlayerShield():
@@ -668,8 +684,9 @@ while CURRENT_GAME_STATE == "GAME":
 			elif evt.key == K_SPACE:
 				player.fireShot()
 			elif evt.key == K_LCTRL:
-				if player.activateShield == 0:
+				if player.activateShield == 0 and nb_player_shield > 0:
 					player.activateShield = 500
+					nb_player_shield -= 1
 			elif evt.key == K_F1:
 				player.currentWeapon = "fire1"
 			elif evt.key == K_F2:
@@ -685,8 +702,9 @@ while CURRENT_GAME_STATE == "GAME":
 			elif evt.key == K_SPACE:
 				player.fireShot()
 			elif evt.key == K_LCTRL:
-				if player.activateShield == 0:
+				if player.activateShield == 0 and nb_player_shield > 0:
 					player.activateShield = 500
+					nb_player_shield -= 1
 			elif evt.key == K_F1:
 				player.currentWeapon = "fire1"
 			elif evt.key == K_F2:
@@ -705,8 +723,9 @@ while CURRENT_GAME_STATE == "GAME":
 				elif player.currentWeapon == "fire3":
 					player.currentWeapon = "fire1"
 			elif evt.button == 2:
-				if player.activateShield == 0:
+				if player.activateShield == 0 and nb_player_shield > 0:
 					player.activateShield = 500
+					nb_player_shield -= 1
 		
 		elif evt.type == JOYAXISMOTION:
 			if evt.axis == 0:
