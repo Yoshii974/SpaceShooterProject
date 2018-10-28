@@ -59,14 +59,14 @@ animatedMainGameBackGround1 = pygame.image.load(pathfile.mainGameBackGround1)
 animatedMainGameBackGround1Compensation = pygame.image.load(pathfile.mainGameBackGround1)
 animatedMainGameBackGround2 = pygame.image.load(pathfile.mainGameBackGround2)
 animatedMainGameBackGround2Compensation1 = pygame.image.load(pathfile.mainGameBackGround2)
-animatedMainGameBackGround2Compensation2 = pygame.image.load(pathfile.mainGameBackGround2)
+# animatedMainGameBackGround2Compensation2 = pygame.image.load(pathfile.mainGameBackGround2)
 
 #This is used to make the background scroll :
 current_background_position_1 = 0
 current_background_position_2 = [0,0]
 
 #The countdown for the background :
-backgroundCountDown = 0
+#backgroundCountDown = 0
 #The background Pattern :
 backgroundPattern = random.choice([0,2,4,6])#0
 
@@ -157,17 +157,23 @@ def physicCollisionManager():
 		#Create a fireshot rect:
 		fireshot_rect = pygame.Rect(fireshot.x,fireshot.y,GAME_ELEMENT_SIZE,GAME_ELEMENT_SIZE)
 		collisionFound = False
+		
 		#for each ennemy in each ennemy_group:
 		for eg_id,eg in ennemies.ListofEnnemies.items():
-			if collisionFound == False:
-				for e in eg.ListofPositions:
-					if collisionFound == False:
-						e_rect = pygame.Rect(e[1],e[2],GAME_ELEMENT_SIZE,GAME_ELEMENT_SIZE)
-						#If there is a collision between the current fireshot and the current ennemy, then we create a collision and we go to the next fireshot checking :
-						if fireshot_rect.colliderect(e_rect):
-							collision = [eg_id,e[0],fire_id]
-							ListofEnnemiesCollisions.append(collision)
-							collisionFound = True
+			if collisionFound == True:
+				break
+			
+			for e in eg.ListofPositions:
+				if collisionFound == True:
+					break
+				
+				e_rect = pygame.Rect(e[1],e[2],GAME_ELEMENT_SIZE,GAME_ELEMENT_SIZE)
+				
+				#If there is a collision between the current fireshot and the current ennemy, then we create a collision and we go to the next fireshot checking :
+				if fireshot_rect.colliderect(e_rect):
+					collision = [eg_id,e[0],fire_id]
+					ListofEnnemiesCollisions.append(collision)
+					collisionFound = True
 
 	#Now, it is time to destroy every elements which collided with something else:
 	for col in ListofEnnemiesCollisions:
@@ -367,7 +373,7 @@ def mainGameBackGroundAnimationRenderer(mode):
 	global animatedMainGameBackGround1Compensation
 	global animatedMainGameBackGround2
 	global animatedMainGameBackGround2Compensation1
-	global animatedMainGameBackGround2Compensation2
+	# global animatedMainGameBackGround2Compensation2
 	global current_background_position_1
 	global current_background_position_2
 	global backgroundCountDown
