@@ -38,6 +38,15 @@ class SpriteManager():
 		self.loadBossSprites()
 		self.loadSysFonts()
 
+	#Main Menu BackGround
+	def loadMainMenuBackGrounds(self):
+		"""This function loads the main menu backgrounds."""
+		#The background of the game :
+		self.backGround1 = pygame.image.load(pathfile.mainGameBackGround1)
+		self.backGround1Copy = pygame.image.load(pathfile.mainGameBackGround1)
+		self.backGround2 = pygame.image.load(pathfile.mainGameBackGround2)
+		self.backGround2Copy = pygame.image.load(pathfile.mainGameBackGround2)
+
 	#Player's Sprites:
 	#Initialization of all animations of the player's space shuttle :
 	def loadPlayerSprites(self):

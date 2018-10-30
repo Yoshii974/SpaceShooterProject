@@ -26,15 +26,12 @@ class RendererEngine:
 		self.score: Score
 		self.listofExplosions: []
 		self.gameMode: str
+		self.spriteManager: SpriteManager
 		self.mainWindow = pygame.display.set_mode((MAIN_WINDOW_SIZE, MAIN_WINDOW_SIZE))
-		#The background of the game :
-		self.backGround1 = pygame.image.load(pathfile.mainGameBackGround1)
-		self.backGround1Copy = pygame.image.load(pathfile.mainGameBackGround1)
-		self.backGround2 = pygame.image.load(pathfile.mainGameBackGround2)
-		self.backGround2Copy = pygame.image.load(pathfile.mainGameBackGround2)
 
 	# Set the Dependencies to the Renderer Engine
-	def setDependencies(self, Ennemies, Player, Score, ListofExplosions):
+	def setDependencies(self, SpriteManager, Ennemies, Player, Score, ListofExplosions):
+		self.spriteManager = SpriteManager
 		self.ennemies = Ennemies
 		self.player = Player
 		self.score = Score
@@ -138,3 +135,49 @@ class RendererEngine:
 			#elif backgroundPattern == 7:
 			#	current_background_position_2[0] -= 1
 			#	current_background_position_2[1] -= 1
+	
+	# Update and Render the health bar
+	def updateHealthBarStatus(self):
+		"""Update the health bar status and draw it at the screen."""
+
+		#First, draw the rect which is updated depending on the current player's health.
+		x_health = (self.player.health/self.player.maxHealth) * 115
+		if x_health < 0:
+			x_health = 0
+		health_bar_surface = pygame.Surface((int(x_health),10))
+		
+		#Fill the surface partially depending on the player's health :
+		health_bar_surface.fill((0,255,0))
+		
+		#Finaly, draw the health bar :
+		self.mainWindow.blit(health_bar_surface,(512-130,20))
+		self.mainWindow.blit(self.spriteManager.HealthBar,(512-150,15))
+
+	# Update and Render the player score
+	def updatePlayerScore(self):
+		"""Update the player score."""
+
+		#Draw the score :
+		policeFont = self.spriteManager.ListofSysFonts["Times New Roman"]
+		scoreSentence = "THE SCORE : " + str(self.score.playerScore)
+		scoreSurface = policeFont.render(scoreSentence,0,(0,255,0))
+		self.mainWindow.blit(scoreSurface,(20,20))
+
+	# Update and Render the player shield
+	def updatePlayerShield(self):
+		"""Update the number of shield which remain for the player"""
+		
+		#Draw the number of remaining shields
+		policeFont = self.spriteManager.ListofSysFonts["Times New Roman"]
+		shieldSentence = "REMAINING SHIELDS : " + str(self.player.nbTimesShieldAllowed)
+		shieldSurface = policeFont.render(shieldSentence,0,(0,255,0))
+		self.mainWindow.blit(shieldSurface,(20,40))
+
+	# Update and Render the player shield
+	def drawPlayerShield(self):
+		"""Draw the shield around the player."""
+		
+		#Draw the shield :
+		shieldSurface = self.spriteManager.ListofExplosionSurface["bonusCircle"]
+		self.mainWindow.blit(shieldSurface,(self.player.x - 16, self.player.y - 16))
+		self.player.activateShield -= 1

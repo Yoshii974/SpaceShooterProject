@@ -35,6 +35,7 @@ class Player:
 		self.maxHealth = 100
 		self.activateShield = 0
 		self.currentWeapon = "fire1"
+		self.nbTimesShieldAllowed = 3
 
 	#Parametric Constructor :
 	def __init__(self,X,Y):
@@ -52,6 +53,7 @@ class Player:
 		self.maxHealth = 100
 		self.activateShield = 0
 		self.currentWeapon = "fire1"
+		self.nbTimesShieldAllowed = 3
 
 	#Initialization :
 	def initialization(self):
