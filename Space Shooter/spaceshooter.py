@@ -10,11 +10,13 @@ from __future__ import division
 ##########################################################IMPORTS########################################################################################################
 import random
 import pathfile
+import PhysicEngine
+import RendererEngine
+import pygame
+from pygame.locals import *
 from commonclasses import *
 from Player import *
 from Ennemies import *
-import pygame
-from pygame.locals import *
 ##########################################################GLOBAL VARIABLES###############################################################################################
 #Size in pixels of the main menu's window :
 MAIN_WINDOW_SIZE = 512
@@ -46,6 +48,21 @@ ListofExplosions = []
 
 #player score :
 score = Score()
+
+#The Physic Engine :
+physicEngine = PhysicEngine.PhysicEngine()
+physicEngine.setDependencies(ennemies,
+							 player,
+							 score)
+
+#The Renderer Engine :
+rendererEngine = RendererEngine.RendererEngine()
+rendererEngine.setDependencies(spriteManager,
+							   musicAndSoundManager,
+							   physicEngine,
+							   ennemies,
+							   player,
+							   score)
 
 #player number of shield left :
 nb_player_shield = 3
@@ -140,76 +157,6 @@ def mainWindowSpaceShuttleAnimation():
 	else:
 		return False
 
-
-
-#Physics engine for the ennemy and the player collisions :
-def physicCollisionManager():
-	"""This function deals with every physics component related to ennemies."""
-	global ennemies
-	global player
-	global ListofExplosions
-	global score
-
-	#Loop on each ennemy group and check if there's any collision :
-	ListofEnnemiesCollisions = []
-	
-	for fire_id,fireshot in player.ListofFireShot.items():
-		#Create a fireshot rect:
-		fireshot_rect = pygame.Rect(fireshot.x,fireshot.y,GAME_ELEMENT_SIZE,GAME_ELEMENT_SIZE)
-		collisionFound = False
-		
-		#for each ennemy in each ennemy_group:
-		for eg_id,eg in ennemies.ListofEnnemies.items():
-			if collisionFound == True:
-				break
-			
-			for e in eg.ListofPositions:
-				if collisionFound == True:
-					break
-				
-				e_rect = pygame.Rect(e[1],e[2],GAME_ELEMENT_SIZE,GAME_ELEMENT_SIZE)
-				
-				#If there is a collision between the current fireshot and the current ennemy, then we create a collision and we go to the next fireshot checking :
-				if fireshot_rect.colliderect(e_rect):
-					collision = [eg_id,e[0],fire_id]
-					ListofEnnemiesCollisions.append(collision)
-					collisionFound = True
-
-	#Now, it is time to destroy every elements which collided with something else:
-	for col in ListofEnnemiesCollisions:
-		print(col)
-		eg = ennemies.ListofEnnemies[col[0]]
-		for e in eg.ListofPositions:
-			if e[0] == col[1]:
-				ennemyToBeRemoved = e
-				exp = Explosion(e[1],e[2])
-				ListofExplosions.append(exp)
-				score.playerScore += 50
-				eg.currentEnnemyNumber -= 1
-				break
-		if eg.ListofPositions.count(ennemyToBeRemoved) != 0:
-			eg.ListofPositions.remove(ennemyToBeRemoved)
-		del player.ListofFireShot[col[2]]
-
-	#Checking if any of the ennemies shots collide with the player. In this case, the player health is decreased :
-	ListofPlayerCollisions = []
-	player_rect = pygame.Rect(player.x,player.y,GAME_ELEMENT_PLAYER_SIZE,GAME_ELEMENT_PLAYER_SIZE)
-
-	for eg_id,eg in ennemies.ListofEnnemies.items():
-		for shot_id,shot in eg.ListofFireShot.items():
-			shot_rect = pygame.Rect(shot.x,shot.y,GAME_ELEMENT_SIZE,GAME_ELEMENT_SIZE)
-			if (shot_rect.colliderect(player_rect)):
-				collision = [eg_id,shot_id]
-				ListofPlayerCollisions.append(collision)
-
-	for col in ListofPlayerCollisions:
-		eg = ennemies.ListofEnnemies[col[0]]
-		del eg.ListofFireShot[col[1]]
-		if player.activateShield == 0:
-			print(player.health)
-			player.health -= 10
-
-
 ###THE BIG FUNCTION###
 def mainGameAnimationRendererManager():
 	"""This function provides animation for each elements drawned on the screen. This function is typically called by the game loop."""
@@ -270,7 +217,8 @@ def mainGameAnimationRendererManager():
 				enablePhysicdetection = False
 		
 		if enablePhysicdetection:
-			physicCollisionManager()
+			#physicCollisionManager()
+			physicEngine.simulateAllCollisions()
 
 		#Check the game over status :
 		checkGameOverStatus()
@@ -479,7 +427,7 @@ def mainGameInitialization():
 	pygame.key.set_repeat(50,100)
 
 	#Set the level1 music :
-	musicAndSoundManager.playMusic("level1")
+	#musicAndSoundManager.playMusic("level1")
 
 	#Set the ennemies and player references to the sprite and sound managers :
 	player.SpriteManager = spriteManager
@@ -630,7 +578,7 @@ mainWindow.blit(mainWindowLogo,(25,-10))
 mainWindowSpaceShuttle()
 
 #Call the music manager :
-musicAndSoundManager.playMusic("mainMenu")
+#musicAndSoundManager.playMusic("mainMenu")
 
 #Main window loop :
 while CURRENT_GAME_STATE == "MENU":

@@ -28,8 +28,8 @@ class Player:
 		self.SpriteKey = ""
 		self.SoundKey = ""
 		self.ListofFireShot = {}
-		self.SpriteManager = ""
-		self.MusicAndSoundManager = ""
+		#self.SpriteManager = ""
+		#self.MusicAndSoundManager = ""
 		self.touchedCounter = 0
 		self.health = 100
 		self.maxHealth = 100
@@ -46,8 +46,8 @@ class Player:
 		self.SpriteKey = ""
 		self.SoundKey = ""
 		self.ListofFireShot = {}
-		self.SpriteManager = ""
-		self.MusicAndSoundManager = ""
+		#self.SpriteManager = ""
+		#self.MusicAndSoundManager = ""
 		self.touchedCounter = 0
 		self.health = 100
 		self.maxHealth = 100

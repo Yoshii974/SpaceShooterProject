@@ -19,18 +19,17 @@ class PhysicEngine:
         self.ennemies: Ennemies
         self.player: Player
         self.score: Score
-        self.listofExplosions: []
+        self.listofExplosions = []
 
     # Set the Dependencies to the Physic Engine
-    def setDependencies(self, Ennemies, Player, Score, ListofExplosions):
+    def setDependencies(self, Ennemies, Player, Score):
         self.ennemies = Ennemies
         self.player = Player
         self.score = Score
-        self.listofExplosions = ListofExplosions
     
     # Detect all Collisions
     def simulateAllCollisions(self):
-        print("all collisions")
+        #print("all collisions")
         self.simulateEnnemiesCollisions()
         self.simulatePlayerCollisions()
 
@@ -73,7 +72,7 @@ class PhysicEngine:
 
         # Now, it is time to destroy every elements which collided with something else:
         for col in ListofEnnemiesCollisions:
-            # print(col)
+            print(col)
             # First, get the ennemy group
             eg = self.ennemies.ListofEnnemies[col[0]]
 
@@ -91,21 +90,14 @@ class PhysicEngine:
                     self.score.playerScore += 50
                     # Remove 1 ennemy from the ennemy group
                     eg.currentEnnemyNumber -= 1
+                    # Remove the fire shot from the player list
+                    del self.player.ListofFireShot[col[2]]
                     # Remove the collided ennemy
                     eg.ListofPositions.remove(e)
-                    # Remove the fire shot from the player list
-                    self.player.ListofFireShot.remove(col[2])
-                    # Stop looking to which ennemy the current fire shot has collide with ...
+                    # I usually don't like to remove an item from a list on which I am currently looping but in this case, since it doesn't keep looping
+                    # after removing the item, then everything should works fine 
+                    # ( so here the break is quiet important ... or maybe not, if python deals nicely with these kind of situations )
                     break
-            
-            # if eg.ListofPositions.count(ennemyToBeRemoved) != 0:
-            #    eg.ListofPositions.remove(ennemyToBeRemoved)
-            
-            # del self.player.ListofFireShot[col[2]]
-
-
-
-
 
     # Detect Collisions for the Player
     def simulatePlayerCollisions(self):
@@ -134,7 +126,7 @@ class PhysicEngine:
             # Get the ennemy group ID
             eg = self.ennemies.ListofEnnemies[col[0]]
             # Remove the shot from the list of ennemy fire shots
-            eg.ListofFireShot.remove(col[1])
+            del eg.ListofFireShot[col[1]]
             # If the player hasn't activated its shield
             if self.player.activateShield == 0:
                 # print(self.player.health)
