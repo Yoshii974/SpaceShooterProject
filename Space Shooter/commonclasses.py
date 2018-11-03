@@ -30,6 +30,7 @@ class SpriteManager():
 	#loads Sprites:
 	def initialization(self):
 		""""""
+		self.loadMainGameBackGrounds()
 		self.loadPlayerSprites()
 		self.loadEnnemiesSprites()
 		self.loadFireShotSprites()
@@ -38,9 +39,9 @@ class SpriteManager():
 		self.loadBossSprites()
 		self.loadSysFonts()
 
-	#Main Menu BackGround
-	def loadMainMenuBackGrounds(self):
-		"""This function loads the main menu backgrounds."""
+	#Main Game BackGround
+	def loadMainGameBackGrounds(self):
+		"""This function loads the main game backgrounds."""
 		#The background of the game :
 		self.backGround1 = pygame.image.load(pathfile.mainGameBackGround1)
 		self.backGround1Copy = pygame.image.load(pathfile.mainGameBackGround1)

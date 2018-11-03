@@ -7,6 +7,7 @@ from __future__ import division
 #########################################################################################################################################################################
 import pygame
 import PhysicEngine
+import pathfile
 from commonclasses import *
 from Player import *
 from Ennemies import *
@@ -28,7 +29,17 @@ class RendererEngine:
 		self.soundManager: MusicAndSoundManager
 		self.physicEngine: PhysicEngine
 		self.mainMenuOptionsSelections = [1, 0]
+		self.currentGameStatus = "MENU"
+
+	# Initialization
+	def initialization(self):
+		# Initialization of pygame :
+		pygame.init()
 		self.mainWindow = pygame.display.set_mode((MAIN_WINDOW_SIZE, MAIN_WINDOW_SIZE))
+
+		#Load main menu back ground sprite
+		self.mainMenuBG = pygame.image.load(pathfile.mainWindowBackGround).convert()
+		self.mainMenuLogo = pygame.image.load(pathfile.mainWindowLogo).convert_alpha()
 
 	# Set the Dependencies to the Renderer Engine
 	def setDependencies(self, SpriteManager, SoundManager, PhysicEngine, Ennemies, Player, Score):
@@ -39,12 +50,159 @@ class RendererEngine:
 		self.player = Player
 		self.score = Score
     
+	# Set the current game status
+	def setCurrentGameStauts(self, status):
+		self.currentGameStatus = status
+
 	# Render every game element present at the screen
-	def renderAllGameElement(self):
-		print("rendering game elements")
+	def renderAll(self):
+		"""This function provides animation for each elements drawn on the screen. This function is typically called by the game loop."""
+		#print("rendering game elements")
+
+		#It has to be defined each loop otherwise, you get a black screen from pygame ...
+		pygame.time.Clock().tick(30)
+
+		if self.currentGameStatus == "MENU":
+			self.drawMainMenu()
+		
+		elif self.currentGameStatus == "GAME_OVER":
+			#Display a game over message :
+			print("We are in game over mode.")
+			#Change the music :
+			#musicAndSoundManager.play("game_over")
+			
+		elif self.currentGameStatus == "GAME":
+			#Animate the background :
+			self.drawBackGround()
+			
+			#Destroy the player's fireshot which lifespan has been reached :
+			self.player.destroyFireShots()
+			
+			#Check for the animation of the player :
+			self.player.animate()
+			
+			#Update the wave of ennemies :
+			self.ennemies.updateEnnemiesWave()
+			
+			#Destroy all previous ennemy shots :
+			self.ennemies.destroyFireShots()
+			
+			#Make ennemies to trigger fire shots :
+			self.ennemies.fire()
+			self.ennemies.animateFireShots()
+			
+			#Animate the ennemies groups :
+			self.ennemies.animate()
+			
+			#By default, enable collision detection
+			enablePhysicdetection = True
+
+			#If first ennemies animation in not finished
+			for eg_id in self.ennemies.ListofEnnemiesWave[self.ennemies.currentEnnemyWave]:
+				eg = self.ennemies.ListofEnnemies[eg_id]
+				if eg.endStartMove == False:
+					enablePhysicdetection = False
+			
+			#Call the physic engine
+			if enablePhysicdetection:
+				self.physicEngine.simulateAllCollisions()
+
+			#Check the game over status
+			if self.player.health <= 0:
+				self.currentGameStatus = "GAME_OVER"
+
+			#Draw everything which has to be drawn :
+			self.mainWindow.blit(self.spriteManager.ListofPlayerSurface[self.player.SpriteKey],(self.player.x,self.player.y))
+			
+			#For each ennemy group :
+			for eg_id,eg in self.ennemies.ListofEnnemies.items():
+				for e in eg.ListofPositions:
+					draw_ennemy = self.spriteManager.ListofEnnemiesSurface[eg.surface_id]
+					
+					#Convert orientation to degrees :
+					if e[3] == 0:
+						angle = 0
+					elif e[3] == 1:
+						angle = -45
+					elif e[3] == 2:
+						angle = -90
+					elif e[3] == 3:
+						angle = -135
+					elif e[3] == 4:
+						angle = -180
+					elif e[3] == 5:
+						angle = -225
+					elif e[3] == 6:
+						angle = -270
+					elif e[3] == 7:
+						angle = -315
+					elif e[3] == 8:
+						angle = -360
+				
+					#Apply rotation before the final draw call :
+					if not angle == 0:
+						draw_ennemy = self.spriteManager.rot_center(draw_ennemy,angle)
+					
+					#The Final draw call:
+					self.mainWindow.blit(draw_ennemy,(e[1],e[2]))
+			
+			#Draw the shots after drawing the ennemies. This way, the shots are overwritting the ennemies sprites/surface and lets the player knows what happen to the shot :
+			for shot_id,shot in self.player.ListofFireShot.items():
+				#Final draw call
+				self.mainWindow.blit(self.spriteManager.ListofFireShotSurface[shot.type],(shot.x,shot.y))
+			
+			#Draw each ennemy with a rotation which is the same as the shot angle :
+			for eg_id,eg in self.ennemies.ListofEnnemies.items():
+				for shot_id,shot in eg.ListofFireShot.items():
+					draw_shot = self.spriteManager.ListofFireShotSurface[shot.type]
+					
+					#Convert orientation to degrees :
+					if shot.orientation == 0:
+						angle = 0
+					elif shot.orientation == 1:
+						angle = -45
+					elif shot.orientation == 2:
+						angle = -90
+					elif shot.orientation == 3:
+						angle = -135
+					elif shot.orientation == 4:
+						angle = -180
+					elif shot.orientation == 5:
+						angle = -225
+					elif shot.orientation == 6:
+						angle = -270
+					elif shot.orientation == 7:
+						angle = -315
+					elif shot.orientation == 8:
+						angle = -360
+				
+					#Apply rotation before the final draw call :
+					draw_shot = self.spriteManager.rot_center(draw_shot,angle)
+					
+					#The final draw call :
+					self.mainWindow.blit(draw_shot,(shot.x,shot.y))
+			
+			#Draw the explosions :
+			self.makingExplosions()
+
+			#Draw the health bar :
+			self.updateHealthBarStatus()
+
+			#Update the player score :
+			self.updatePlayerScore()
+			
+			#Update the number of remaining shields :
+			self.updatePlayerShield()
+
+			#TEST:
+			if self.player.activateShield > 0:
+				self.activatePlayerShield()
+		
+		#Finally, refresh the screen
+		pygame.display.flip()
     
 	# Render Background
-	def mainGameBackGroundAnimationRenderer(self):
+	def drawBackGround(self):
 		"""Main background animation. It allows the background to be scrolled each time this function it's called."""
 
 		#This is used to make the background scroll :
@@ -137,7 +295,7 @@ class RendererEngine:
 			#elif backgroundPattern == 7:
 			#	current_background_position_2[0] -= 1
 			#	current_background_position_2[1] -= 1
-	
+
 	# Update and Render the health bar
 	def updateHealthBarStatus(self):
 		"""Update the health bar status and draw it at the screen."""
@@ -184,13 +342,21 @@ class RendererEngine:
 		self.mainWindow.blit(shieldSurface,(self.player.x - 16, self.player.y - 16))
 		self.player.activateShield -= 1
 	
+	# Draw Main Menu
+	def drawMainMenu(self):
+		"""This function draw the main menu of the game"""
+		self.mainWindow.blit(self.mainMenuBG,(0,0))
+		self.mainWindow.blit(self.mainMenuLogo,(25,-10))
+		self.drawMainMenuOptions()
+		#self.drawMainMenuShip
+
 	# Useless...
-	def mainWindowLogoAnimation(self):
+	def drawMainMenuLogo(self):
 		"""This function provides animation of the main Logo displayed on the main window"""
 		print("TODO Wtf is this function doing ??")
 
 	# Draw the main menu options
-	def mainWindowOptionsRenderer(self):
+	def drawMainMenuOptions(self):
 		"""This function create each elements from the main window"""
 		
 		#Here we create the differents options :
@@ -217,33 +383,26 @@ class RendererEngine:
 		creditsImg = creditsFont.render(creditsText,1,(255,255,0))
 		self.mainWindow.blit(creditsImg,(200,495))
 
-	# TODO: A Revoir !
-	#Animate and Draw a randow ennemy space shuttle at the main menu
-	def mainWindowSpaceShuttle(self):
-		"""This function provides a spacecraft to be animated from time to time. This function does not deal with the animation of the spaceshuttle. It only gives which one to choose in the list of all spaceshuttle available."""
-		global animatedSpaceShuttle
-		global animatedSpaceShuttleRect
-		global spriteManager
-
+	# TODO: Cette fonction ne marche pas car elle redefinie a chaque boucle, un nouveau sprite et rect pour le ship !
+	# Draw the main menu ship
+	def drawMainMenuShip(self):
+		"""The ship from the main menu"""
+		
 		#Choose randomly a ship to be showed
 		randomKey = random.choice(self.spriteManager.ListofEnnemiesSurfaceKeys)
-		animatedSpaceShuttle = self.spriteManager.ListofEnnemiesSurface[randomKey]
+		shipSurface = self.spriteManager.ListofEnnemiesSurface[randomKey]
+		shipRect = shipSurface.get_rect()
 
 		#Define the position of the ship
-		animatedSpaceShuttleRect.x = 475
-		animatedSpaceShuttleRect.y = 350
+		shipRect.x = 475
+		shipRect.y = 350
 
-	# TODO: A Revoir !
-	def mainWindowSpaceShuttleAnimation(self):
-		"""Calculate the new position of the animated ship. Return True if the position is still positif, false otherwise"""
-		global animatedSpaceShuttleRect
-
-		#Move the ship per 4 pixels throught the window
-		if animatedSpaceShuttleRect.x > 0:
-			animatedSpaceShuttleRect = animatedSpaceShuttleRect.move(-4,0)
-			return True
-		else:
-			return False
+		#ship = pygame.Surface((0,0))
+		if (shipRect.x > 0):
+			shipRect.x -= 4
+		
+		#Draw ship
+		self.mainWindow.blit(shipSurface, shipRect)
 	
 	# Draw explosions
 	def makingExplosions(self):

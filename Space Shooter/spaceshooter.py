@@ -12,6 +12,7 @@ import random
 import pathfile
 import PhysicEngine
 import RendererEngine
+import InputEngine
 import pygame
 from pygame.locals import *
 from commonclasses import *
@@ -51,31 +52,25 @@ score = Score()
 
 #The Physic Engine :
 physicEngine = PhysicEngine.PhysicEngine()
-physicEngine.setDependencies(ennemies,
-							 player,
-							 score)
 
 #The Renderer Engine :
 rendererEngine = RendererEngine.RendererEngine()
-rendererEngine.setDependencies(spriteManager,
-							   musicAndSoundManager,
-							   physicEngine,
-							   ennemies,
-							   player,
-							   score)
+
+#The Input Engine :
+inputEngine = InputEngine.InputEngine()
 
 #player number of shield left :
 nb_player_shield = 3
 
 #The space shuttle and its position as global variables :
-animatedSpaceShuttle = pygame.Surface((0,0)) 
-animatedSpaceShuttleRect = animatedSpaceShuttle.get_rect()
+#animatedSpaceShuttle = pygame.Surface((0,0)) 
+#animatedSpaceShuttleRect = animatedSpaceShuttle.get_rect()
 
 #The background of the game :
-animatedMainGameBackGround1 = pygame.image.load(pathfile.mainGameBackGround1)
-animatedMainGameBackGround1Compensation = pygame.image.load(pathfile.mainGameBackGround1)
-animatedMainGameBackGround2 = pygame.image.load(pathfile.mainGameBackGround2)
-animatedMainGameBackGround2Compensation1 = pygame.image.load(pathfile.mainGameBackGround2)
+#animatedMainGameBackGround1 = pygame.image.load(pathfile.mainGameBackGround1)
+#animatedMainGameBackGround1Compensation = pygame.image.load(pathfile.mainGameBackGround1)
+#animatedMainGameBackGround2 = pygame.image.load(pathfile.mainGameBackGround2)
+#animatedMainGameBackGround2Compensation1 = pygame.image.load(pathfile.mainGameBackGround2)
 # animatedMainGameBackGround2Compensation2 = pygame.image.load(pathfile.mainGameBackGround2)
 
 #This is used to make the background scroll :
@@ -553,73 +548,62 @@ def activatePlayerShield():
 	player.activateShield -= 1
 
 ###########################################################MAIN##########################################################################################################
-# Initialization of pygame :
-pygame.init()
-
 ### Main menu ###
 # Using pygame to create the main menu window :
-mainWindow = pygame.display.set_mode((MAIN_WINDOW_SIZE, MAIN_WINDOW_SIZE))
+#mainWindow = pygame.display.set_mode((MAIN_WINDOW_SIZE, MAIN_WINDOW_SIZE))
+physicEngine.setDependencies(ennemies,
+							 player,
+							 score)
+
+rendererEngine.setDependencies(spriteManager,
+							   musicAndSoundManager,
+							   physicEngine,
+							   ennemies,
+							   player,
+							   score)
+
+#Initialize the renderer engine :
+rendererEngine.initialization()
+
+#Initialize the input engine :
+inputEngine.initialization()
 
 #Initialize the sprite manager :
 spriteManager.initialization()
 
 #Initialize the music and sound manager :
 musicAndSoundManager.initialization()
-
 #Add a font to the background of the main window menu :
-mainWindowBG = pygame.image.load(pathfile.mainWindowBackGround).convert()
-mainWindow.blit(mainWindowBG,(0,0))
+#mainWindowBG = pygame.image.load(pathfile.mainWindowBackGround).convert()
+#mainWindow.blit(mainWindowBG,(0,0))
 
 #Add the logo of the game :
-mainWindowLogo = pygame.image.load(pathfile.mainWindowLogo).convert_alpha()
-mainWindow.blit(mainWindowLogo,(25,-10))
+#mainWindowLogo = pygame.image.load(pathfile.mainWindowLogo).convert_alpha()
+#mainWindow.blit(mainWindowLogo,(25,-10))
 
 #Call the animation of the main menu :
-mainWindowSpaceShuttle()
+#mainWindowSpaceShuttle()
 
 #Call the music manager :
 #musicAndSoundManager.playMusic("mainMenu")
 
 #Main window loop :
 while CURRENT_GAME_STATE == "MENU":
-	
-	#Limitation of the loop to only 30 fps :
-	pygame.time.Clock().tick(30)
-	
 	#Here is the end of the main menu loop. So every needs in animation is done at this place
-	mainGameAnimationRendererManager()
+	#mainGameAnimationRendererManager()
+	rendererEngine.renderAll()
 	
-	#Loop on each event which has been sent by PyGame :	
-	for evt in pygame.event.get():
-		
-		#If the player selected the quit button (cross right-sided of the window)
-		if evt.type == QUIT:
-			CURRENT_GAME_STATE = "QUIT"
-		
-		elif evt.type == KEYDOWN:
-			if evt.key == K_DOWN:
-				if ListSelectedOptions == [1,0]:
-					ListSelectedOptions = [0,1]
-				elif ListSelectedOptions == [0,1]:
-					ListSelectedOptions = [1,0]
-			
-			if evt.key == K_UP:
-				if ListSelectedOptions == [1,0]:
-					ListSelectedOptions = [0,1]
-				elif ListSelectedOptions == [0,1]:
-					ListSelectedOptions = [1,0]
+	#Call the input engine
+	inputEngine.getPygameEvents()
 
-			if evt.key == K_RETURN or evt.key == K_KP_ENTER:
-				if ListSelectedOptions == [1,0]:
-					CURRENT_GAME_STATE = "GAME"
-				elif ListSelectedOptions == [0,1]:
-					CURRENT_GAME_STATE = "QUIT"
-
+	#
+	rendererEngine.setCurrentGameStauts(inputEngine.currentGameState)
+	rendererEngine.mainMenuOptionsSelections = inputEngine.mainMenuOptionsSelections
 
 
 ###Main Game###
 #Initializing the game objects :
-mainGameInitialization()
+#mainGameInitialization()
 
 #The main game loop :
 while CURRENT_GAME_STATE == "GAME":
@@ -698,7 +682,7 @@ while CURRENT_GAME_STATE == "GAME":
 					player.dy = 0
 			
 	#Call the Animation Manager :
-	mainGameAnimationRendererManager()
+	#mainGameAnimationRendererManager()
 
 ###END of the Game###
 print("See you next time !")
