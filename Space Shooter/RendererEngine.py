@@ -24,7 +24,6 @@ class RendererEngine:
 		self.ennemies: Ennemies
 		self.player: Player
 		self.score: Score
-		self.gameMode: str
 		self.spriteManager: SpriteManager
 		self.soundManager: MusicAndSoundManager
 		self.physicEngine: PhysicEngine

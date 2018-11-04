@@ -130,7 +130,7 @@ class PhysicEngine:
             # Remove the shot from the list of ennemy fire shots
             del eg.ListofFireShot[col[1]]
             # If the player hasn't activated its shield
-            if self.player.activateShield == 0:
+            if self.player.timeBeforeShieldIsDeactivated == 0:
                 # print(self.player.health)
                 # Remove health
-                self.player.health -= 10
+                self.player.health -= 0
