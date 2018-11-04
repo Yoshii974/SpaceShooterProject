@@ -94,9 +94,11 @@ class PhysicEngine:
                     del self.player.ListofFireShot[col[2]]
                     # Remove the collided ennemy
                     eg.ListofPositions.remove(e)
-                    # I usually don't like to remove an item from a list on which I am currently looping but in this case, since it doesn't keep looping
-                    # after removing the item, then everything should works fine 
-                    # ( so here the break is quiet important ... or maybe not, if python deals nicely with these kind of situations )
+                    # I usually don't like to remove an item from a list on which I am currently looping 
+                    # but in this case, since it doesn't keep looping after removing the item, 
+                    # then everything should works fine 
+                    # ( so here the break is quiet important ... 
+                    # or maybe not, if python deals nicely with these kind of situations )
                     break
 
     # Detect Collisions for the Player

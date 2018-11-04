@@ -29,13 +29,17 @@ class RendererEngine:
 		self.soundManager: MusicAndSoundManager
 		self.physicEngine: PhysicEngine
 		self.mainMenuOptionsSelections = [1, 0]
-		self.currentGameStatus = "MENU"
+		self.currentGameState = "MENU"
+		self.backGroundPos1 = 0
 
 	# Initialization
 	def initialization(self):
 		# Initialization of pygame :
 		pygame.init()
+		# Set window to be size of 512 pixels
 		self.mainWindow = pygame.display.set_mode((MAIN_WINDOW_SIZE, MAIN_WINDOW_SIZE))
+		# Set pygame timer to tick every 16.67 ms <=> 60 FPS
+		pygame.time.Clock().tick(60)
 
 		#Load main menu back ground sprite
 		self.mainMenuBG = pygame.image.load(pathfile.mainWindowBackGround).convert()
@@ -51,8 +55,8 @@ class RendererEngine:
 		self.score = Score
     
 	# Set the current game status
-	def setCurrentGameStauts(self, status):
-		self.currentGameStatus = status
+	def setCurrentGameState(self, state):
+		self.currentGameState = state
 
 	# Render every game element present at the screen
 	def renderAll(self):
@@ -60,18 +64,18 @@ class RendererEngine:
 		#print("rendering game elements")
 
 		#It has to be defined each loop otherwise, you get a black screen from pygame ...
-		pygame.time.Clock().tick(30)
+		#pygame.time.Clock().tick(60)
 
-		if self.currentGameStatus == "MENU":
+		if self.currentGameState == "MENU":
 			self.drawMainMenu()
 		
-		elif self.currentGameStatus == "GAME_OVER":
+		elif self.currentGameState == "GAME_OVER":
 			#Display a game over message :
 			print("We are in game over mode.")
 			#Change the music :
 			#musicAndSoundManager.play("game_over")
 			
-		elif self.currentGameStatus == "GAME":
+		elif self.currentGameState == "GAME":
 			#Animate the background :
 			self.drawBackGround()
 			
@@ -109,7 +113,7 @@ class RendererEngine:
 
 			#Check the game over status
 			if self.player.health <= 0:
-				self.currentGameStatus = "GAME_OVER"
+				self.currentGameState = "GAME_OVER"
 
 			#Draw everything which has to be drawn :
 			self.mainWindow.blit(self.spriteManager.ListofPlayerSurface[self.player.SpriteKey],(self.player.x,self.player.y))
@@ -194,11 +198,11 @@ class RendererEngine:
 			#Update the number of remaining shields :
 			self.updatePlayerShield()
 
-			#TEST:
-			if self.player.activateShield > 0:
-				self.activatePlayerShield()
+			#Draw player shield:
+			if self.player.timeBeforeShieldIsDeactivated > 0:
+				self.drawPlayerShield()
 		
-		#Finally, refresh the screen
+		#Finally, refresh the screen unless the cpu gets here before 16.67 ms has passed, then it'll not refresh the screen
 		pygame.display.flip()
     
 	# Render Background
@@ -206,25 +210,25 @@ class RendererEngine:
 		"""Main background animation. It allows the background to be scrolled each time this function it's called."""
 
 		#This is used to make the background scroll :
-		current_background_position_1 = 0
+		#current_background_position_1 = 0
 		current_background_position_2 = [0,0]
 		backgroundPattern = random.choice([0,2,4,6])
 
 		if self.ennemies.GAME_STATUS == "NORMAL":
 			#The current position of the main game background and the position of the duplicate :
-			current_background_position_1 += 2
+			self.backGroundPos1 += 2
 
 			#Get the rect from the background in order to know and use the height :
 			background_rect_1 = self.spriteManager.backGround1.get_rect()
 			background_height_1 = background_rect_1.height
 			
 			#Scroll the background by 2 pixels:
-			self.mainWindow.blit(self.spriteManager.backGround1,(0,current_background_position_1))
-			self.mainWindow.blit(self.spriteManager.backGround1Copy,(0,current_background_position_1 - background_height_1))
+			self.mainWindow.blit(self.spriteManager.backGround1,(0, self.backGroundPos1))
+			self.mainWindow.blit(self.spriteManager.backGround1Copy,(0, self.backGroundPos1 - background_height_1))
 			
 			#If the background y position has reached the size of the screen, we reset the position :
-			if current_background_position_1 == background_height_1:
-				current_background_position_1 = 0
+			if self.backGroundPos1 == background_height_1:
+				self.backGroundPos1 = 0
 			
 		elif self.ennemies.GAME_STATUS == "BOSS":
 			#The current position of the main game background and the position of the duplicate :
@@ -340,7 +344,7 @@ class RendererEngine:
 		#Draw the shield :
 		shieldSurface = self.spriteManager.ListofExplosionSurface["bonusCircle"]
 		self.mainWindow.blit(shieldSurface,(self.player.x - 16, self.player.y - 16))
-		self.player.activateShield -= 1
+		self.player.timeBeforeShieldIsDeactivated -= 1
 	
 	# Draw Main Menu
 	def drawMainMenu(self):
@@ -403,7 +407,7 @@ class RendererEngine:
 		
 		#Draw ship
 		self.mainWindow.blit(shipSurface, shipRect)
-	
+
 	# Draw explosions
 	def makingExplosions(self):
 		"""This function is only useful for drawing and producing explosions objects at the right place, at the right time..."""

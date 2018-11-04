@@ -408,49 +408,6 @@ def mainGameBackGroundAnimationRenderer(mode):
 		#	current_background_position_2[0] -= 1
 		#	current_background_position_2[1] -= 1
 
-
-def mainGameInitialization():
-	"""Initialise the display window for receiving the differents elements of the game and initialize the game elements itselfs"""
-	global player
-	global ennemies
-	global spriteManager
-	global musicAndSoundManager
-	global animatedMainGameBackGround1
-	global JOYSTICK_ID
-
-	#Set the key repeat mode :
-	pygame.key.set_repeat(50,100)
-
-	#Set the level1 music :
-	#musicAndSoundManager.playMusic("level1")
-
-	#Set the ennemies and player references to the sprite and sound managers :
-	player.SpriteManager = spriteManager
-	player.MusicAndSoundManager = musicAndSoundManager
-	ennemies.SpriteManager = spriteManager
-	ennemies.MusicAndSoundManager = musicAndSoundManager
-
-	#Initialize the ennemies :
-	ennemies.initialization()
-
-	#Initialize the player :
-	player.initialization()
-
-	#TEST JOYSTICK :
-	nb_joysticks = pygame.joystick.get_count()
-	print("Il y a " + str(nb_joysticks) + " joysticks connecté au PC")
-
-	#Check if there's any Joystick connected to the PC:
-	if nb_joysticks > 0:
-		joystick_player = pygame.joystick.Joystick(JOYSTICK_ID)
-		JOYSTICK_ID += 1
-		joystick_player.init()
-		print("Joystick name : " + joystick_player.get_name())
-		print("Axes :", joystick_player.get_numaxes())
-		print("Boutons :", joystick_player.get_numbuttons())
-		print("Trackballs :", joystick_player.get_numballs())
-		print("Hats :", joystick_player.get_numhats())
-
 def makingExplosions():
 	"""This function is only useful for drawing and producing explosions objects at the right place, at the right time..."""
 	global ListofExplosions
@@ -536,21 +493,8 @@ def updatePlayerShield():
 	ShieldSurface = policeFont.render(shield_sentence,0,(0,255,0));
 	mainWindow.blit(ShieldSurface,(20,40))
 
-
-def activatePlayerShield():
-	"""Activate the shield around the player."""
-	global player
-	global spriteManager
-	
-	#Draw the shield :
-	shield_surface = spriteManager.ListofExplosionSurface["bonusCircle"]
-	mainWindow.blit(shield_surface,(player.x - 16,player.y - 16))
-	player.activateShield -= 1
-
 ###########################################################MAIN##########################################################################################################
-### Main menu ###
-# Using pygame to create the main menu window :
-#mainWindow = pygame.display.set_mode((MAIN_WINDOW_SIZE, MAIN_WINDOW_SIZE))
+#Set the ennemies and player references to the sprite and sound managers :
 physicEngine.setDependencies(ennemies,
 							 player,
 							 score)
@@ -561,6 +505,8 @@ rendererEngine.setDependencies(spriteManager,
 							   ennemies,
 							   player,
 							   score)
+
+inputEngine.setDependencies(player)
 
 #Initialize the renderer engine :
 rendererEngine.initialization()
@@ -573,116 +519,36 @@ spriteManager.initialization()
 
 #Initialize the music and sound manager :
 musicAndSoundManager.initialization()
-#Add a font to the background of the main window menu :
-#mainWindowBG = pygame.image.load(pathfile.mainWindowBackGround).convert()
-#mainWindow.blit(mainWindowBG,(0,0))
 
-#Add the logo of the game :
-#mainWindowLogo = pygame.image.load(pathfile.mainWindowLogo).convert_alpha()
-#mainWindow.blit(mainWindowLogo,(25,-10))
+player.SpriteManager = spriteManager
+player.MusicAndSoundManager = musicAndSoundManager
+ennemies.SpriteManager = spriteManager
+ennemies.MusicAndSoundManager = musicAndSoundManager
 
-#Call the animation of the main menu :
-#mainWindowSpaceShuttle()
+#Initialize the ennemies :
+ennemies.initialization()
 
-#Call the music manager :
-#musicAndSoundManager.playMusic("mainMenu")
+#Initialize the player :
+player.initialization()
 
-#Main window loop :
-while CURRENT_GAME_STATE == "MENU":
-	#Here is the end of the main menu loop. So every needs in animation is done at this place
-	#mainGameAnimationRendererManager()
-	rendererEngine.renderAll()
+#Main Game loop :
+while True:
+	#The renderer engine state
+	state = rendererEngine.currentGameState
+
+	if state == "QUIT" or state == "GAME_OVER":
+		break
 	
 	#Call the input engine
 	inputEngine.getPygameEvents()
 
-	#
-	rendererEngine.setCurrentGameStauts(inputEngine.currentGameState)
-	rendererEngine.mainMenuOptionsSelections = inputEngine.mainMenuOptionsSelections
-
-
-###Main Game###
-#Initializing the game objects :
-#mainGameInitialization()
-
-#The main game loop :
-while CURRENT_GAME_STATE == "GAME":
+	#Synchronise the state of the renderer engine with the state of the input engine
+	if state == "MENU":
+		rendererEngine.setCurrentGameState(inputEngine.currentGameState)
+		rendererEngine.mainMenuOptionsSelections = inputEngine.mainMenuOptionsSelections
 	
-	#Loop on all the event sent by pygame :
-	for evt in pygame.event.get():
-		if evt.type == KEYDOWN:
-			if evt.key == K_DOWN:
-				player.dy = 2
-			elif evt.key == K_UP:
-				player.dy = -2
-			elif evt.key == K_LEFT:
-				player.dx = -2
-			elif evt.key == K_RIGHT:
-				player.dx = 2
-			elif evt.key == K_SPACE:
-				player.fireShot()
-			elif evt.key == K_LCTRL:
-				if player.activateShield == 0 and nb_player_shield > 0:
-					player.activateShield = 500
-					nb_player_shield -= 1
-			elif evt.key == K_F1:
-				player.currentWeapon = "fire1"
-			elif evt.key == K_F2:
-				player.currentWeapon = "fire2"
-			elif evt.key == K_F3:
-				player.currentWeapon = "fire3"
-
-		elif evt.type == KEYUP:
-			if evt.key == K_LEFT or evt.key == K_RIGHT:
-				player.dx = 0
-			elif evt.key == K_DOWN or evt.key == K_UP:
-				player.dy = 0
-			elif evt.key == K_SPACE:
-				player.fireShot()
-			elif evt.key == K_LCTRL:
-				if player.activateShield == 0 and nb_player_shield > 0:
-					player.activateShield = 500
-					nb_player_shield -= 1
-			elif evt.key == K_F1:
-				player.currentWeapon = "fire1"
-			elif evt.key == K_F2:
-				player.currentWeapon = "fire2"
-			elif evt.key == K_F3:
-				player.currentWeapon = "fire3"
-		
-		elif evt.type == JOYBUTTONDOWN:
-			if evt.button == 0:
-				player.fireShot()
-			elif evt.button == 1:
-				if player.currentWeapon == "fire1":
-					player.currentWeapon = "fire2"
-				elif player.currentWeapon == "fire2":
-					player.currentWeapon = "fire3"
-				elif player.currentWeapon == "fire3":
-					player.currentWeapon = "fire1"
-			elif evt.button == 2:
-				if player.activateShield == 0 and nb_player_shield > 0:
-					player.activateShield = 500
-					nb_player_shield -= 1
-		
-		elif evt.type == JOYAXISMOTION:
-			if evt.axis == 0:
-				if evt.value < -0.25:
-					player.dx = -2
-				elif evt.value > 0.25:
-					player.dx = 2
-				else:
-					player.dx = 0
-			elif evt.axis == 1:
-				if evt.value < -0.25:
-					player.dy = -2
-				elif evt.value > 0.25:
-					player.dy = 2
-				else:
-					player.dy = 0
-			
-	#Call the Animation Manager :
-	#mainGameAnimationRendererManager()
+	#Here is the end of the main menu loop. So every needs in animation is done at this place
+	rendererEngine.renderAll()
 
 ###END of the Game###
 print("See you next time !")

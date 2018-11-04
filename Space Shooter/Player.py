@@ -33,9 +33,9 @@ class Player:
 		self.touchedCounter = 0
 		self.health = 100
 		self.maxHealth = 100
-		self.activateShield = 0
-		self.currentWeapon = "fire1"
+		self.timeBeforeShieldIsDeactivated = 0
 		self.nbTimesShieldAllowed = 3
+		self.currentWeapon = "fire1"
 
 	#Parametric Constructor :
 	def __init__(self,X,Y):
@@ -51,9 +51,10 @@ class Player:
 		self.touchedCounter = 0
 		self.health = 100
 		self.maxHealth = 100
-		self.activateShield = 0
-		self.currentWeapon = "fire1"
+		self.timeBeforeShieldIsDeactivated = 0
 		self.nbTimesShieldAllowed = 3
+		self.remainingShield = 3
+		self.currentWeapon = "fire1"
 
 	#Initialization :
 	def initialization(self):
