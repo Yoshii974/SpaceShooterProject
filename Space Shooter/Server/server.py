@@ -34,7 +34,7 @@ while True:
     (clientSocket, clientInfo) = TCPSocket.accept()
 
     # Create a thread to interact with the client
-    clientThread = NetworkingThread()
+    clientThread = ServerNetworkingThread()
     clientThread.setDependencies(threadID, 
                                  clientSocket, 
                                  clientInfo.clientPort, 
@@ -57,13 +57,13 @@ while True:
         print("Game Starting ...")
 
         for clientThread in clientsThreads:
-            clientThread.GAME_STATUS = "RUNNING"
-            clientThread.starts()
+            clientThread.currentGameState = "RUNNING"
+            clientThread.start()
         
         # Stop receiving connection
         break
     
 # Main Game loop
-print ("Thats was nice Server, deh ? o_O")
+print ("That was nice Server, deh ? o_O")
 # Do Physics stuff here ...
 # No Rendering plz !

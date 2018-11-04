@@ -8,6 +8,12 @@ from __future__ import division
 import threading
 import pickle
 import socket
+import os
+import sys
+sys.path.append('../')
+from Player import *
+from Ennemies import *
+from commonclasses import *
 # import io
 
 # Since a packet is usually 1518 bytes and since we're using TCP, we'd rather make sure our buffer will fullfill the payload of each frame/packet to its maximum size
@@ -113,12 +119,11 @@ class NetworkEngine:
         # Return data
         # return data
 
-
-class NetworkingThread (threading.Thread):
+class ServerNetworkingThread (threading.Thread):
     """This class is instantiate any time a new connection to the main server socket is accepted."""
     # Voir : https://www.tutorialspoint.com/python/python_multithreading.htm
     
-    # Parametric Constructor
+    # Default Constructor
     def __init__(self):
         threading.Thread.__init__(self)
         self.threadID: int
@@ -126,9 +131,9 @@ class NetworkingThread (threading.Thread):
         self.clientPort: int
         self.clientIpAddress: int
         self.clientID: int
-        self.GAME_STATUS: str
-        self.inputCommands: {}
-        self.outputCommands: {}
+        self.currentGameState: str
+        self.inputCommands: {} # dict of Clients inputs
+        self.outputCommands: {} # dict of Client outputs
         self.networkEngine: NetworkEngine
         self.timer: threading.Timer
     
@@ -138,8 +143,8 @@ class NetworkingThread (threading.Thread):
 
         # Create the network engine and set dependencies
         self.networkEngine = NetworkEngine()
-        self.networkEngine.initialization()
         self.networkEngine.setDependencies(self.clientPort, self.clientIpAddress, self.clientSocket)
+        self.networkEngine.initialization()
 
         # Create the timer: every 16 ms means 60FPS
         self.timer = threading.Timer(0.016, self.threadMain())
@@ -184,3 +189,88 @@ class NetworkingThread (threading.Thread):
 
         # Send data to the client
         self.networkEngine.encodeData(sendData)
+
+class ClientNetworkingThread(threading.Thread):
+    """This class is instantiate once per client. It allows the client to receive and send data from/to a remote server asynchronously"""
+
+    # Default Constructor
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.serverAddress: str
+        self.serverPort: str
+        self.serverSocket: socket
+        self.networkEngine: NetworkEngine
+        self.inputCommands: ServerNetworkingOutput
+        self.outputCommands: ServerNetworkingInput
+        self.timer: threading.Timer
+    
+    # Initialize the thread
+    def initialization(self):
+        #Create the local socket to connect to the server
+        self.serverSocket = socket.socket(socket.AF_INET,
+                                          socket.SOCK_STREAM)
+
+        #Connect to remote server
+        self.serverSocket.connect((self.serverAddress, self.serverPort))
+
+        # Create the network engine and set dependencies
+        self.networkEngine = NetworkEngine()
+        self.networkEngine.setDependencies(self.serverPort, self.serverAddress, self.serverSocket)
+        self.networkEngine.initialization()
+
+        # Create the timer: every 16 ms means 60FPS
+        self.timer = threading.Timer(0.016, self.threadMain())
+
+    # Set the dependencies
+    def setDependencies(self, ServerPort, ServerAddress):
+        self.serverPort = ServerPort
+        self.serverAddress = ServerAddress
+    
+    # Get the timer
+    def getTimer(self):
+        return self.timer
+
+    # Start timer
+    def startTimer(self):
+        self.timer.start()
+
+    # Stop timer
+    def stopTimer(self):
+        self.timer.cancel()
+
+    # Override the "run" function (due to Interface)
+    def run(self):
+        print("Starting communication with server at : " + str(self.serverAddress))
+        self.startTimer()
+    
+    # Main Thread Function
+    def threadMain(self):
+        # Decode data from the server
+        recvData = self.networkEngine.decodeData()
+
+        # Create a struct/tuple and add it to the input Command dict
+        self.inputCommands = recvData
+
+        # Create local data to send to the server
+        sendData = self.outputCommands
+
+        # Send data to the server
+        self.networkEngine.encodeData(sendData)
+
+class ServerNetworkingInput:
+    """This class represent every input received from a remote client"""
+
+    # Default Constructor
+    def __init__(self):
+        self.clientInput: [] # list of Client string commands
+
+class ServerNetworkingOutput:
+    """This class represent every output processed by the server to be sent to a remote client"""
+
+    # Default Constructor
+    def __init__(self):
+        self.player: Player
+        self.score: Score
+        self.otherPlayers: [] # list of Player object
+        self.ennemies: [] # list of Ennemy_group object
+        self.otherScore: [] # list of other players Score object
