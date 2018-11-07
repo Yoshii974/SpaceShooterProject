@@ -44,9 +44,6 @@ spriteManager = SpriteManager()
 #The Music and Sound Manager :
 musicAndSoundManager = MusicAndSoundManager()
 
-#Used to remember where to draw explosions :
-ListofExplosions = []
-
 #player score :
 score = Score()
 

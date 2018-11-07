@@ -8,7 +8,7 @@ from __future__ import division
 import threading
 import pickle
 import socket
-import os
+#import os
 import sys
 sys.path.append('../')
 from Player import *

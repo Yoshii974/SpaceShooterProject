@@ -5,9 +5,16 @@ from __future__ import division
 ### Author : Yoshii_974																																					#
 ### Description : This file contains the Server Logic for the game. 																									#
 #########################################################################################################################################################################
+import NetworkEngine
 import threading
 import socket
-from NetworkEngine import *
+import sys
+sys.path.append('../')
+from Player import *
+from Ennemies import *
+from PhysicEngine import *
+from InputEngine import *
+from commonclasses import *
 
 ##############################################GLOBAL VARIABLES#######################################################################################
 TCPSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -15,8 +22,11 @@ Port = 5890
 inputCommands = []
 outputCommands = []
 clientsThreads = []
+players = []
+inputEngines = []
 threadID = 0
 NB_MIN_PLAYER = 2
+timer = threading.Timer(0.016, mainServerFunction)
 
 # Main Server Function
 print ("Launching  Game Server ...")
@@ -34,7 +44,7 @@ while True:
     (clientSocket, clientInfo) = TCPSocket.accept()
 
     # Create a thread to interact with the client
-    clientThread = ServerNetworkingThread()
+    clientThread = NetworkEngine.ServerNetworkingThread()
     clientThread.setDependencies(threadID, 
                                  clientSocket, 
                                  clientInfo.clientPort, 
@@ -62,8 +72,43 @@ while True:
         
         # Stop receiving connection
         break
-    
+
+# Here, create server objects
+initialPos = 50
+index = 0
+for client in clientsThreads:
+    # Create one Player object for each player
+    player = Player(initialPos + index*80, 452)
+    players.append(player)
+
+    # Create one Input Engine for each player and set dependencies
+    inputEngine = InputEngine()
+    inputEngine.playerID = index
+    inputEngine.setDependencies(player)
+    inputEngines.append(inputEngine)
+
+    index += 1
+
+networkEngine = NetworkEngine.NetworkEngine()
+physicEngine = PhysicEngine()
+ennemies = Ennemies()
+ennemies.PlayerObject = players[0]
+
 # Main Game loop
+#timer.start()
 print ("That was nice Server, deh ? o_O")
+
+
 # Do Physics stuff here ...
 # No Rendering plz !
+def mainServerFunction():
+    # 0 - Get data from clients
+    networkEngine.decodeData()
+
+    # 1 - Process players inputs
+    print('maamn')
+
+    # 2 - Do the Physics Processing
+
+    # 3 - Send to the clients to the Game State
+    networkEngine.encodeData()

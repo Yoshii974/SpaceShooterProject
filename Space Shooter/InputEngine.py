@@ -17,6 +17,7 @@ class InputEngine:
 
     #Default Constructor
     def __init__(self):
+        self.playerID = 0
         self.player: Player
         self.currentGameState = "MENU"
         self.mainMenuOptionsSelections = [1, 0]
@@ -157,3 +158,31 @@ class InputEngine:
             print("Boutons :", joystick_player.get_numbuttons())
             print("Trackballs :", joystick_player.get_numballs())
             print("Hats :", joystick_player.get_numhats())"""
+
+    #Process Player Inputs (Awesome comments here !)
+    def processPlayerInput(self, playerInputs):
+        """Process the player inputs"""
+        for input in playerInputs:
+            if input == "left":
+                self.player.dx = 2
+            elif input == "right":
+                self.player.dx = 2
+            elif input == "up":
+                self.player.dy = -2
+            elif input == "down":
+                self.player.dy = 2
+            elif input == "space":
+                self.player.fireShot()
+            elif input == "ctrl":
+                if self.player.timeBeforeShieldIsDeactivated == 0 and self.player.nbTimesShieldAllowed > 0:
+                        self.player.timeBeforeShieldIsDeactivated = 500
+                        self.player.nbTimesShieldAllowed -= 1
+            elif input == "f1":
+                self.player.currentWeapon = "fire1"
+            elif input == "f2":
+                self.player.currentWeapon = "fire2"
+            elif input == "f3":
+                self.player.currentWeapon = "fire3"
+            else:
+                print('error with inputs of player #' + str(self.playerID))
+    
