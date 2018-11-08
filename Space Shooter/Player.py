@@ -14,7 +14,6 @@ import pygame
 GAME_ELEMENT_PLAYER_SIZE = 50
 GAME_ELEMENT_SIZE = 32
 MAIN_WINDOW_SIZE = 512
-SHOT_ID = 0
 ########################################################################################################################################################################
 class Player:
 	"""This class contains all the required information about the player, such as its position, the collision detection etc."""
@@ -34,6 +33,9 @@ class Player:
 		self.timeBeforeShieldIsDeactivated = 0
 		self.nbTimesShieldAllowed = 3
 		self.currentWeapon = "fire1"
+		self.score = Score()
+		self.playerID = 0
+		self.shotID = 0
 
 	#Parametric Constructor :
 	def __init__(self,X,Y):
@@ -51,6 +53,9 @@ class Player:
 		self.nbTimesShieldAllowed = 3
 		self.remainingShield = 3
 		self.currentWeapon = "fire1"
+		self.score = Score()
+		self.playerID = 0
+		self.shotID = 0
 
 	#Initialization :
 	def initialization(self):
@@ -79,20 +84,19 @@ class Player:
 
 	#Set up and animate a fire shot :
 	def fireShot(self):
-		"""This function blablabla"""
-		global SHOT_ID
+		"""This function triggers a fireshot from the player !"""
 		
 		#Create a fire shot tuple :
-		fireShot = FireShot(self.x,self.y,self.currentWeapon,SHOT_ID,"ennemy",0)
+		fireShot = FireShot(self.x, self.y, self.currentWeapon, self.shotID, "ennemy", 0)
 
 		#Insert the fire shot into the list of fire shot tuple :
-		self.ListofFireShot[SHOT_ID] = fireShot
+		self.ListofFireShot[self.shotID] = fireShot
 
 		#Increase the counter of fire shots:
-		SHOT_ID = SHOT_ID + 1
+		self.shotID += 1
 
 	def destroyFireShots(self):
-		""""""
+		"""This function loop through all the player's fireshots and delete these which do not need to be alive anymore"""
 		listofFireShotToBeRemoved = []
 		
 		for shot_id,shot in self.ListofFireShot.items():

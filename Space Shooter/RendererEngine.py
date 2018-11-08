@@ -22,8 +22,7 @@ class RendererEngine:
 	# Default Constructor:
 	def __init__(self):
 		self.ennemies: Ennemies
-		self.player: Player
-		self.score: Score
+		self.players: [] # list of Players
 		self.spriteManager: SpriteManager
 		self.soundManager: MusicAndSoundManager
 		self.physicEngine: PhysicEngine
@@ -45,15 +44,14 @@ class RendererEngine:
 		self.mainMenuLogo = pygame.image.load(pathfile.mainWindowLogo).convert_alpha()
 
 	# Set the Dependencies to the Renderer Engine
-	def setDependencies(self, SpriteManager, SoundManager, PhysicEngine, Ennemies, Player, Score):
+	def setDependencies(self, SpriteManager, SoundManager, PhysicEngine, Ennemies, Players):
 		self.spriteManager = SpriteManager
 		self.soundManager = SoundManager
 		self.physicEngine = PhysicEngine
 		self.ennemies = Ennemies
-		self.player = Player
-		self.score = Score
+		self.players = Players
     
-	# Set the current game status
+	# Set the current game state
 	def setCurrentGameState(self, state):
 		self.currentGameState = state
 
@@ -61,9 +59,6 @@ class RendererEngine:
 	def renderAll(self):
 		"""This function provides animation for each elements drawn on the screen. This function is typically called by the game loop."""
 		#print("rendering game elements")
-
-		#It has to be defined each loop otherwise, you get a black screen from pygame ...
-		#pygame.time.Clock().tick(60)
 
 		if self.currentGameState == "MENU":
 			self.drawMainMenu()
@@ -77,25 +72,9 @@ class RendererEngine:
 		elif self.currentGameState == "GAME":
 			#Animate the background :
 			self.drawBackGround()
-			
-			#Destroy the player's fireshot which lifespan has been reached :
-			self.player.destroyFireShots()
-			
-			#Check for the animation of the player :
-			self.player.animate()
-			
-			#Update the wave of ennemies :
-			self.ennemies.updateEnnemiesWave()
-			
-			#Destroy all previous ennemy shots :
-			self.ennemies.destroyFireShots()
-			
-			#Make ennemies to trigger fire shots :
-			self.ennemies.fire()
-			self.ennemies.animateFireShots()
-			
-			#Animate the ennemies groups :
-			self.ennemies.animate()
+
+			#Update game state
+			self.physicEngine.updateCurrentGameState()
 			
 			#By default, enable collision detection
 			enablePhysicdetection = True

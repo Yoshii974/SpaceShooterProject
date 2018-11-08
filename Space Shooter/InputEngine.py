@@ -17,7 +17,6 @@ class InputEngine:
 
     #Default Constructor
     def __init__(self):
-        self.playerID = 0
         self.player: Player
         self.currentGameState = "MENU"
         self.mainMenuOptionsSelections = [1, 0]
@@ -122,9 +121,9 @@ class InputEngine:
                     elif self.player.currentWeapon == "fire3":
                         self.player.currentWeapon = "fire1"
                 elif evt.button == 2:
-                    if self.player.activateShield == 0 and nb_player_shield > 0:
-                        self.player.activateShield = 500
-                        nb_player_shield -= 1
+                    if self.player.timeBeforeShieldIsDeactivated == 0 and self.player.nbTimesShieldAllowed > 0:
+                        self.player.timeBeforeShieldIsDeactivated = 500
+                        self.player.nbTimesShieldAllowed -= 1
             
             elif evt.type == JOYAXISMOTION:
                 if evt.axis == 0:
@@ -184,5 +183,5 @@ class InputEngine:
             elif input == "f3":
                 self.player.currentWeapon = "fire3"
             else:
-                print('error with inputs of player #' + str(self.playerID))
+                print('error with inputs of player #' + str(self.player.playerID))
     
