@@ -13,6 +13,7 @@ import pathfile
 import PhysicEngine
 import RendererEngine
 import InputEngine
+from '.Server/' import NetworkEngine
 import pygame
 from pygame.locals import *
 from commonclasses import *
@@ -28,10 +29,15 @@ GAME_ELEMENT_SIZE = 32
 #Size in pixels of the player element :
 GAME_ELEMENT_PLAYER_SIZE = 50
 
-#Player's space shuttle :
+#The main character :
 player = Player(256,452)
+player.playerID = 0
 
-#These lists contains respectively the ennemies and the differents weapons available for the player :
+#List of players :
+listOfPlayers = []
+listOfPlayers.append(player)
+
+#The ennemies of the game :
 ennemies = Ennemies()
 ennemies.PlayerObject = player
 
@@ -44,9 +50,6 @@ spriteManager = SpriteManager()
 #The Music and Sound Manager :
 musicAndSoundManager = MusicAndSoundManager()
 
-#player score :
-score = Score()
-
 #The Physic Engine :
 physicEngine = PhysicEngine.PhysicEngine()
 
@@ -55,6 +58,9 @@ rendererEngine = RendererEngine.RendererEngine()
 
 #The Input Engine :
 inputEngine = InputEngine.InputEngine()
+
+#The Client Networking Thread :
+clientNetworkingThread = NetworkEngine.ClientNetworkingThread()
 
 #This is used to make the background scroll :
 current_background_position_1 = 0
@@ -69,23 +75,42 @@ ListSelectedOptions = [1,0]
 #QUIT --> Quit the game
 
 ##########################################################FUNCTIONS##############################################################################################
+#Multiplayer Initialization function :
+def multiplayerInitialization():
+	serverAddress = input('Plz, enter server address : ')
+	serverPort = input('Plz, enter server port : ')
 
+	#Set client networking dependencies
+	clientNetworkingThread.setDependencies(serverPort, serverAddress)
+	clientNetworkingThread.initialization()
+
+	#Set renderer dependencies to the client network
+	rendererEngine.clientNetworkingThread = clientNetworkingThread
+
+	#Start the network thread
+	clientNetworkingThread.start()
+
+	#No need to get into this part of the code once the multiplayer mode has been already initialized
+	isMultiplayerInitialized = True
 
 
 ###########################################################MAIN##########################################################################################################
 #Set the ennemies and player references to the sprite and sound managers :
 physicEngine.setDependencies(ennemies,
-							 player,
-							 score)
+							 listOfPlayers)
 
 rendererEngine.setDependencies(spriteManager,
 							   musicAndSoundManager,
 							   physicEngine,
 							   ennemies,
-							   player,
-							   score)
+							   listOfPlayers)
 
+#Set input engine dependencies :
 inputEngine.setDependencies(player)
+
+#Set ennemies dependencies :
+ennemies.SpriteManager = spriteManager
+ennemies.MusicAndSoundManager = musicAndSoundManager
 
 #Initialize the renderer engine :
 rendererEngine.initialization()
@@ -99,16 +124,14 @@ spriteManager.initialization()
 #Initialize the music and sound manager :
 musicAndSoundManager.initialization()
 
-player.SpriteManager = spriteManager
-player.MusicAndSoundManager = musicAndSoundManager
-ennemies.SpriteManager = spriteManager
-ennemies.MusicAndSoundManager = musicAndSoundManager
-
 #Initialize the ennemies :
 ennemies.initialization()
 
 #Initialize the player :
 player.initialization()
+
+#Multiplayer initialization control :
+isMultiplayerInitialized = False
 
 #Main Game loop :
 while True:
@@ -125,6 +148,9 @@ while True:
 	if state == "MENU":
 		rendererEngine.setCurrentGameState(inputEngine.currentGameState)
 		rendererEngine.mainMenuOptionsSelections = inputEngine.mainMenuOptionsSelections
+	
+	if state == "MULTI_PLAYER" and !isMultiplayerInitialized:
+		multiplayerInitialization()
 	
 	#Here is the end of the main menu loop. So every needs in animation is done at this place
 	rendererEngine.renderAll()

@@ -34,7 +34,7 @@ class InputEngine:
         """Get the events caught by Pygame"""
         if self.currentGameState == "MENU":
             self.handleMenuEvents()
-        elif self.currentGameState == "GAME":
+        elif self.currentGameState == "SINGLE_PLAYER":
             self.handleGameEvents()
     
     #Handle events for the menu
@@ -61,7 +61,7 @@ class InputEngine:
 
                 if evt.key == K_RETURN or evt.key == K_KP_ENTER:
                     if self.mainMenuOptionsSelections == [1,0]:
-                        self.currentGameState = "GAME"
+                        self.currentGameState = "SINGLE_PLAYER"
                     elif self.mainMenuOptionsSelections == [0,1]:
                         self.currentGameState = "QUIT"
     

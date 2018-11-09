@@ -12,6 +12,7 @@ from commonclasses import *
 from Player import *
 from Ennemies import *
 from pygame.locals import *
+from '.Server/NetworkEngine' import *
 ##########################################################IMPORTS########################################################################################################
 #Size in pixels of the main menu's window :
 MAIN_WINDOW_SIZE = 512
@@ -26,6 +27,7 @@ class RendererEngine:
 		self.spriteManager: SpriteManager
 		self.soundManager: MusicAndSoundManager
 		self.physicEngine: PhysicEngine
+		self.clientNetworkingThread: ClientNetworkingThread
 		self.mainMenuOptionsSelections = [1, 0]
 		self.currentGameState = "MENU"
 		self.backGroundPos1 = 0
@@ -69,7 +71,7 @@ class RendererEngine:
 			#Change the music :
 			#musicAndSoundManager.play("game_over")
 			
-		elif self.currentGameState == "GAME":
+		elif self.currentGameState == "SINGLE_PLAYER":
 			#Animate the background :
 			self.drawBackGround()
 
@@ -90,18 +92,18 @@ class RendererEngine:
 				self.physicEngine.simulateAllCollisions()
 
 			#Check the game over status
-			if self.player.health <= 0:
+			if self.players[0].health <= 0:
 				self.currentGameState = "GAME_OVER"
 
-			#Draw everything which has to be drawn :
-			self.mainWindow.blit(self.spriteManager.ListofPlayerSurface[self.player.SpriteKey],(self.player.x,self.player.y))
+			#Draw the player
+			self.mainWindow.blit(self.spriteManager.ListofPlayerSurface[self.players[0].SpriteKey], (self.players[0].x, self.players[0].y))
 			
-			#For each ennemy group :
+			#For each ennemy group
 			for eg_id,eg in self.ennemies.ListofEnnemies.items():
 				for e in eg.ListofPositions:
 					draw_ennemy = self.spriteManager.ListofEnnemiesSurface[eg.surface_id]
 					
-					#Convert orientation to degrees :
+					#Convert orientation to degrees
 					if e[3] == 0:
 						angle = 0
 					elif e[3] == 1:
@@ -121,19 +123,19 @@ class RendererEngine:
 					elif e[3] == 8:
 						angle = -360
 				
-					#Apply rotation before the final draw call :
+					#Apply rotation before the final draw call
 					if not angle == 0:
 						draw_ennemy = self.spriteManager.rot_center(draw_ennemy,angle)
 					
-					#The Final draw call:
+					#The Final draw call
 					self.mainWindow.blit(draw_ennemy,(e[1],e[2]))
 			
 			#Draw the shots after drawing the ennemies. This way, the shots are overwritting the ennemies sprites/surface and lets the player knows what happen to the shot :
-			for shot_id,shot in self.player.ListofFireShot.items():
+			for shot_id,shot in self.players[0].ListofFireShot.items():
 				#Final draw call
-				self.mainWindow.blit(self.spriteManager.ListofFireShotSurface[shot.type],(shot.x,shot.y))
+				self.mainWindow.blit(self.spriteManager.ListofFireShotSurface[shot.type], (shot.x, shot.y))
 			
-			#Draw each ennemy with a rotation which is the same as the shot angle :
+			#Draw each ennemy with a rotation which is the same as the shot angle
 			for eg_id,eg in self.ennemies.ListofEnnemies.items():
 				for shot_id,shot in eg.ListofFireShot.items():
 					draw_shot = self.spriteManager.ListofFireShotSurface[shot.type]
@@ -162,7 +164,7 @@ class RendererEngine:
 					draw_shot = self.spriteManager.rot_center(draw_shot,angle)
 					
 					#The final draw call :
-					self.mainWindow.blit(draw_shot,(shot.x,shot.y))
+					self.mainWindow.blit(draw_shot, (shot.x, shot.y))
 			
 			#Draw the explosions :
 			self.makingExplosions()
@@ -177,11 +179,36 @@ class RendererEngine:
 			self.updatePlayerShield()
 
 			#Draw player shield:
-			if self.player.timeBeforeShieldIsDeactivated > 0:
+			if self.players[0].timeBeforeShieldIsDeactivated > 0:
 				self.drawPlayerShield()
 		
+		elif self.currentGameState == "MULTI_PLAYER":
+			#Animate the background :
+			self.drawBackGround()
+
+			#Draw each player
+			for player in self.players:
+				self.mainWindow.blit(self.spriteManager.ListofPlayerSurface[player.SpriteKey], (player.x, player.y))
+
+			"""#Draw the explosions :
+			self.makingExplosions()
+
+			#Draw the health bar :
+			self.updateHealthBarStatus()
+
+			#Update the player score :
+			self.updatePlayerScore()
+			
+			#Update the number of remaining shields :
+			self.updatePlayerShield()
+
+			#Draw player shield:
+			if self.players[0].timeBeforeShieldIsDeactivated > 0:
+				self.drawPlayerShield()"""
+			
 		#Finally, refresh the screen unless the cpu gets here before 16.67 ms has passed, then it'll not refresh the screen
 		pygame.display.flip()
+
     
 	# Render Background
 	def drawBackGround(self):
@@ -301,7 +328,7 @@ class RendererEngine:
 
 		#Draw the score :
 		policeFont = self.spriteManager.ListofSysFonts["Times New Roman"]
-		scoreSentence = "THE SCORE : " + str(self.score.playerScore)
+		scoreSentence = "THE SCORE : " + str(self.players[0].playerScore)
 		scoreSurface = policeFont.render(scoreSentence,0,(0,255,0))
 		self.mainWindow.blit(scoreSurface,(20,20))
 
