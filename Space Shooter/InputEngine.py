@@ -11,6 +11,7 @@ import RendererEngine
 import PhysicEngine
 import pygame
 from pygame.locals import *
+from '.Server/NetworkEngine' import *
 ##########################################################IMPORTS########################################################################################################
 class InputEngine:
     """All I/O element should be found in this class"""
@@ -20,6 +21,7 @@ class InputEngine:
         self.player: Player
         self.currentGameState = "MENU"
         self.mainMenuOptionsSelections = [1, 0]
+        self.clientNetworkingThread: ClientNetworkingThread
 
     #Initialization
     def initialization(self):
@@ -36,6 +38,8 @@ class InputEngine:
             self.handleMenuEvents()
         elif self.currentGameState == "SINGLE_PLAYER":
             self.handleGameEvents()
+        elif self.currentGameState =="MULTI_PLAYER":
+            self.handleMultiPlayerGameEvents()
     
     #Handle events for the menu
     def handleMenuEvents(self):
@@ -65,9 +69,13 @@ class InputEngine:
                     elif self.mainMenuOptionsSelections == [0,1]:
                         self.currentGameState = "QUIT"
     
-    #Handle events for the game
-    def handleGameEvents(self):
+    #Handle events for the game in single player mode
+    def handleSinglePlayerGameEvents(self):
         """Handle any related events when actually playing the game"""
+
+        if self.player.timeBeforeShieldIsDeactivated > 0:
+            self.player.timeBeforeShieldIsDeactivated -= 1
+
         #Loop on all the event sent by pygame :
         for evt in pygame.event.get():
             if evt.type == KEYDOWN:
@@ -141,6 +149,60 @@ class InputEngine:
                     else:
                         self.player.dy = 0
 
+    #Handle events for the game in multi player mode
+    def handleMultiPlayerGameEvents(self):
+        """Handle any related events when actually playing the game"""
+
+        #Inputs of the user
+        userInputs = []
+
+        #Loop on all the event sent by pygame :
+        for evt in pygame.event.get():
+            if evt.type == KEYDOWN:
+                if evt.key == K_DOWN:
+                    userInputs.append("KEYDOWN_DOWN")
+                elif evt.key == K_UP:
+                    userInputs.append("KEYDOWN_UP")
+                elif evt.key == K_LEFT:
+                    userInputs.append("KEYDOWN_LEFT")
+                elif evt.key == K_RIGHT:
+                    userInputs.append("KEYDOWN_RIGHT")
+                elif evt.key == K_SPACE:
+                    userInputs.append("KEYDOWN_FIRESHOT")
+                elif evt.key == K_LCTRL:
+                    userInputs.append("KEYDOWN_SHIELD")
+                elif evt.key == K_F1:
+                    userInputs.append("KEYDOWN_WEAPON1")
+                elif evt.key == K_F2:
+                    userInputs.append("KEYDOWN_WEAPON2")
+                elif evt.key == K_F3:
+                    userInputs.append("KEYDOWN_WEAPON3")
+
+            elif evt.type == KEYUP:
+                if evt.key == K_LEFT or evt.key == K_RIGHT:
+                    userInputs.append("KEYUP_LEFT_RIGHT")
+                elif evt.key == K_DOWN or evt.key == K_UP:
+                    userInputs.append("KEYUP_DOWN_UP")
+                """elif evt.key == K_SPACE:
+                    self.player.fireShot()
+                elif evt.key == K_LCTRL:
+                    if self.player.timeBeforeShieldIsDeactivated == 0 and self.player.nbTimesShieldAllowed > 0:
+                        self.player.timeBeforeShieldIsDeactivated = 500
+                        self.player.nbTimesShieldAllowed -= 1
+                elif evt.key == K_F1:
+                    self.player.currentWeapon = "fire1"
+                elif evt.key == K_F2:
+                    self.player.currentWeapon = "fire2"
+                elif evt.key == K_F3:
+                    self.player.currentWeapon = "fire3"""
+        
+        #Create server input
+        serverInput = ServerNetworkingInput()
+        serverInput.clientInput = userInputs
+
+        #Send data to server
+        self.clientNetworkingThread.outputCommands = serverInput
+
     #TODO: Faire quelque chose avec ce truc ...
     """def joystick(self):
         #TEST JOYSTICK :
@@ -158,9 +220,14 @@ class InputEngine:
             print("Trackballs :", joystick_player.get_numballs())
             print("Hats :", joystick_player.get_numhats())"""
 
-    #Process Player Inputs (Awesome comments here !)
+    #This function should only be used by a game server !
+    #This is for multiplayer mode use only
     def processPlayerInput(self, playerInputs):
         """Process the player inputs"""
+
+        if self.player.timeBeforeShieldIsDeactivated > 0:
+            self.player.timeBeforeShieldIsDeactivated -= 1
+
         for input in playerInputs:
             if input == "left":
                 self.player.dx = 2

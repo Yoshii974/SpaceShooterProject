@@ -272,10 +272,12 @@ class ServerNetworkingOutput:
         self.ennemies: Ennemies
         self.player: Player
         self.otherPlayers: [] # list of Player object
+        self.listOfExplosions: [] # list of Explosions to be drawn by the clients
         #self.ennemies: [] # list of Ennemy_group object
     
     # Set Dependencies
-    def setDependencies(self, Ennemies, Player, OtherPlayers):
+    def setDependencies(self, Ennemies, Player, OtherPlayers, ListOfExplosions):
         self.ennemies = Ennemies
         self.player = Player
         self.otherPlayers = OtherPlayers
+        self.listOfExplosions = ListOfExplosions

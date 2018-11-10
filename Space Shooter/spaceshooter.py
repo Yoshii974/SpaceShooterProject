@@ -84,8 +84,9 @@ def multiplayerInitialization():
 	clientNetworkingThread.setDependencies(serverPort, serverAddress)
 	clientNetworkingThread.initialization()
 
-	#Set renderer dependencies to the client network
+	#Set dependencies to the client network
 	rendererEngine.clientNetworkingThread = clientNetworkingThread
+	inputEngine.clientNetworkingThread = clientNetworkingThread
 
 	#Start the network thread
 	clientNetworkingThread.start()

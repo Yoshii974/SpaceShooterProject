@@ -54,6 +54,7 @@ class PhysicEngine:
         #print("all collisions")
         self.simulateEnnemiesCollisions()
         self.simulatePlayersCollisions()
+        self.updateExplosionsStates()
 
     # Detect Collisions for the Ennemies
     def simulateEnnemiesCollisions(self):
@@ -161,3 +162,23 @@ class PhysicEngine:
                     # print(self.player.health)
                     # Remove health
                     player.health -= 0
+    
+    # Loop through explosions and delete these which lifespan has reach 0
+    def updateExplosionsStates(self):
+        """Loop through explosions and delete these which lifespan has reach 0 """
+
+        #Contains each explosions which has their lifespan 1 and 2 equals to 0, it's time to remove this explosion object :
+        listofExplosionsToBeRemoved = []
+
+        # Loop through explosions
+        for exp in self.listofExplosions:
+            if exp.lifespan1 > 0:
+                exp.lifespan1 -= 1
+            elif exp.lifespan2 > 0:
+                exp.lifespan2 -=1
+            else:
+                listofExplosionsToBeRemoved.append(exp)
+        
+        #We delete every explosions which has no longer any reason to stay alive:
+        for exp in listofExplosionsToBeRemoved:
+            self.listofExplosions.remove(exp)

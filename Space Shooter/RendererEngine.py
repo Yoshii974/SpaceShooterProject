@@ -179,8 +179,7 @@ class RendererEngine:
 			self.updatePlayerShield()
 
 			#Draw player shield:
-			if self.players[0].timeBeforeShieldIsDeactivated > 0:
-				self.drawPlayerShield()
+			self.drawPlayersShield()
 		
 		elif self.currentGameState == "MULTI_PLAYER":
 			#First, get data from the client networking thread
@@ -193,21 +192,20 @@ class RendererEngine:
 			for player in self.players:
 				self.mainWindow.blit(self.spriteManager.ListofPlayerSurface[player.SpriteKey], (player.x, player.y))
 
-			"""#Draw the explosions :
+			#Draw the explosions :
 			self.makingExplosions()
 
-			#Draw the health bar :
+			"""#Draw the health bar :
 			self.updateHealthBarStatus()
 
 			#Update the player score :
 			self.updatePlayerScore()
 			
 			#Update the number of remaining shields :
-			self.updatePlayerShield()
+			self.updatePlayerShield()"""
 
 			#Draw player shield:
-			if self.players[0].timeBeforeShieldIsDeactivated > 0:
-				self.drawPlayerShield()"""
+			self.drawPlayersShield()
 			
 		#Finally, refresh the screen unless the cpu gets here before 16.67 ms has passed, then it'll not refresh the screen
 		pygame.display.flip()
@@ -216,11 +214,12 @@ class RendererEngine:
 	def handleDataRcvdFromServer(self):
 		"""Process data received from a remote server """
 		
-		self.players[0] = self.clientNetworkingThread.player
-		self.ennemies = self.clientNetworkingThread.ennemies
+		self.players[0] = self.clientNetworkingThread.inputCommands.player
+		self.ennemies = self.clientNetworkingThread.inputCommands.ennemies
+		self.physicEngine.listofExplosions = self.clientNetworkingThread.inputCommands.listOfExplosions
 
 		for i in range (1, len(self.clientNetworkingThread.otherPlayers)):
-			self.players[i] = self.clientNetworkingThread.otherPlayers[i]
+			self.players[i] = self.clientNetworkingThread.inputCommands.otherPlayers[i]
 
 
 	# Render Background
@@ -326,14 +325,14 @@ class RendererEngine:
 		x_health = (self.player.health/self.player.maxHealth) * 115
 		if x_health < 0:
 			x_health = 0
-		health_bar_surface = pygame.Surface((int(x_health),10))
+		health_bar_surface = pygame.Surface((int(x_health), 10))
 		
 		#Fill the surface partially depending on the player's health :
 		health_bar_surface.fill((0,255,0))
 		
 		#Finaly, draw the health bar :
-		self.mainWindow.blit(health_bar_surface,(512-130,20))
-		self.mainWindow.blit(self.spriteManager.HealthBar,(512-150,15))
+		self.mainWindow.blit(health_bar_surface, (512-130,20))
+		self.mainWindow.blit(self.spriteManager.HealthBar, (512-150,15))
 
 	# Update and Render the player score
 	def updatePlayerScore(self):
@@ -342,8 +341,8 @@ class RendererEngine:
 		#Draw the score :
 		policeFont = self.spriteManager.ListofSysFonts["Times New Roman"]
 		scoreSentence = "THE SCORE : " + str(self.players[0].playerScore)
-		scoreSurface = policeFont.render(scoreSentence,0,(0,255,0))
-		self.mainWindow.blit(scoreSurface,(20,20))
+		scoreSurface = policeFont.render(scoreSentence, 0, (0,255,0))
+		self.mainWindow.blit(scoreSurface, (20,20))
 
 	# Update and Render the player shield
 	def updatePlayerShield(self):
@@ -352,23 +351,24 @@ class RendererEngine:
 		#Draw the number of remaining shields
 		policeFont = self.spriteManager.ListofSysFonts["Times New Roman"]
 		shieldSentence = "REMAINING SHIELDS : " + str(self.player.nbTimesShieldAllowed)
-		shieldSurface = policeFont.render(shieldSentence,0,(0,255,0))
-		self.mainWindow.blit(shieldSurface,(20,40))
+		shieldSurface = policeFont.render(shieldSentence, 0, (0,255,0))
+		self.mainWindow.blit(shieldSurface, (20,40))
 
 	# Update and Render the player shield
-	def drawPlayerShield(self):
+	def drawPlayersShield(self):
 		"""Draw the shield around the player."""
-		
-		#Draw the shield :
 		shieldSurface = self.spriteManager.ListofExplosionSurface["bonusCircle"]
-		self.mainWindow.blit(shieldSurface,(self.player.x - 16, self.player.y - 16))
-		self.player.timeBeforeShieldIsDeactivated -= 1
+
+		for player in self.players:
+			if player.timeBeforeShieldIsDeactivated > 0:
+				#Draw the shield :
+				self.mainWindow.blit(shieldSurface, (player.x - 16, player.y - 16))
 	
 	# Draw Main Menu
 	def drawMainMenu(self):
 		"""This function draw the main menu of the game"""
-		self.mainWindow.blit(self.mainMenuBG,(0,0))
-		self.mainWindow.blit(self.mainMenuLogo,(25,-10))
+		self.mainWindow.blit(self.mainMenuBG, (0,0))
+		self.mainWindow.blit(self.mainMenuLogo, (25,-10))
 		self.drawMainMenuOptions()
 		#self.drawMainMenuShip
 
@@ -429,24 +429,15 @@ class RendererEngine:
 	# Draw explosions
 	def makingExplosions(self):
 		"""This function is only useful for drawing and producing explosions objects at the right place, at the right time..."""
-
-		#Contains each explosions which has their lifespan 1 and 2 equals to 0, it's time to remove this explosion object :
-		listofExplosionsToBeRemoved = []
 		
 		#Loop on each explosions :
 		for exp in self.physicEngine.listofExplosions:
 			if exp.lifespan1 > 0:
 				self.mainWindow.blit(self.spriteManager.ListofExplosionSurface["explosion1"],(exp.x,exp.y))
-				if exp.hasSoundBeenPlayed == 0:
-					self.soundManager.ListofExplosionSound["explosion1"].play()
-					exp.hasSoundBeenPlayed = 1
-				exp.lifespan1 -= 1
+				#if exp.hasSoundBeenPlayed == 0:
+				self.soundManager.ListofExplosionSound["explosion1"].play()
+					#exp.hasSoundBeenPlayed = 1
+				#exp.lifespan1 -= 1
 			elif exp.lifespan2 > 0:
 				self.mainWindow.blit(self.spriteManager.ListofExplosionSurface["explosion2"],(exp.x,exp.y))
-				exp.lifespan2 -= 1
-			else:
-				listofExplosionsToBeRemoved.append(exp)
-
-		#We delete every explosions which has no longer any reason to stay alive:
-		for exp in listofExplosionsToBeRemoved:
-			self.physicEngine.listofExplosions.remove(exp)
+				#exp.lifespan2 -= 1
