@@ -269,8 +269,13 @@ class ServerNetworkingOutput:
 
     # Default Constructor
     def __init__(self):
+        self.ennemies: Ennemies
         self.player: Player
-        self.score: Score
         self.otherPlayers: [] # list of Player object
-        self.ennemies: [] # list of Ennemy_group object
-        self.otherScore: [] # list of other players Score object
+        #self.ennemies: [] # list of Ennemy_group object
+    
+    # Set Dependencies
+    def setDependencies(self, Ennemies, Player, OtherPlayers):
+        self.ennemies = Ennemies
+        self.player = Player
+        self.otherPlayers = OtherPlayers

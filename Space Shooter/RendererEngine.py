@@ -183,7 +183,10 @@ class RendererEngine:
 				self.drawPlayerShield()
 		
 		elif self.currentGameState == "MULTI_PLAYER":
-			#Animate the background :
+			#First, get data from the client networking thread
+			handleDataRcvdFromServer()
+
+			#Animate the background
 			self.drawBackGround()
 
 			#Draw each player
@@ -209,7 +212,17 @@ class RendererEngine:
 		#Finally, refresh the screen unless the cpu gets here before 16.67 ms has passed, then it'll not refresh the screen
 		pygame.display.flip()
 
-    
+    # Handle data from server
+	def handleDataRcvdFromServer(self):
+		"""Process data received from a remote server """
+		
+		self.players[0] = self.clientNetworkingThread.player
+		self.ennemies = self.clientNetworkingThread.ennemies
+
+		for i in range (1, len(self.clientNetworkingThread.otherPlayers)):
+			self.players[i] = self.clientNetworkingThread.otherPlayers[i]
+
+
 	# Render Background
 	def drawBackGround(self):
 		"""Main background animation. It allows the background to be scrolled each time this function it's called."""
