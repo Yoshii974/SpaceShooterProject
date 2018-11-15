@@ -8,13 +8,30 @@ from __future__ import division
 import NetworkEngine
 import threading
 import socket
-import sys
-sys.path.append('../')
+#import sys
+#sys.path.append('../')
+import os, sys
+sys.path.insert(0, os.path.abspath(".."))
 from Player import *
 from Ennemies import *
 from PhysicEngine import *
 from InputEngine import *
 from commonclasses import *
+##########################################################FUNCTIONS##############################################################################################
+# Do Physics stuff here ...
+# No Rendering plz !
+def mainServerFunction():
+    # 0 - Get data from clients
+    networkEngine.decodeData()
+
+    # 1 - Process players inputs
+    print('maamn')
+
+    # 2 - Do the Physics Processing
+
+    # 3 - Send to the clients to the Game State
+    networkEngine.encodeData()
+
 
 ##############################################GLOBAL VARIABLES#######################################################################################
 TCPSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -97,18 +114,3 @@ ennemies.PlayerObject = players[0]
 # Main Game loop
 #timer.start()
 print ("That was nice Server, deh ? o_O")
-
-
-# Do Physics stuff here ...
-# No Rendering plz !
-def mainServerFunction():
-    # 0 - Get data from clients
-    networkEngine.decodeData()
-
-    # 1 - Process players inputs
-    print('maamn')
-
-    # 2 - Do the Physics Processing
-
-    # 3 - Send to the clients to the Game State
-    networkEngine.encodeData()

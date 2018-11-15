@@ -13,8 +13,8 @@ import pathfile
 import PhysicEngine
 import RendererEngine
 import InputEngine
-from '.Server/' import NetworkEngine
 import pygame
+from Server import NetworkEngine
 from pygame.locals import *
 from commonclasses import *
 from Player import *
@@ -150,7 +150,7 @@ while True:
 		rendererEngine.setCurrentGameState(inputEngine.currentGameState)
 		rendererEngine.mainMenuOptionsSelections = inputEngine.mainMenuOptionsSelections
 	
-	if state == "MULTI_PLAYER" and !isMultiplayerInitialized:
+	if state == "MULTI_PLAYER" and isMultiplayerInitialized == False:
 		multiplayerInitialization()
 	
 	#Here is the end of the main menu loop. So every needs in animation is done at this place

@@ -113,7 +113,7 @@ class PhysicEngine:
                     # Add this explosions to the list of explosions to be drawn by the Renderer Engine later
                     self.listofExplosions.append(exp)
                     # Increase the current player score
-                    self.players[col[3]] += 50
+                    self.players[col[3]].score.playerScore += 50
                     # Remove 1 ennemy from the ennemy group
                     eg.currentEnnemyNumber -= 1
                     # Remove the fire shot from the current player list

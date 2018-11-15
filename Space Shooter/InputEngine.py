@@ -11,7 +11,7 @@ import RendererEngine
 import PhysicEngine
 import pygame
 from pygame.locals import *
-from '.Server/NetworkEngine' import *
+from Server import NetworkEngine
 ##########################################################IMPORTS########################################################################################################
 class InputEngine:
     """All I/O element should be found in this class"""
@@ -21,7 +21,7 @@ class InputEngine:
         self.player: Player
         self.currentGameState = "MENU"
         self.mainMenuOptionsSelections = [1, 0]
-        self.clientNetworkingThread: ClientNetworkingThread
+        self.clientNetworkingThread: NetworkEngine.ClientNetworkingThread
 
     #Initialization
     def initialization(self):
@@ -37,7 +37,7 @@ class InputEngine:
         if self.currentGameState == "MENU":
             self.handleMenuEvents()
         elif self.currentGameState == "SINGLE_PLAYER":
-            self.handleGameEvents()
+            self.handleSinglePlayerGameEvents()
         elif self.currentGameState =="MULTI_PLAYER":
             self.handleMultiPlayerGameEvents()
     
@@ -197,7 +197,7 @@ class InputEngine:
                     self.player.currentWeapon = "fire3"""
         
         #Create server input
-        serverInput = ServerNetworkingInput()
+        serverInput = NetworkEngine.ServerNetworkingInput()
         serverInput.clientInput = userInputs
 
         #Send data to server

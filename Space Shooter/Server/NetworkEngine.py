@@ -8,9 +8,8 @@ from __future__ import division
 import threading
 import pickle
 import socket
-#import os
-import sys
-sys.path.append('../')
+import os, sys
+sys.path.insert(0, os.path.abspath(".."))
 from Player import *
 from Ennemies import *
 from commonclasses import *

@@ -12,7 +12,7 @@ from commonclasses import *
 from Player import *
 from Ennemies import *
 from pygame.locals import *
-from '.Server/NetworkEngine' import *
+from Server import NetworkEngine
 ##########################################################IMPORTS########################################################################################################
 #Size in pixels of the main menu's window :
 MAIN_WINDOW_SIZE = 512
@@ -27,7 +27,7 @@ class RendererEngine:
 		self.spriteManager: SpriteManager
 		self.soundManager: MusicAndSoundManager
 		self.physicEngine: PhysicEngine
-		self.clientNetworkingThread: ClientNetworkingThread
+		self.clientNetworkingThread: NetworkEngine.ClientNetworkingThread
 		self.mainMenuOptionsSelections = [1, 0]
 		self.currentGameState = "MENU"
 		self.backGroundPos1 = 0
@@ -322,7 +322,7 @@ class RendererEngine:
 		"""Update the health bar status and draw it at the screen."""
 
 		#First, draw the rect which is updated depending on the current player's health.
-		x_health = (self.player.health/self.player.maxHealth) * 115
+		x_health = (self.players[0].health/self.players[0].maxHealth) * 115
 		if x_health < 0:
 			x_health = 0
 		health_bar_surface = pygame.Surface((int(x_health), 10))
@@ -340,7 +340,7 @@ class RendererEngine:
 
 		#Draw the score :
 		policeFont = self.spriteManager.ListofSysFonts["Times New Roman"]
-		scoreSentence = "THE SCORE : " + str(self.players[0].playerScore)
+		scoreSentence = "THE SCORE : " + str(self.players[0].score.playerScore)
 		scoreSurface = policeFont.render(scoreSentence, 0, (0,255,0))
 		self.mainWindow.blit(scoreSurface, (20,20))
 
@@ -350,7 +350,7 @@ class RendererEngine:
 		
 		#Draw the number of remaining shields
 		policeFont = self.spriteManager.ListofSysFonts["Times New Roman"]
-		shieldSentence = "REMAINING SHIELDS : " + str(self.player.nbTimesShieldAllowed)
+		shieldSentence = "REMAINING SHIELDS : " + str(self.players[0].nbTimesShieldAllowed)
 		shieldSurface = policeFont.render(shieldSentence, 0, (0,255,0))
 		self.mainWindow.blit(shieldSurface, (20,40))
 
