@@ -435,7 +435,7 @@ class RendererEngine:
 			if exp.lifespan1 > 0:
 				self.mainWindow.blit(self.spriteManager.ListofExplosionSurface["explosion1"],(exp.x,exp.y))
 				#if exp.hasSoundBeenPlayed == 0:
-				self.soundManager.ListofExplosionSound["explosion1"].play()
+				#self.soundManager.ListofExplosionSound["explosion1"].play()
 					#exp.hasSoundBeenPlayed = 1
 				#exp.lifespan1 -= 1
 			elif exp.lifespan2 > 0:
