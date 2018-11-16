@@ -8,8 +8,6 @@ from __future__ import division
 import NetworkEngine
 import threading
 import socket
-#import sys
-#sys.path.append('../')
 import os, sys
 sys.path.insert(0, os.path.abspath(".."))
 from Player import *
@@ -22,7 +20,7 @@ from commonclasses import *
 # No Rendering plz !
 def mainServerFunction():
     # 0 - Get data from clients
-    networkEngine.decodeData()
+    #networkEngine.decodeData()
 
     # 1 - Process players inputs
     print('maamn')
@@ -30,14 +28,14 @@ def mainServerFunction():
     # 2 - Do the Physics Processing
 
     # 3 - Send to the clients to the Game State
-    networkEngine.encodeData()
+    #networkEngine.encodeData()
 
 
 ##############################################GLOBAL VARIABLES#######################################################################################
 TCPSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 Port = 5890
-inputCommands = []
-outputCommands = []
+inputCommands = {}
+outputCommands = {}
 clientsThreads = []
 players = []
 inputEngines = []
@@ -66,9 +64,7 @@ while True:
                                  clientSocket, 
                                  clientInfo.clientPort, 
                                  clientInfo.clientIpAddress, 
-                                 clientInfo.clientID, 
-                                 inputCommands, 
-                                 outputCommands)
+                                 clientInfo.clientID)
 
     # Initialize thread
     clientThread.initialization()
@@ -82,10 +78,6 @@ while True:
     # If the number of players have reached the desired number, then the multiplayer game starts
     if (len(clientsThreads) >= NB_MIN_PLAYER):
         print("Game Starting ...")
-
-        for clientThread in clientsThreads:
-            clientThread.currentGameState = "RUNNING"
-            clientThread.start()
         
         # Stop receiving connection
         break
@@ -93,7 +85,7 @@ while True:
 # Here, create server objects
 initialPos = 50
 index = 0
-for client in clientsThreads:
+for cT in clientsThreads:
     # Create one Player object for each player
     player = Player(initialPos + index*80, 452)
     players.append(player)
@@ -106,10 +98,27 @@ for client in clientsThreads:
 
     index += 1
 
-networkEngine = NetworkEngine.NetworkEngine()
+#networkEngine = NetworkEngine.NetworkEngine()
 physicEngine = PhysicEngine()
 ennemies = Ennemies()
 ennemies.PlayerObject = players[0]
+
+# Initialization of all the outputCommands for each client thread
+for index in range(0, len(players)):
+    # Give dependencies to the list of clients Thread outputs commands
+    clientsThreads[index].outputCommands.ennemies = ennemies
+    clientsThreads[index].outputCommands.listOfExplosions = physicEngine.listofExplosions
+    clientsThreads[index].outputCommands.player = players[index]
+    clientsThreads[index].outputCommands.otherPlayers = [p for p in players if p != players[index]]
+
+    # Insert the current player into the dict of players inputs
+    inputCommands['player' + str(index)] = clientsThreads[index].inputCommands
+    outputCommands['player' + str(index)] = clientsThreads[index].outputCommands
+
+# Starts all the clients Threads
+for cT in clientsThreads:
+    cT.currentGameState = "RUNNING"
+    cT.start()
 
 # Main Game loop
 #timer.start()

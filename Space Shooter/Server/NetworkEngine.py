@@ -131,8 +131,8 @@ class ServerNetworkingThread (threading.Thread):
         self.clientIpAddress: int
         self.clientID: int
         self.currentGameState: str
-        self.inputCommands: {} # dict of Clients inputs
-        self.outputCommands: {} # dict of Client outputs
+        self.inputCommands = ServerNetworkingInput()
+        self.outputCommands = ServerNetworkingOutput()
         self.networkEngine: NetworkEngine
         self.timer: threading.Timer
     
@@ -149,14 +149,14 @@ class ServerNetworkingThread (threading.Thread):
         self.timer = threading.Timer(0.016, self.threadMain())
     
     # Set the dependencies
-    def setDependencies(self, threadID, clientSocket, clientPort, clientIpAddress, clientID, inputCommands, outputCommands):
+    def setDependencies(self, threadID, clientSocket, clientPort, clientIpAddress, clientID):
         self.threadID = threadID
         self.clientSocket = clientSocket
         self.clientPort = clientPort
         self.clientIpAddress = clientIpAddress
         self.clientID = clientID
-        self.inputCommands = inputCommands
-        self.outputCommands = outputCommands
+        #self.inputCommands = inputCommands
+        #self.outputCommands = outputCommands
 
     # Get the timer
     def getTimer(self):
@@ -181,10 +181,10 @@ class ServerNetworkingThread (threading.Thread):
         recvData = self.networkEngine.decodeData()
 
         # Create a struct/tuple and add it to the input Command dict
-        self.inputCommands[self.clientID] = recvData
+        self.inputCommands = recvData
 
         # Create local data to send to the client
-        sendData = self.outputCommands[self.clientID]
+        sendData = self.outputCommands
 
         # Send data to the client
         self.networkEngine.encodeData(sendData)
