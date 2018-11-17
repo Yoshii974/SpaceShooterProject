@@ -183,7 +183,7 @@ class RendererEngine:
 		
 		elif self.currentGameState == "MULTI_PLAYER":
 			#First, get data from the client networking thread
-			handleDataRcvdFromServer()
+			self.handleDataRcvdFromServer()
 
 			#Animate the background
 			self.drawBackGround()

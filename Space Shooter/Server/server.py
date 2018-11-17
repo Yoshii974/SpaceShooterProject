@@ -20,22 +20,30 @@ from commonclasses import *
 # No Rendering plz !
 def mainServerFunction():
     # 0 - Get data from clients
-    #networkEngine.decodeData()
+    # Already there in the clients Threads !
 
     # 1 - Process players inputs
-    print('maamn')
+    for index in range(0, len(clientsThreads)):
+        inputEngines[index].processPlayerInput(clientsThreads[index].inputCommands)
 
     # 2 - Do the Physics Processing
+    physicEngine.updateCurrentGameState()
+    physicEngine.simulateAllCollisions()
+    # TODO: Check players healths
 
-    # 3 - Send to the clients to the Game State
-    #networkEngine.encodeData()
+    # 3 - Send to the clients the current Game State
+    for index in range(0, len(clientsThreads)):
+        sendData = NetworkEngine.ServerNetworkingOutput()
+        sendData.ennemies = ennemies
+        sendData.player = players[index]
+        sendData.otherPlayers = [p for p in players if p != players[index]]
+
+        clientsThreads[index].outputCommands = sendData
 
 
 ##############################################GLOBAL VARIABLES#######################################################################################
 TCPSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 Port = 5890
-inputCommands = {}
-outputCommands = {}
 clientsThreads = []
 players = []
 inputEngines = []
@@ -85,9 +93,12 @@ while True:
 # Here, create server objects
 initialPos = 50
 index = 0
+
+# For each client thread create a corresponding Player and Input Engine
 for cT in clientsThreads:
     # Create one Player object for each player
     player = Player(initialPos + index*80, 452)
+    player.initialization() # Does nothing ...
     players.append(player)
 
     # Create one Input Engine for each player and set dependencies
@@ -98,10 +109,14 @@ for cT in clientsThreads:
 
     index += 1
 
-#networkEngine = NetworkEngine.NetworkEngine()
-physicEngine = PhysicEngine()
+# Set Dependencies to the Ennemies
 ennemies = Ennemies()
 ennemies.PlayerObject = players[0]
+ennemies.initialization()
+
+# Set Dependencies to the Physic Engine
+physicEngine = PhysicEngine()
+physicEngine.setDependencies(ennemies, players)
 
 # Initialization of all the outputCommands for each client thread
 for index in range(0, len(players)):
@@ -110,10 +125,6 @@ for index in range(0, len(players)):
     clientsThreads[index].outputCommands.listOfExplosions = physicEngine.listofExplosions
     clientsThreads[index].outputCommands.player = players[index]
     clientsThreads[index].outputCommands.otherPlayers = [p for p in players if p != players[index]]
-
-    # Insert the current player into the dict of players inputs
-    inputCommands['player' + str(index)] = clientsThreads[index].inputCommands
-    outputCommands['player' + str(index)] = clientsThreads[index].outputCommands
 
 # Starts all the clients Threads
 for cT in clientsThreads:
