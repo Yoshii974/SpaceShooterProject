@@ -147,8 +147,9 @@ while True:
 
 	#Synchronise the state of the renderer engine with the state of the input engine
 	if state == "MENU":
-		rendererEngine.setCurrentGameState(inputEngine.currentGameState)
 		rendererEngine.mainMenuOptionsSelections = inputEngine.mainMenuOptionsSelections
+		rendererEngine.setCurrentGameState(inputEngine.currentGameState)
+		state = rendererEngine.currentGameState
 	
 	if state == "MULTI_PLAYER" and isMultiplayerInitialized == False:
 		multiplayerInitialization()

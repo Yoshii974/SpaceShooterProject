@@ -22,10 +22,10 @@ class SpriteManager():
 		self.ListofEnnemiesSurface = {}
 		self.ListofFireShotSurface = {}
 		self.ListofExplosionSurface = {}
-		self.ListofEnnemiesSurfaceKeys = []
 		self.ListofSysFonts = {}
 		self.HealthBar = ""
 		self.Boss = ""
+		self.isServer = False
 
 	#loads Sprites:
 	def initialization(self):
@@ -43,18 +43,32 @@ class SpriteManager():
 	def loadMainGameBackGrounds(self):
 		"""This function loads the main game backgrounds."""
 		#The background of the game :
-		self.backGround1 = pygame.image.load(pathfile.mainGameBackGround1)
-		self.backGround1Copy = pygame.image.load(pathfile.mainGameBackGround1)
-		self.backGround2 = pygame.image.load(pathfile.mainGameBackGround2)
-		self.backGround2Copy = pygame.image.load(pathfile.mainGameBackGround2)
+		if (self.isServer):
+			pathbackGround1 = "../" + pathfile.mainGameBackGround1
+			pathbackGround2 = "../" + pathfile.mainGameBackGround2
+		else:
+			pathbackGround1 = pathfile.mainGameBackGround1
+			pathbackGround2 = pathfile.mainGameBackGround2
+
+		self.backGround1 = pygame.image.load(pathbackGround1)
+		self.backGround1Copy = pygame.image.load(pathbackGround1)
+		self.backGround2 = pygame.image.load(pathbackGround2)
+		self.backGround2Copy = pygame.image.load(pathbackGround2)
 
 	#Player's Sprites:
 	#Initialization of all animations of the player's space shuttle :
 	def loadPlayerSprites(self):
 		"""This function loads the differents sprites used by the player."""
 		#Fullfill the list of player's Surfaces
-		player_left_surface = pygame.image.load(pathfile.mainGameShuttlesPlayerLeft).convert_alpha()
-		player_right_surface = pygame.image.load(pathfile.mainGameShuttlesPlayerRight).convert_alpha()
+		if (self.isServer):
+			pathShuttleLeft = "../" + pathfile.mainGameShuttlesPlayerLeft
+			pathShuttleRight = "../" + pathfile.mainGameShuttlesPlayerRight
+		else:
+			pathShuttleLeft = pathfile.mainGameShuttlesPlayerLeft
+			pathShuttleRight = pathfile.mainGameShuttlesPlayerRight
+
+		player_left_surface = pygame.image.load(pathShuttleLeft).convert_alpha()
+		player_right_surface = pygame.image.load(pathShuttleRight).convert_alpha()
 	
 		tmpSurfaceListLeft = []
 		tmpSurfaceListRight = []
@@ -88,8 +102,7 @@ class SpriteManager():
 				ennemySurface = self.rot_center(ennemySurface,90)
 				
 				#Add the sprite to the dictionnary :
-				self.ListofEnnemiesSurfaceKeys.append(key)
-				self.ListofEnnemiesSurface[key] = ennemySurface	
+				self.ListofEnnemiesSurface[key] = ennemySurface
 	
 	#FireShot's Sprites:
 	def loadFireShotSprites(self):
@@ -156,12 +169,13 @@ class MusicAndSoundManager():
 		self.ListofFireShotSound = {}
 		self.ListofExplosionSound = {}
 		self.ListofMusic = {}
+		self.isServer = False
 	
 	#Initialization :
 	def initialization(self):
 		"""Load every music and sounds used in the game."""
 		self.loadExplosionSounds()
-		self.loadMusic()	
+		self.loadMusic()
 	
 	#Load the Sounds of shoots of explosions :
 	def loadExplosionSounds(self):

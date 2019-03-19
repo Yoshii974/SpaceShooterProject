@@ -27,14 +27,20 @@ class Ennemies:
 		self.currentGroupNumber = 0
 		self.currentEnnemyNumber = 0
 		self.currentEnnemyWave = 1
-		self.SpriteManager = ""
-		self.MusicAndSoundManager = ""
+		self.ListofEnnemiesSurfaceKeys = []
 		self.PlayerObject = ""
 		self.GAME_STATUS = "NORMAL"
 	
 	#Initialize the ennemy class:
 	def initialization(self):
 		"""This function initialize each part of the class."""
+		
+		for j in range(0,7):
+			for i in range(0,8):
+				#The dictionnary key of the current sprite :
+				key = "surface_" + str(j+1) + str(i+1)
+				self.ListofEnnemiesSurfaceKeys.append(key)
+		
 		self.createEnnemyWave()
 	
 	#animate:
@@ -138,7 +144,7 @@ class Ennemies:
 			ennemy_group = Ennemy_Group_3(center_X,center_Y)
 		
 		#Set the attributes of the ennemy group:
-		ennemy_group.surface_id = random.choice(self.SpriteManager.ListofEnnemiesSurfaceKeys)
+		ennemy_group.surface_id = random.choice(self.ListofEnnemiesSurfaceKeys)
 		ennemy_group.center_x = center_X
 		ennemy_group.center_y = center_Y
 		ENNEMY_GROUP_ID += 1

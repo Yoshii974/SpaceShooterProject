@@ -9,12 +9,14 @@ import NetworkEngine
 import threading
 import socket
 import os, sys
+#import pygame
 sys.path.insert(0, os.path.abspath(".."))
 from Player import *
 from Ennemies import *
 from PhysicEngine import *
 from InputEngine import *
 from commonclasses import *
+#from pygame.locals import *
 ##########################################################FUNCTIONS##############################################################################################
 # Do Physics stuff here ...
 # No Rendering plz !
@@ -48,8 +50,23 @@ clientsThreads = []
 players = []
 inputEngines = []
 threadID = 0
-NB_MIN_PLAYER = 2
-timer = threading.Timer(0.016, mainServerFunction)
+NB_MIN_PLAYER = 1
+
+# TODO : C'est de la merde, parce que 0.016 signifie executer la fonction juste apres l'appel Threading.Timer
+# TODO : Ne veut pas dire "repeter" tous les 0.016 secondes
+#timer = threading.Timer(0.016, mainServerFunction)
+
+# Ok, This is not the good way of doing it but whatever ...
+# So I'm not really using pygame here. It is just used to load the sprites into the SpriteManager which is not even used !
+#pygame.init()
+#pygame.display.set_mode((512, 512))
+
+# This is just done to have the server not pissing me off !
+#spriteManager = SpriteManager()
+#spriteManager.isServer = True
+
+#musicAndSoundManager = MusicAndSoundManager()
+#musicAndSoundManager.isServer = True
 
 # Main Server Function
 print ("Launching  Game Server ...")
@@ -68,11 +85,14 @@ while True:
 
     # Create a thread to interact with the client
     clientThread = NetworkEngine.ServerNetworkingThread()
+    print("New Connected Client. The client infos are : ")
+    print(clientInfo)
+    # TEST:
     clientThread.setDependencies(threadID, 
                                  clientSocket, 
-                                 clientInfo.clientPort, 
-                                 clientInfo.clientIpAddress, 
-                                 clientInfo.clientID)
+                                 clientInfo[1], 
+                                 clientInfo[0], 
+                                 None)
 
     # Initialize thread
     clientThread.initialization()
@@ -112,10 +132,14 @@ for cT in clientsThreads:
 # Set Dependencies to the Ennemies
 ennemies = Ennemies()
 ennemies.PlayerObject = players[0]
+#ennemies.SpriteManager = spriteManager
+#ennemies.MusicAndSoundManager = musicAndSoundManager
+#spriteManager.initialization()
+#musicAndSoundManager.initialization()
 ennemies.initialization()
 
 # Set Dependencies to the Physic Engine
-physicEngine = PhysicEngine()
+physicEngine = PhysicEngine.PhysicEngine()
 physicEngine.setDependencies(ennemies, players)
 
 # Initialization of all the outputCommands for each client thread

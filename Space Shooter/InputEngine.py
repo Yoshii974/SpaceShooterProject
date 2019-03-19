@@ -20,7 +20,7 @@ class InputEngine:
     def __init__(self):
         self.player: Player
         self.currentGameState = "MENU"
-        self.mainMenuOptionsSelections = [1, 0]
+        self.mainMenuOptionsSelections = [1, 0, 0]
         self.clientNetworkingThread: NetworkEngine.ClientNetworkingThread
 
     #Initialization
@@ -52,21 +52,27 @@ class InputEngine:
             
             elif evt.type == KEYDOWN:
                 if evt.key == K_DOWN:
-                    if self.mainMenuOptionsSelections == [1,0]:
-                        self.mainMenuOptionsSelections = [0,1]
-                    elif self.mainMenuOptionsSelections == [0,1]:
-                        self.mainMenuOptionsSelections = [1,0]
+                    if self.mainMenuOptionsSelections == [1, 0, 0]:
+                        self.mainMenuOptionsSelections = [0, 1, 0]
+                    elif self.mainMenuOptionsSelections == [0, 1, 0]:
+                        self.mainMenuOptionsSelections = [0, 0, 1]
+                    elif self.mainMenuOptionsSelections == [0, 0, 1]:
+                        self.mainMenuOptionsSelections = [1, 0, 0]
                 
                 if evt.key == K_UP:
-                    if self.mainMenuOptionsSelections == [1,0]:
-                        self.mainMenuOptionsSelections = [0,1]
-                    elif self.mainMenuOptionsSelections == [0,1]:
-                        self.mainMenuOptionsSelections = [1,0]
+                    if self.mainMenuOptionsSelections == [1, 0, 0]:
+                        self.mainMenuOptionsSelections = [0, 0, 1]
+                    elif self.mainMenuOptionsSelections == [0, 1, 0]:
+                        self.mainMenuOptionsSelections = [1, 0, 0]
+                    elif self.mainMenuOptionsSelections == [0, 0, 1]:
+                        self.mainMenuOptionsSelections = [0, 1, 0]
 
                 if evt.key == K_RETURN or evt.key == K_KP_ENTER:
-                    if self.mainMenuOptionsSelections == [1,0]:
+                    if self.mainMenuOptionsSelections == [1, 0, 0]:
                         self.currentGameState = "SINGLE_PLAYER"
-                    elif self.mainMenuOptionsSelections == [0,1]:
+                    elif self.mainMenuOptionsSelections == [0, 1, 0]:
+                        self.currentGameState = "MULTI_PLAYER"
+                    elif self.mainMenuOptionsSelections == [0, 0, 1]:
                         self.currentGameState = "QUIT"
     
     #Handle events for the game in single player mode

@@ -28,7 +28,7 @@ class RendererEngine:
 		self.soundManager: MusicAndSoundManager
 		self.physicEngine: PhysicEngine
 		self.clientNetworkingThread: NetworkEngine.ClientNetworkingThread
-		self.mainMenuOptionsSelections = [1, 0]
+		self.mainMenuOptionsSelections = [1, 0, 0]
 		self.currentGameState = "MENU"
 		self.backGroundPos1 = 0
 
@@ -381,27 +381,34 @@ class RendererEngine:
 	def drawMainMenuOptions(self):
 		"""This function create each elements from the main window"""
 		
-		#Here we create the differents options :
+		# Here we create the differents options :
 		policeFont = self.spriteManager.ListofSysFonts["Times New Roman"]
 
-		#Play game button :
-		if self.mainMenuOptionsSelections == [1,0]:
-			playGame = policeFont.render("Play Game",0,(255,0,0))
-		elif self.mainMenuOptionsSelections == [0,1]:
-			playGame = policeFont.render("Play Game",0,(255,255,255))
-		self.mainWindow.blit(playGame,(70,200))
+		# Single Player button :
+		if self.mainMenuOptionsSelections == [1, 0, 0]:
+			singlePlayer = policeFont.render("Single Player", 0, (255, 0, 0))
+		else:
+			singlePlayer = policeFont.render("Single Player", 0, (255, 255, 255))
+		self.mainWindow.blit(singlePlayer,(70,200))
 
-		#Exit game button :
-		if self.mainMenuOptionsSelections == [1,0]:
-			exitGame = policeFont.render("Exit Game",0,(255,255,255))
-		elif self.mainMenuOptionsSelections == [0,1]:
+		# Multi Player button
+		if self.mainMenuOptionsSelections == [0, 1, 0]:
+			multiPlayer = policeFont.render("Multi Player", 0, (255, 0, 0))
+		else:
+			multiPlayer = policeFont.render("Multi Player", 0, (255, 255, 255))
+		self.mainWindow.blit(multiPlayer,(70,240))
+
+		# Exit game button :
+		if self.mainMenuOptionsSelections == [0, 0, 1]:
 			exitGame = policeFont.render("Exit Game",0,(255,0,0))
-		self.mainWindow.blit(exitGame,(70,230))
+		else:
+			exitGame = policeFont.render("Exit Game",0,(255,255,255))
+		self.mainWindow.blit(exitGame,(70,280))
 
 		#Credits :
 		creditsFont = self.spriteManager.ListofSysFonts["Arial"]
 		creditsFont.set_italic(True)
-		creditsText = "Space Shooter, v1.0.5, author : Yoshii_974, all right reserved.TM"
+		creditsText = "Space Shooter, v1.0.9, author : Yoshii_974, all right reserved.TM"
 		creditsImg = creditsFont.render(creditsText,1,(255,255,0))
 		self.mainWindow.blit(creditsImg,(200,495))
 

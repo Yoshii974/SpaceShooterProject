@@ -97,8 +97,8 @@ class NetworkEngine:
                 chunks.append(chunk)
                 break
             
-            # Add the latest chunk of data to the previous received data
-            chunks.append(chunk)
+        # Add the latest chunk of data to the previous received data
+        # chunks.append(chunk)
         
         # Recreate the original message
         rcvdData = ''.join(chunks)
@@ -128,7 +128,7 @@ class ServerNetworkingThread (threading.Thread):
         self.threadID: int
         self.clientSocket: socket
         self.clientPort: int
-        self.clientIpAddress: int
+        self.clientIpAddress: str
         self.clientID: int
         self.currentGameState: str
         self.inputCommands = ServerNetworkingInput()
@@ -146,7 +146,7 @@ class ServerNetworkingThread (threading.Thread):
         self.networkEngine.initialization()
 
         # Create the timer: every 16 ms means 60FPS
-        self.timer = threading.Timer(0.016, self.threadMain())
+        # self.timer = threading.Timer(0.016, self.threadMain())
     
     # Set the dependencies
     def setDependencies(self, threadID, clientSocket, clientPort, clientIpAddress, clientID):
@@ -210,7 +210,7 @@ class ClientNetworkingThread(threading.Thread):
                                           socket.SOCK_STREAM)
 
         #Connect to remote server
-        self.serverSocket.connect((self.serverAddress, self.serverPort))
+        self.serverSocket.connect((self.serverAddress, int(self.serverPort)))
 
         # Create the network engine and set dependencies
         self.networkEngine = NetworkEngine()
@@ -218,7 +218,7 @@ class ClientNetworkingThread(threading.Thread):
         self.networkEngine.initialization()
 
         # Create the timer: every 16 ms means 60FPS
-        self.timer = threading.Timer(0.016, self.threadMain())
+        # self.timer = threading.Timer(0.016, self.threadMain())
 
     # Set the dependencies
     def setDependencies(self, ServerPort, ServerAddress):
