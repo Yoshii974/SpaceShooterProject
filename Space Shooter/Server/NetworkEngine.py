@@ -18,6 +18,9 @@ from commonclasses import *
 # Since a packet is usually 1518 bytes and since we're using TCP, we'd rather make sure our buffer will fullfill the payload of each frame/packet to its maximum size
 BUFFER_SIZE = 2048
 
+# Macro which defines the repeat time (every 16 ms means 60FPS)
+THREADING_REPEAT_TIME = 0.016
+
 class NetworkEngine:
     """Any of Networking element should be found in this class. """
 
@@ -26,7 +29,7 @@ class NetworkEngine:
         self.port: int
         self.address: str
         self.bufferSize: int
-        self.socket: socket
+        self.socket: socket.socket
     
     # The Server is gonna talk to each Client via TCP Protocol
     def initialization(self):
@@ -41,82 +44,53 @@ class NetworkEngine:
 
     # Serialize data
     def encodeData(self, data):
-        # DEBUG Code
-        # Create an empty byte buffer
-        # writeStream = bytearray(self.bufferSize)
-        # Serialize data
-        print('Les donnees serializer : {!r}'.format(pickle.dumps(data)))
-        #pickle.dump(data, writeStream)
-
-        # Real code here --
-        # Put into string, the binary representation of our data
-        dataString = pickle.dumps(data)
-        
-        # Get the size of the message to explain the Receiver how big the message is
-        # msgSize = len(dataString)
-
-        # Add the End Marker
-        dataString = dataString + "@"
-
-        # Create the final message : format -> [Size Separator Msg]
-        #finalDataString = str(msgSize) + "@" + dataString
-        print('Voici ce que contient data String : ' + dataString)
+        # print('Les donnees serializer : {!r}'.format(pickle.dumps(data)))
+        # Put into a Stream, the binary representation of our data
+        dataStream = pickle.dumps(data)
 
         # Send the data to the socket
         totalsent = 0
 
-        # As long as all the message has not been sent
-        while totalsent < len(dataString):
-            sent = self.socket.send(dataString[totalsent:])
-
-            # If nothing has been sent, it means the connection has broken
+        # While the whole message has not been sent
+        while totalsent < len(dataStream):
+            sent = self.socket.send(dataStream[totalsent:])
+            # If nothing has been sent, it means that the connection has broken
             if (sent == 0):
-                print("Connection broken ")
-
-            totalsent = totalsent + sent
+                print("Error : NetworkEngine --> Impossible to send data into self.socket. Connection broken ")
+                break
+            # Else, it means that we still need to send the data
+            else:
+                totalsent = totalsent + sent
     
     # De-Serialize data
     def decodeData(self):
-        # Read data from the socket
-        chunks = []
+        # The data Stream container to received the chunks of data
+        dataStream = b""
 
-        # Read until the End Marker is found
+        # Read until the last chunk is of size lower than self.bufferSize
         while True:
-            chunk = self.socket.recv(self.bufferSize)
+            receivedData = self.socket.recv(self.bufferSize)
 
-            # If chunk is null, then an error has occured
-            if len(chunk) == 0:
-                print("Connection broken ")
+            # If receivedData is null, then an error has occurred
+            if len(receivedData) == 0:
+                print("Error : NetworkEngine --> Impossible to receive data from self.socket. Connection broken ")
                 break
-
-            # The End Marker has been found. The message received is now complete
-            if "@" in chunk:
-                # Get rid of the Marker
-                chunk = chunk[:-1]
-                # Add the latest chunk before breaking
-                chunks.append(chunk)
+            # If the "" null string has been returned, then it has finished to receive
+            elif receivedData == b"":
                 break
-            
-        # Add the latest chunk of data to the previous received data
-        # chunks.append(chunk)
-        
-        # Recreate the original message
-        rcvdData = ''.join(chunks)
+            # The last receivedData has been found
+            elif len(receivedData) < self.bufferSize:
+                dataStream += bytes(receivedData)
+                break
+            # Otherwise, keep receiving data (here, receivedData should always be as big as self.bufferSize)
+            else:
+                dataStream += bytes(receivedData)
 
         # Recreate the original object from the received data
-        data = pickle.loads(rcvdData)
+        data = pickle.loads(dataStream)
 
         # Return the object received
         return data
-
-        # Create a stream which can be read
-        # readStream = io.BytesIO(writeStream.get_value())
-
-        # Get data from the encoded stream
-        # data = pickle.load(readStream)
-
-        # Return data
-        # return data
 
 class ServerNetworkingThread (threading.Thread):
     """This class is instantiate any time a new connection to the main server socket is accepted."""
@@ -134,7 +108,8 @@ class ServerNetworkingThread (threading.Thread):
         self.inputCommands = ServerNetworkingInput()
         self.outputCommands = ServerNetworkingOutput()
         self.networkEngine: NetworkEngine
-        self.timer: threading.Timer
+        #self.timer: threading.Timer
+        self.threadingRepeatTime: float
     
     # Initialize the thread
     def initialization(self):
@@ -147,6 +122,7 @@ class ServerNetworkingThread (threading.Thread):
 
         # Create the timer: every 16 ms means 60FPS
         # self.timer = threading.Timer(0.016, self.threadMain())
+        self.threadingRepeatTime = THREADING_REPEAT_TIME
     
     # Set the dependencies
     def setDependencies(self, threadID, clientSocket, clientPort, clientIpAddress, clientID):
@@ -159,24 +135,28 @@ class ServerNetworkingThread (threading.Thread):
         #self.outputCommands = outputCommands
 
     # Get the timer
-    def getTimer(self):
-        return self.timer
+    #def getTimer(self):
+    #    return self.timer
 
     # Start timer
-    def startTimer(self):
-        self.timer.start()
+    #def startTimer(self):
+    #    self.timer.start()
 
     # Stop timer
-    def stopTimer(self):
-        self.timer.cancel()
+    #def stopTimer(self):
+    #    self.timer.cancel()
 
     # Override the "run" function (due to Interface)
     def run(self):
         print("Starting communication with : " + str(self.clientID))
-        self.startTimer()
+        # self.startTimer()
+        self.threadMain()
 
     # Main Thread Function
     def threadMain(self):
+        # Allows to repeat n times this thread main function
+        threading.Timer(self.threadingRepeatTime, self.threadMain).start()
+
         # Decode data from the client
         recvData = self.networkEngine.decodeData()
 
