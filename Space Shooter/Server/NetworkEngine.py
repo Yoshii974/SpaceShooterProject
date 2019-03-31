@@ -8,6 +8,7 @@ from __future__ import division
 import threading
 import pickle
 import socket
+import time
 import os, sys
 sys.path.insert(0, os.path.abspath(".."))
 from Player import *
@@ -110,6 +111,7 @@ class ServerNetworkingThread (threading.Thread):
         self.networkEngine: NetworkEngine
         #self.timer: threading.Timer
         self.threadingRepeatTime: float
+        self.threadStop = False
     
     # Initialize the thread
     def initialization(self):
@@ -155,19 +157,30 @@ class ServerNetworkingThread (threading.Thread):
     # Main Thread Function
     def threadMain(self):
         # Allows to repeat n times this thread main function
-        threading.Timer(self.threadingRepeatTime, self.threadMain).start()
+        # t = threading.Timer(self.threadingRepeatTime, self.threadMain).start()
+        while self.threadStop == False:
+            try:
+                # Wait for 0.016 s =16ms = 60 FPS
+                time.sleep(self.threadingRepeatTime)
 
-        # Decode data from the client
-        recvData = self.networkEngine.decodeData()
+                # Decode data from the client
+                recvData = self.networkEngine.decodeData()
 
-        # Create a struct/tuple and add it to the input Command dict
-        self.inputCommands = recvData
+                # Create a struct/tuple and add it to the input Command dict
+                self.inputCommands = recvData
 
-        # Create local data to send to the client
-        sendData = self.outputCommands
+                # Create local data to send to the client
+                sendData = self.outputCommands
 
-        # Send data to the client
-        self.networkEngine.encodeData(sendData)
+                # Send data to the client
+                self.networkEngine.encodeData(sendData)
+            except:
+                # A problem occurred during networking process, then we sto the thread
+                    print ("An error occurred during networking process in the Server Networking thread. The exception was raised in thread :  " + str(self.threadID) + ". Network connection has been shut down with client : " + str(self.clientID))
+                    self.threadStop = True
+        
+        # Close socket connection
+        self.clientSocket.close()
 
 class ClientNetworkingThread(threading.Thread):
     """This class is instantiate once per client. It allows the client to receive and send data from/to a remote server asynchronously"""
@@ -181,7 +194,9 @@ class ClientNetworkingThread(threading.Thread):
         self.networkEngine: NetworkEngine
         self.inputCommands: ServerNetworkingOutput
         self.outputCommands: ServerNetworkingInput
-        self.timer: threading.Timer
+        # self.timer: threading.Timer
+        self.threadingRepeatTime: float
+        self.threadStop = False
     
     # Initialize the thread
     def initialization(self):
@@ -199,6 +214,7 @@ class ClientNetworkingThread(threading.Thread):
 
         # Create the timer: every 16 ms means 60FPS
         # self.timer = threading.Timer(0.016, self.threadMain())
+        self.threadingRepeatTime = THREADING_REPEAT_TIME
 
     # Set the dependencies
     def setDependencies(self, ServerPort, ServerAddress):
@@ -206,35 +222,47 @@ class ClientNetworkingThread(threading.Thread):
         self.serverAddress = ServerAddress
     
     # Get the timer
-    def getTimer(self):
-        return self.timer
+    #def getTimer(self):
+    #    return self.timer
 
     # Start timer
-    def startTimer(self):
-        self.timer.start()
+    #def startTimer(self):
+    #    self.timer.start()
 
     # Stop timer
-    def stopTimer(self):
-        self.timer.cancel()
+    #def stopTimer(self):
+    #    self.timer.cancel()
 
     # Override the "run" function (due to Interface)
     def run(self):
         print("Starting communication with server at : " + str(self.serverAddress))
-        self.startTimer()
+        #self.startTimer()
+        self.threadMain()
     
     # Main Thread Function
     def threadMain(self):
-        # Decode data from the server
-        recvData = self.networkEngine.decodeData()
+        while self.threadStop == False:
+            try:
+                # Wait for 0.016 s =16ms = 60 FPS
+                time.sleep(self.threadingRepeatTime)
+                # Decode data from the server
+                recvData = self.networkEngine.decodeData()
 
-        # Create a struct/tuple and add it to the input Command dict
-        self.inputCommands = recvData
+                # Create a struct/tuple and add it to the input Command dict
+                self.inputCommands = recvData
 
-        # Create local data to send to the server
-        sendData = self.outputCommands
+                # Create local data to send to the server
+                sendData = self.outputCommands
 
-        # Send data to the server
-        self.networkEngine.encodeData(sendData)
+                # Send data to the server
+                self.networkEngine.encodeData(sendData)
+            except:
+                # A problem occurred during networking process, then we sto the thread
+                print ("An error occurred during networking process in the Client Networking thread. Network connection has been shut down. ")
+                self.threadStop = True
+        
+        # Close socket connection
+        self.serverSocket.close()
 
 class ServerNetworkingInput:
     """This class represent every input received from a remote client"""

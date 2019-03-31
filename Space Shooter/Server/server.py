@@ -8,6 +8,7 @@ from __future__ import division
 import NetworkEngine
 import threading
 import socket
+import time
 import os, sys
 #import pygame
 sys.path.insert(0, os.path.abspath(".."))
@@ -29,9 +30,9 @@ def mainServerFunction():
         inputEngines[index].processPlayerInput(clientsThreads[index].inputCommands)
 
     # 2 - Do the Physics Processing
-    physicEngine.updateCurrentGameState()
+    physicEngine.simulateGameState()
     physicEngine.simulateAllCollisions()
-    # TODO: Check players healths
+    physicEngine.updateCurrentGameState()
 
     # 3 - Send to the clients the current Game State
     for index in range(0, len(clientsThreads)):
@@ -154,7 +155,16 @@ for index in range(0, len(players)):
 for cT in clientsThreads:
     cT.currentGameState = "RUNNING"
     cT.start()
+    cT.join()
 
 # Main Game loop
 #timer.start()
+physicEngine.currentGameState = "RUNNING"
+while True:
+    if physicEngine.currentGameState == "STOP":
+        for cT in clientsThreads:
+            cT.threadStop = True
+        break
+    time.sleep(0.016)
+    mainServerFunction()
 print ("That was nice Server, deh ? o_O")

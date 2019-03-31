@@ -76,7 +76,7 @@ class RendererEngine:
 			self.drawBackGround()
 
 			#Update game state
-			self.physicEngine.updateCurrentGameState()
+			self.physicEngine.simulateGameState()
 			
 			#By default, enable collision detection
 			enablePhysicdetection = True

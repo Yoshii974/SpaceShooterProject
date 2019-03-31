@@ -19,14 +19,31 @@ class PhysicEngine:
         self.ennemies: Ennemies
         self.players: [] # list of Players
         self.listofExplosions = []
+        self.currentGameState = "STOP"
 
     # Set the Dependencies to the Physic Engine
     def setDependencies(self, Ennemies, Players):
         self.ennemies = Ennemies
         self.players = Players
     
-    # Update current game State
+    # Set the current game state
+    def setCurrentGameState(self, state):
+        self.currentGameState = state
+    
+    # Update the current game state
     def updateCurrentGameState(self):
+        found = False
+        for p in self.players:
+            if p.health > 0:
+                found = True
+                break
+        if found:
+            self.currentGameState = "RUNNING"
+        else:
+            self.currentGameState = "STOP"
+
+    # Update current game State
+    def simulateGameState(self):
         """Update the state of the different elements of the game """
         for player in self.players:
 

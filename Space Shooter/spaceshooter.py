@@ -90,6 +90,7 @@ def multiplayerInitialization():
 
 	#Start the network thread
 	clientNetworkingThread.start()
+	clientNetworkingThread.join()
 
 	#No need to get into this part of the code once the multiplayer mode has been already initialized
 	isMultiplayerInitialized = True
