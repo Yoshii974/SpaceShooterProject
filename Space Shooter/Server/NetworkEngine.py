@@ -19,6 +19,10 @@ from commonclasses import *
 # Since a packet is usually 1518 bytes and since we're using TCP, we'd rather make sure our buffer will fullfill the payload of each frame/packet to its maximum size
 BUFFER_SIZE = 2048
 
+# Macro which defines the header length. In this application protocol, it has been decided to use a 2-bytes header which explains
+# how long is the payload.
+HEADER_LENGTH = 2
+
 # Macro which defines the repeat time (every 16 ms means 60FPS)
 THREADING_REPEAT_TIME = 0.016
 
@@ -30,12 +34,14 @@ class NetworkEngine:
         self.port: int
         self.address: str
         self.bufferSize: int
+        self.headerLength: int
         self.socket: socket.socket
     
     # The Server is gonna talk to each Client via TCP Protocol
     def initialization(self):
         #self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.bufferSize = BUFFER_SIZE
+        self.headerLength = HEADER_LENGTH
 
     # Set the dependencies
     def setDependencies(self,port, address, socket):
@@ -49,12 +55,18 @@ class NetworkEngine:
         # Put into a Stream, the binary representation of our data
         dataStream = pickle.dumps(data)
 
+        # Insert header which contains the length of the payload
+        header = pickle.dumps(len(dataStream))
+
+        #
+
         # Send the data to the socket
         totalsent = 0
 
         # While the whole message has not been sent
         while totalsent < len(dataStream):
             sent = self.socket.send(dataStream[totalsent:])
+            print ("Quantite information sent : " + str(sent))
             # If nothing has been sent, it means that the connection has broken
             if (sent == 0):
                 print("Error : NetworkEngine --> Impossible to send data into self.socket. Connection broken ")
@@ -71,14 +83,15 @@ class NetworkEngine:
         # Read until the last chunk is of size lower than self.bufferSize
         while True:
             receivedData = self.socket.recv(self.bufferSize)
+            print ("Quantite information recv : " + str(receivedData))
 
             # If receivedData is null, then an error has occurred
             if len(receivedData) == 0:
                 print("Error : NetworkEngine --> Impossible to receive data from self.socket. Connection broken ")
                 break
             # If the "" null string has been returned, then it has finished to receive
-            elif receivedData == b"":
-                break
+            #elif receivedData == b"":
+            #    break
             # The last receivedData has been found
             elif len(receivedData) < self.bufferSize:
                 dataStream += bytes(receivedData)
