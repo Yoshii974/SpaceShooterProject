@@ -61,14 +61,12 @@ class NetworkEngine:
         # Converts the size of the data stream onto 4 bytes (with default reading is "big endian")
         header = dataStreamLength.to_bytes(4, 'big')
 
-        # The final message is as follow : '[ Header PayLoad ]'
-        # With Header always of a 4-bytes size
-        # And the Payload is of variable size
+        # The final message is as follow : MSG = [ [Header] [PayLoad] ]
+        # With Header always of a 4-bytes size and the Payload is of variable size
         msg = header + dataStream
         print('Ce que contient header : ' + str(header))
         print('Ce que contient dataStream : ' + str(dataStream))
         print('Ce que contient msg : ' + str(msg))
-
 
         # Send the data to the socket
         totalsent = 0
@@ -88,7 +86,7 @@ class NetworkEngine:
     # De-Serialize data
     def decodeData(self):
         # First, we need to receive the header of the message (which is always a 4-bytes size header),
-        # Then, we we receive the payload
+        # Then, we receive the payload
         header = b""
 
         while len(header) < self.headerLength:
@@ -109,23 +107,14 @@ class NetworkEngine:
         # The data Stream container to received the chunks of data
         dataStream = b""
 
-        # Read until the last chunk is of size lower than self.bufferSize
         while len(dataStream) < dataStreamLength:
             receivedData = self.socket.recv(dataStreamLength)
-            print ("Quantite information recv : " + str(receivedData))
+            print ("Information dataStream recv : " + str(receivedData))
 
             # If receivedData is null, then an error has occurred
             if len(receivedData) == 0:
                 print("Error : NetworkEngine --> Impossible to receive data from self.socket. Connection broken ")
                 break
-            # If the "" null string has been returned, then it has finished to receive
-            #elif receivedData == b"":
-            #    break
-            # The last receivedData has been found
-            #elif len(receivedData) < self.bufferSize:
-            #    dataStream += bytes(receivedData)
-            #    break
-            # Otherwise, keep receiving data (here, receivedData should always be as big as self.bufferSize)
             else:
                 dataStream += bytes(receivedData)
 
