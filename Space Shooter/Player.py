@@ -24,7 +24,7 @@ class Player:
 		self.y = 0
 		self.dx = 0
 		self.dy = 0
-		self.SpriteKey = ""
+		self.SpriteKey = "idle"
 		self.SoundKey = ""
 		self.ListofFireShot = {}
 		#self.touchedCounter = 0
@@ -43,7 +43,7 @@ class Player:
 		self.y = Y
 		self.dx = 0
 		self.dy = 0	
-		self.SpriteKey = ""
+		self.SpriteKey = "idle"
 		self.SoundKey = ""
 		self.ListofFireShot = {}
 		#self.touchedCounter = 0

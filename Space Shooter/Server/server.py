@@ -27,7 +27,7 @@ def mainServerFunction():
 
     # 1 - Process players inputs
     for index in range(0, len(clientsThreads)):
-        inputEngines[index].processPlayerInput(clientsThreads[index].inputCommands)
+        inputEngines[index].processPlayerInput(clientsThreads[index].inputCommands.clientInput)
 
     # 2 - Do the Physics Processing
     physicEngine.simulateGameState()
@@ -51,6 +51,7 @@ clientsThreads = []
 players = []
 inputEngines = []
 threadID = 0
+clientID = 0
 NB_MIN_PLAYER = 1
 
 # TODO : C'est de la merde, parce que 0.016 signifie executer la fonction juste apres l'appel Threading.Timer
@@ -93,7 +94,7 @@ while True:
                                  clientSocket, 
                                  clientInfo[1], 
                                  clientInfo[0], 
-                                 None)
+                                 clientID)
 
     # Initialize thread
     clientThread.initialization()
@@ -103,6 +104,9 @@ while True:
 
     # Increment thread count
     threadID += 1
+    
+    # Increment client count
+    clientID += 1
 
     # If the number of players have reached the desired number, then the multiplayer game starts
     if (len(clientsThreads) >= NB_MIN_PLAYER):
@@ -155,7 +159,7 @@ for index in range(0, len(players)):
 for cT in clientsThreads:
     cT.currentGameState = "RUNNING"
     cT.start()
-    cT.join()
+    # Ne surtout pas mettre "ct.join()" car cet appel est bloquant et le main thread va rester en pause tant et aussi longtemps que le thread n'a pas fini de s'exécuter. Et comme la fonction du thread contient un while(True) ^^
 
 # Main Game loop
 #timer.start()

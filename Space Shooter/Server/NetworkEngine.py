@@ -64,9 +64,9 @@ class NetworkEngine:
         # The final message is as follow : MSG = [ [Header] [PayLoad] ]
         # With Header always of a 4-bytes size and the Payload is of variable size
         msg = header + dataStream
-        print('Ce que contient header : ' + str(header))
-        print('Ce que contient dataStream : ' + str(dataStream))
-        print('Ce que contient msg : ' + str(msg))
+        #print('Ce que contient header : ' + str(header))
+        #print('Ce que contient dataStream : ' + str(dataStream))
+        #print('Ce que contient msg : ' + str(msg))
 
         # Send the data to the socket
         totalsent = 0
@@ -74,7 +74,7 @@ class NetworkEngine:
         # While the whole message has not been sent
         while totalsent < len(msg):
             sent = self.socket.send(msg[totalsent:])
-            print ("Quantite information sent : " + str(sent))
+            #print ("Quantite information sent : " + str(sent))
             # If nothing has been sent, it means that the connection has broken
             if (sent == 0):
                 print("Error : NetworkEngine --> Impossible to send data into self.socket. Connection broken ")
@@ -91,7 +91,7 @@ class NetworkEngine:
 
         while len(header) < self.headerLength:
             receivedHeader = self.socket.recv(self.headerLength)
-            print("Le header recu : " + str(receivedHeader))
+            #print("Le header recu : " + str(receivedHeader))
 
             # If receivedHeader is null, then an error has occurred
             if len(receivedHeader) == 0:
@@ -109,7 +109,7 @@ class NetworkEngine:
 
         while len(dataStream) < dataStreamLength:
             receivedData = self.socket.recv(dataStreamLength)
-            print ("Information dataStream recv : " + str(receivedData))
+            #print ("Information dataStream recv : " + str(receivedData))
 
             # If receivedData is null, then an error has occurred
             if len(receivedData) == 0:
@@ -137,8 +137,8 @@ class ServerNetworkingThread (threading.Thread):
         self.clientIpAddress: str
         self.clientID: int
         self.currentGameState: str
-        self.inputCommands = ServerNetworkingInput()
-        self.outputCommands = ServerNetworkingOutput()
+        self.inputCommands: ServerNetworkingInput
+        self.outputCommands: ServerNetworkingOutput
         self.networkEngine: NetworkEngine
         #self.timer: threading.Timer
         self.threadingRepeatTime: float
@@ -147,6 +147,8 @@ class ServerNetworkingThread (threading.Thread):
     # Initialize the thread
     def initialization(self):
         # self.GAME_STATUS = "START"
+        self.inputCommands = ServerNetworkingInput()
+        self.outputCommands = ServerNetworkingOutput()
 
         # Create the network engine and set dependencies
         self.networkEngine = NetworkEngine()
@@ -181,7 +183,7 @@ class ServerNetworkingThread (threading.Thread):
 
     # Override the "run" function (due to Interface)
     def run(self):
-        print("Starting communication with : " + str(self.clientID))
+        print("Starting communication with client : " + str(self.clientID))
         # self.startTimer()
         self.threadMain()
 
@@ -231,6 +233,12 @@ class ClientNetworkingThread(threading.Thread):
     
     # Initialize the thread
     def initialization(self):
+        self.inputCommands = ServerNetworkingOutput()
+        self.outputCommands = ServerNetworkingInput()
+
+        self.inputCommands.reset()
+        self.outputCommands.reset()
+
         #Create the local socket to connect to the server
         self.serverSocket = socket.socket(socket.AF_INET,
                                           socket.SOCK_STREAM)
@@ -276,6 +284,7 @@ class ClientNetworkingThread(threading.Thread):
             try:
                 # Wait for 0.016 s =16ms = 60 FPS
                 time.sleep(self.threadingRepeatTime)
+
                 # Decode data from the server
                 recvData = self.networkEngine.decodeData()
 
@@ -300,7 +309,11 @@ class ServerNetworkingInput:
 
     # Default Constructor
     def __init__(self):
-        self.clientInput: [] # list of Client string commands
+        self.clientInput = [] # list of Client string commands
+
+    # Reset the Object
+    def reset(self):
+        self.clientInput = []
 
 class ServerNetworkingOutput:
     """This class represent every output processed by the server to be sent to a remote client"""
@@ -319,3 +332,10 @@ class ServerNetworkingOutput:
         self.player = Player
         self.otherPlayers = OtherPlayers
         self.listOfExplosions = ListOfExplosions
+
+    # Reset the Object
+    def reset(self):
+        self.ennemies = None
+        self.player = None
+        self.listOfExplosions = None
+        self.otherPlayers = None

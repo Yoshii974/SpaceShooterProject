@@ -218,8 +218,11 @@ class RendererEngine:
 		self.ennemies = self.clientNetworkingThread.inputCommands.ennemies
 		self.physicEngine.listofExplosions = self.clientNetworkingThread.inputCommands.listOfExplosions
 
-		for i in range (1, len(self.clientNetworkingThread.otherPlayers)):
-			self.players[i] = self.clientNetworkingThread.inputCommands.otherPlayers[i]
+		try:
+			for i in range (1, len(self.clientNetworkingThread.inputCommands.otherPlayers)):
+				self.players[i] = self.clientNetworkingThread.inputCommands.otherPlayers[i]
+		except:
+			pass
 
 
 	# Render Background

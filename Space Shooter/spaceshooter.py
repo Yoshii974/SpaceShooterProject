@@ -77,6 +77,8 @@ ListSelectedOptions = [1,0]
 ##########################################################FUNCTIONS##############################################################################################
 #Multiplayer Initialization function :
 def multiplayerInitialization():
+	global isMultiplayerInitialized
+	
 	serverAddress = input('Plz, enter server address : ')
 	serverPort = input('Plz, enter server port : ')
 
@@ -88,9 +90,14 @@ def multiplayerInitialization():
 	rendererEngine.clientNetworkingThread = clientNetworkingThread
 	inputEngine.clientNetworkingThread = clientNetworkingThread
 
+	clientNetworkingThread.inputCommands.ennemies = ennemies
+	clientNetworkingThread.inputCommands.player = player
+	clientNetworkingThread.inputCommands.otherPlayers = []
+	clientNetworkingThread.inputCommands.listOfExplosions = physicEngine.listofExplosions
+
 	#Start the network thread
 	clientNetworkingThread.start()
-	clientNetworkingThread.join()
+	#clientNetworkingThread.join()
 
 	#No need to get into this part of the code once the multiplayer mode has been already initialized
 	isMultiplayerInitialized = True
