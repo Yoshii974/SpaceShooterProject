@@ -36,12 +36,14 @@ class NetworkEngine:
         self.bufferSize: int
         self.headerLength: int
         self.socket: socket.socket
+        self.LOSCounter: int
     
     # The Server is gonna talk to each Client via TCP Protocol
     def initialization(self):
         #self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.bufferSize = BUFFER_SIZE
         self.headerLength = HEADER_LENGTH
+        self.LOSCounter = 0
 
     # Set the dependencies
     def setDependencies(self,port, address, socket):
@@ -196,8 +198,20 @@ class ServerNetworkingThread (threading.Thread):
                 # Wait for 0.016 s =16ms = 60 FPS
                 time.sleep(self.threadingRepeatTime)
 
-                # Decode data from the client
-                recvData = self.networkEngine.decodeData()
+                try:
+                    # Decode data from the client
+                    recvData = self.networkEngine.decodeData()
+                except:
+                    # No particular data has been retrieved. The server will just process and simulate with the latest values he received.
+                    # Also, increment the LOS Counter
+                    pass
+
+                # Check if any data was retrieved and if not, the increment the LOS Counter
+                if recvData == 0:
+                    self.networkEngine.LOSCounter += 1
+                # Otherwise, reset the counter
+                else:
+                    self.networkEngine.LOSCounter = 0
 
                 # Create a struct/tuple and add it to the input Command dict
                 self.inputCommands = recvData
@@ -239,11 +253,14 @@ class ClientNetworkingThread(threading.Thread):
         self.inputCommands.reset()
         self.outputCommands.reset()
 
-        #Create the local socket to connect to the server
+        # Create the local socket to connect to the server
         self.serverSocket = socket.socket(socket.AF_INET,
                                           socket.SOCK_STREAM)
 
-        #Connect to remote server
+        # Set socket to non-blocking mode
+        self.serverSocket.setblocking(0)
+
+        # Connect to remote server
         self.serverSocket.connect((self.serverAddress, int(self.serverPort)))
 
         # Create the network engine and set dependencies
@@ -285,8 +302,18 @@ class ClientNetworkingThread(threading.Thread):
                 # Wait for 0.016 s =16ms = 60 FPS
                 time.sleep(self.threadingRepeatTime)
 
-                # Decode data from the server
-                recvData = self.networkEngine.decodeData()
+                try:
+                    # Decode data from the server
+                    recvData = self.networkEngine.decodeData()
+                except:
+                    pass
+                
+                # Check if any data was retrieved and if not, the increment the LOS Counter
+                if recvData == 0:
+                    self.networkEngine.LOSCounter += 1
+                # Otherwise, reset the counter
+                else:
+                    self.networkEngine.LOSCounter = 0
 
                 # Create a struct/tuple and add it to the input Command dict
                 self.inputCommands = recvData

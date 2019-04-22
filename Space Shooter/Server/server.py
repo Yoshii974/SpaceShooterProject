@@ -73,6 +73,9 @@ NB_MIN_PLAYER = 1
 # Main Server Function
 print ("Launching  Game Server ...")
 
+# Set socket to non-blocking
+TCPSocket.setblocking(0)
+
 # Bind socket and listen to port
 print ("hostname : " + socket.gethostname())
 TCPSocket.bind(("localhost", Port))
