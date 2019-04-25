@@ -75,12 +75,16 @@ class NetworkEngine:
 
         # While the whole message has not been sent
         while totalsent < len(msg):
-            sent = self.socket.send(msg[totalsent:])
+            try:
+                sent = self.socket.send(msg[totalsent:])
+            except socket.timeout:
             #print ("Quantite information sent : " + str(sent))
             # If nothing has been sent, it means that the connection has broken
-            if (sent == 0):
-                print("Error : NetworkEngine --> Impossible to send data into self.socket. Connection broken ")
-                break
+            #if sent == 0:
+                print("Error : NetworkEngine --> encodeData(), First While, Sending Data. The socket was not ready to send any data. ")
+                return 0
+            except socket.error:
+                return -1
             # Else, it means that we still need to send the data
             else:
                 totalsent = totalsent + sent
@@ -92,31 +96,43 @@ class NetworkEngine:
         header = b""
 
         while len(header) < self.headerLength:
-            receivedHeader = self.socket.recv(self.headerLength)
+            try:
+                receivedHeader = self.socket.recv(self.headerLength)
             #print("Le header recu : " + str(receivedHeader))
+            except socket.timeout:
 
             # If receivedHeader is null, then an error has occurred
-            if len(receivedHeader) == 0:
-                print("Error : NetworkEngine --> Impossible to receive data from self.socket. Connection broken ")
-                break
+            #if len(receivedHeader) == 0:
+                #print("Error : NetworkEngine --> Impossible to receive data from self.socket. Connection broken ")
+                # If no Header has been retrieved, then it is useless to keep checking for any other incoming bytes
+                # And, we increment the LOS counter
+                self.LOSCounter += 1
+                return 0
+            except socket.error:
+                return -1
             else:
+                self.LOSCounter = 0
                 header += receivedHeader
         
         # Once the header has been retrieved, we now therefor know how long the payload is
         dataStreamLength = int.from_bytes(header, 'big')
-        print('Taille du data Stream (base sur linterpretation du header) : ' + str(dataStreamLength))
+        #print('Taille du data Stream (base sur linterpretation du header) : ' + str(dataStreamLength))
 
         # The data Stream container to received the chunks of data
         dataStream = b""
 
         while len(dataStream) < dataStreamLength:
-            receivedData = self.socket.recv(dataStreamLength)
+            try:
+                receivedData = self.socket.recv(dataStreamLength)
             #print ("Information dataStream recv : " + str(receivedData))
 
             # If receivedData is null, then an error has occurred
-            if len(receivedData) == 0:
-                print("Error : NetworkEngine --> Impossible to receive data from self.socket. Connection broken ")
-                break
+            #if len(receivedData) == 0:
+            except socket.timeout:
+                print("Error : NetworkEngine --> decodeData(), Second While(). receivedData = 0 after having received a header ")
+                return -1
+            except socket.error:
+                return -1
             else:
                 dataStream += bytes(receivedData)
 
@@ -148,9 +164,15 @@ class ServerNetworkingThread (threading.Thread):
     
     # Initialize the thread
     def initialization(self):
+        # Set socket to non-blocking mode
+        self.clientSocket.setblocking(0)
+
         # self.GAME_STATUS = "START"
         self.inputCommands = ServerNetworkingInput()
         self.outputCommands = ServerNetworkingOutput()
+
+        self.inputCommands.reset()
+        self.outputCommands.reset()
 
         # Create the network engine and set dependencies
         self.networkEngine = NetworkEngine()
@@ -194,37 +216,34 @@ class ServerNetworkingThread (threading.Thread):
         # Allows to repeat n times this thread main function
         # t = threading.Timer(self.threadingRepeatTime, self.threadMain).start()
         while self.threadStop == False:
-            try:
-                # Wait for 0.016 s =16ms = 60 FPS
-                time.sleep(self.threadingRepeatTime)
+            # Wait for 0.016s = 16ms = 60 FPS
+            time.sleep(self.threadingRepeatTime)
 
-                try:
-                    # Decode data from the client
-                    recvData = self.networkEngine.decodeData()
-                except:
-                    # No particular data has been retrieved. The server will just process and simulate with the latest values he received.
-                    # Also, increment the LOS Counter
-                    pass
+            # Decode data from the client
+            recvData = self.networkEngine.decodeData()
+            # No particular data has been retrieved. The server will just process and simulate with the latest values he received.
+            # Also, increment the LOS Counter
+            
+            # Check if any data was retrieved and if not, the increment the LOS Counter
+            #if recvData == 0:
+            #    self.networkEngine.LOSCounter += 1
+            # Otherwise, reset the counter
+            #else:
+            #    self.networkEngine.LOSCounter = 0
 
-                # Check if any data was retrieved and if not, the increment the LOS Counter
-                if recvData == 0:
-                    self.networkEngine.LOSCounter += 1
-                # Otherwise, reset the counter
-                else:
-                    self.networkEngine.LOSCounter = 0
-
+            if recvData != 0:
                 # Create a struct/tuple and add it to the input Command dict
                 self.inputCommands = recvData
 
-                # Create local data to send to the client
-                sendData = self.outputCommands
+            # Create local data to send to the client
+            sendData = self.outputCommands
 
-                # Send data to the client
-                self.networkEngine.encodeData(sendData)
-            except:
-                # A problem occurred during networking process, then we sto the thread
-                    print ("An error occurred during networking process in the Server Networking thread. The exception was raised in thread :  " + str(self.threadID) + ". Network connection has been shut down with client : " + str(self.clientID))
-                    self.threadStop = True
+            # Send data to the client
+            self.networkEngine.encodeData(sendData)
+        
+            # A problem occurred during networking process, then we stop the thread
+            #    print ("An error occurred during networking process in the Server Networking thread. The exception was raised in thread :  " + str(self.threadID) + ". Network connection has been shut down with client : " + str(self.clientID))
+            #    self.threadStop = True
         
         # Close socket connection
         self.clientSocket.close()
@@ -257,11 +276,11 @@ class ClientNetworkingThread(threading.Thread):
         self.serverSocket = socket.socket(socket.AF_INET,
                                           socket.SOCK_STREAM)
 
-        # Set socket to non-blocking mode
-        self.serverSocket.setblocking(0)
-
         # Connect to remote server
         self.serverSocket.connect((self.serverAddress, int(self.serverPort)))
+
+        # Set socket to non-blocking mode
+        self.serverSocket.setblocking(0)
 
         # Create the network engine and set dependencies
         self.networkEngine = NetworkEngine()
@@ -298,35 +317,36 @@ class ClientNetworkingThread(threading.Thread):
     # Main Thread Function
     def threadMain(self):
         while self.threadStop == False:
-            try:
-                # Wait for 0.016 s =16ms = 60 FPS
-                time.sleep(self.threadingRepeatTime)
+            #try:
+            # Wait for 0.016s = 16ms = 60 FPS
+            time.sleep(self.threadingRepeatTime)
 
-                try:
-                    # Decode data from the server
-                    recvData = self.networkEngine.decodeData()
-                except:
-                    pass
-                
-                # Check if any data was retrieved and if not, the increment the LOS Counter
-                if recvData == 0:
-                    self.networkEngine.LOSCounter += 1
-                # Otherwise, reset the counter
-                else:
-                    self.networkEngine.LOSCounter = 0
+            #try:
+            # Decode data from the server
+            recvData = self.networkEngine.decodeData()
+    #        except:
+    #            pass
+            
+            # Check if any data was retrieved and if not, the increment the LOS Counter
+            #if recvData == 0:
+            #    self.networkEngine.LOSCounter += 1
+            # Otherwise, reset the counter
+            #else:
+            #    self.networkEngine.LOSCounter = 0
 
+            if recvData != 0:
                 # Create a struct/tuple and add it to the input Command dict
                 self.inputCommands = recvData
 
-                # Create local data to send to the server
-                sendData = self.outputCommands
+            # Create local data to send to the server
+            sendData = self.outputCommands
 
-                # Send data to the server
-                self.networkEngine.encodeData(sendData)
-            except:
-                # A problem occurred during networking process, then we sto the thread
-                print ("An error occurred during networking process in the Client Networking thread. Network connection has been shut down. ")
-                self.threadStop = True
+            # Send data to the server
+            self.networkEngine.encodeData(sendData)
+        #except:
+                # A problem occurred during networking process, then we stop the thread
+        #        print ("An error occurred during networking process in the Client Networking thread. Network connection has been shut down. ")
+        #        self.threadStop = True
         
         # Close socket connection
         self.serverSocket.close()
