@@ -39,6 +39,7 @@ def mainServerFunction():
         sendData = NetworkEngine.ServerNetworkingOutput()
         sendData.ennemies = ennemies
         sendData.player = players[index]
+        sendData = physicEngine.listofExplosions
         sendData.otherPlayers = [p for p in players if p != players[index]]
 
         clientsThreads[index].outputCommands = sendData

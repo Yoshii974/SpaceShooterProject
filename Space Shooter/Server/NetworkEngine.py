@@ -36,6 +36,7 @@ class NetworkEngine:
         self.bufferSize: int
         self.headerLength: int
         self.socket: socket.socket
+        self.lastDataReceived: object
         self.LOSCounter: int
     
     # The Server is gonna talk to each Client via TCP Protocol
@@ -43,6 +44,7 @@ class NetworkEngine:
         #self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.bufferSize = BUFFER_SIZE
         self.headerLength = HEADER_LENGTH
+        self.lastDataReceived = None
         self.LOSCounter = 0
 
     # Set the dependencies
@@ -82,12 +84,15 @@ class NetworkEngine:
             # If nothing has been sent, it means that the connection has broken
             #if sent == 0:
                 print("Error : NetworkEngine --> encodeData(), First While, Sending Data. The socket was not ready to send any data. ")
-                return 0
+                return False
             except socket.error:
-                return -1
+                return False
             # Else, it means that we still need to send the data
             else:
                 totalsent = totalsent + sent
+        
+        # Everything went well
+        return True
     
     # De-Serialize data
     def decodeData(self):
@@ -107,9 +112,9 @@ class NetworkEngine:
                 # If no Header has been retrieved, then it is useless to keep checking for any other incoming bytes
                 # And, we increment the LOS counter
                 self.LOSCounter += 1
-                return 0
+                return False
             except socket.error:
-                return -1
+                return False
             else:
                 self.LOSCounter = 0
                 header += receivedHeader
@@ -130,17 +135,20 @@ class NetworkEngine:
             #if len(receivedData) == 0:
             except socket.timeout:
                 print("Error : NetworkEngine --> decodeData(), Second While(). receivedData = 0 after having received a header ")
-                return -1
+                return False
             except socket.error:
-                return -1
+                return False
             else:
                 dataStream += bytes(receivedData)
 
         # Recreate the original object from the received data
         data = pickle.loads(dataStream)
 
+        # Store the received data
+        self.lastDataReceived = data
+
         # Return the object received
-        return data
+        return True
 
 class ServerNetworkingThread (threading.Thread):
     """This class is instantiate any time a new connection to the main server socket is accepted."""
@@ -220,7 +228,11 @@ class ServerNetworkingThread (threading.Thread):
             time.sleep(self.threadingRepeatTime)
 
             # Decode data from the client
-            recvData = self.networkEngine.decodeData()
+            if self.networkEngine.decodeData() == False:
+                print ("Probleme lors de la reception de donnee en provenance du client : " + str(self.clientID) + " dans le thread no : " + str(self.threadID))
+            else:
+                # TODO: Verifier que dans le message recu, il n'y ait pas une demande fermeture de la connection.
+                self.inputCommands = self.networkEngine.lastDataReceived
             # No particular data has been retrieved. The server will just process and simulate with the latest values he received.
             # Also, increment the LOS Counter
             
@@ -231,15 +243,18 @@ class ServerNetworkingThread (threading.Thread):
             #else:
             #    self.networkEngine.LOSCounter = 0
 
-            if recvData != 0:
+            #if len(recvData) != 0:
                 # Create a struct/tuple and add it to the input Command dict
-                self.inputCommands = recvData
+            #    clientInput = ServerNetworkingInput()
+            #    clientInput.clientInput = recvData
+            #    self.inputCommands = clientInput.clientInput
 
             # Create local data to send to the client
             sendData = self.outputCommands
 
             # Send data to the client
-            self.networkEngine.encodeData(sendData)
+            if self.networkEngine.encodeData(sendData) == False:
+                print ("Probleme lors de l'envoie de donnee aux Clients.")
         
             # A problem occurred during networking process, then we stop the thread
             #    print ("An error occurred during networking process in the Server Networking thread. The exception was raised in thread :  " + str(self.threadID) + ". Network connection has been shut down with client : " + str(self.clientID))
@@ -323,7 +338,10 @@ class ClientNetworkingThread(threading.Thread):
 
             #try:
             # Decode data from the server
-            recvData = self.networkEngine.decodeData()
+            if self.networkEngine.decodeData() == False:
+                print ("Probleme lors de la reception de donnee en provenance du Serveur.")
+            else:
+                self.inputCommands = self.networkEngine.lastDataReceived
     #        except:
     #            pass
             
@@ -334,15 +352,16 @@ class ClientNetworkingThread(threading.Thread):
             #else:
             #    self.networkEngine.LOSCounter = 0
 
-            if recvData != 0:
+            #if recvData != 0:
                 # Create a struct/tuple and add it to the input Command dict
-                self.inputCommands = recvData
+            #    self.inputCommands = recvData
 
             # Create local data to send to the server
             sendData = self.outputCommands
 
             # Send data to the server
-            self.networkEngine.encodeData(sendData)
+            if self.networkEngine.encodeData(sendData) == False:
+                print ("Probleme lors de l'envoie des donnees au Serveur.")
         #except:
                 # A problem occurred during networking process, then we stop the thread
         #        print ("An error occurred during networking process in the Client Networking thread. Network connection has been shut down. ")
@@ -369,8 +388,8 @@ class ServerNetworkingOutput:
     def __init__(self):
         self.ennemies: Ennemies
         self.player: Player
-        self.otherPlayers: [] # list of Player object
-        self.listOfExplosions: [] # list of Explosions to be drawn by the clients
+        self.otherPlayers = [] # list of Player object
+        self.listOfExplosions = [] # list of Explosions to be drawn by the clients
         #self.ennemies: [] # list of Ennemy_group object
     
     # Set Dependencies
@@ -384,5 +403,5 @@ class ServerNetworkingOutput:
     def reset(self):
         self.ennemies = None
         self.player = None
-        self.listOfExplosions = None
-        self.otherPlayers = None
+        self.listOfExplosions = []
+        self.otherPlayers = []
