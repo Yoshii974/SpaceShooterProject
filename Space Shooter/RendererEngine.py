@@ -212,17 +212,25 @@ class RendererEngine:
 
     # Handle data from server
 	def handleDataRcvdFromServer(self):
-		"""Process data received from a remote server """
+		"""Process data received from a remote game server."""
 		
-		self.players[0] = self.clientNetworkingThread.inputCommands.player
+		self.players = []
+		self.players.append(self.clientNetworkingThread.inputCommands.player)
+		self.players.extend(self.clientNetworkingThread.inputCommands.otherPlayers)
+
 		self.ennemies = self.clientNetworkingThread.inputCommands.ennemies
 		self.physicEngine.listofExplosions = self.clientNetworkingThread.inputCommands.listOfExplosions
+		
+		#otherPlayers = self.clientNetworkingThread.inputCommands.otherPlayers
+		#self.players.extend(otherPlayers)
+		#otherPlayers.insert(0, self.clientNetworkingThread.inputCommands.player)
+		#self.players = otherPlayers
 
-		try:
+		"""try:
 			for i in range (1, len(self.clientNetworkingThread.inputCommands.otherPlayers)):
 				self.players[i] = self.clientNetworkingThread.inputCommands.otherPlayers[i]
 		except:
-			pass
+			pass"""
 
 
 	# Render Background

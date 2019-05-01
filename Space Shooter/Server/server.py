@@ -39,7 +39,7 @@ def mainServerFunction():
         sendData = NetworkEngine.ServerNetworkingOutput()
         sendData.ennemies = ennemies
         sendData.player = players[index]
-        sendData = physicEngine.listofExplosions
+        sendData.listOfExplosions = physicEngine.listofExplosions
         sendData.otherPlayers = [p for p in players if p != players[index]]
 
         clientsThreads[index].outputCommands = sendData
@@ -170,6 +170,6 @@ while True:
         for cT in clientsThreads:
             cT.threadStop = True
         break
-    time.sleep(0.016)
+    time.sleep(0.032)
     mainServerFunction()
 print ("That was nice Server, deh ? o_O")

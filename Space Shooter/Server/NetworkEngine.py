@@ -23,8 +23,8 @@ BUFFER_SIZE = 2048
 # how long the payload is.
 HEADER_LENGTH = 4
 
-# Macro which defines the repeat time (every 16 ms means 60FPS)
-THREADING_REPEAT_TIME = 0.016
+# Macro which defines the repeat time (every 32 ms means about 30 Hz)
+THREADING_REPEAT_TIME = 0.032
 
 class NetworkEngine:
     """Any of Networking element should be found in this class. """
@@ -229,7 +229,8 @@ class ServerNetworkingThread (threading.Thread):
 
             # Decode data from the client
             if self.networkEngine.decodeData() == False:
-                print ("Probleme lors de la reception de donnee en provenance du client : " + str(self.clientID) + " dans le thread no : " + str(self.threadID))
+                # print ("Probleme lors de la reception de donnee en provenance du client : " + str(self.clientID) + " dans le thread no : " + str(self.threadID))
+                pass
             else:
                 # TODO: Verifier que dans le message recu, il n'y ait pas une demande fermeture de la connection.
                 self.inputCommands = self.networkEngine.lastDataReceived
@@ -254,7 +255,8 @@ class ServerNetworkingThread (threading.Thread):
 
             # Send data to the client
             if self.networkEngine.encodeData(sendData) == False:
-                print ("Probleme lors de l'envoie de donnee aux Clients.")
+                # print ("Probleme lors de l'envoie de donnee aux Clients.")
+                pass
         
             # A problem occurred during networking process, then we stop the thread
             #    print ("An error occurred during networking process in the Server Networking thread. The exception was raised in thread :  " + str(self.threadID) + ". Network connection has been shut down with client : " + str(self.clientID))
@@ -339,7 +341,8 @@ class ClientNetworkingThread(threading.Thread):
             #try:
             # Decode data from the server
             if self.networkEngine.decodeData() == False:
-                print ("Probleme lors de la reception de donnee en provenance du Serveur.")
+                # print ("Probleme lors de la reception de donnee en provenance du Serveur.")
+                pass
             else:
                 self.inputCommands = self.networkEngine.lastDataReceived
     #        except:
@@ -361,7 +364,8 @@ class ClientNetworkingThread(threading.Thread):
 
             # Send data to the server
             if self.networkEngine.encodeData(sendData) == False:
-                print ("Probleme lors de l'envoie des donnees au Serveur.")
+                # print ("Probleme lors de l'envoie des donnees au Serveur.")
+                pass
         #except:
                 # A problem occurred during networking process, then we stop the thread
         #        print ("An error occurred during networking process in the Client Networking thread. Network connection has been shut down. ")

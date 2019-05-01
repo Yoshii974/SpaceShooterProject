@@ -202,6 +202,8 @@ class InputEngine:
                 elif evt.key == K_F3:
                     self.player.currentWeapon = "fire3"""
         
+        #print ("Contenu des users inputs cote client : " + str(userInputs))
+
         #Create server input
         serverInput = NetworkEngine.ServerNetworkingInput()
         serverInput.clientInput = userInputs
@@ -235,25 +237,29 @@ class InputEngine:
             self.player.timeBeforeShieldIsDeactivated -= 1
 
         for input in playerInputs:
-            if input == "left":
+            if input == "KEYUP_LEFT_RIGHT":
+                self.player.dx = 0
+            elif input == "KEYDOWN_LEFT":
+                self.player.dx = -2
+            elif input == "KEYDOWN_RIGHT":
                 self.player.dx = 2
-            elif input == "right":
-                self.player.dx = 2
-            elif input == "up":
+            elif input == "KEYUP_DOWN_UP":
+                self.player.dy = 0
+            elif input == "KEYDOWN_UP":
                 self.player.dy = -2
-            elif input == "down":
+            elif input == "KEYDOWN_DOWN":
                 self.player.dy = 2
-            elif input == "space":
+            elif input == "KEYDOWN_FIRESHOT":
                 self.player.fireShot()
-            elif input == "ctrl":
+            elif input == "KEYDOWN_SHIELD":
                 if self.player.timeBeforeShieldIsDeactivated == 0 and self.player.nbTimesShieldAllowed > 0:
                         self.player.timeBeforeShieldIsDeactivated = 500
                         self.player.nbTimesShieldAllowed -= 1
-            elif input == "f1":
+            elif input == "KEYDOWN_WEAPON1":
                 self.player.currentWeapon = "fire1"
-            elif input == "f2":
+            elif input == "KEYDOWN_WEAPON2":
                 self.player.currentWeapon = "fire2"
-            elif input == "f3":
+            elif input == "KEYDOWN_WEAPON3":
                 self.player.currentWeapon = "fire3"
             else:
                 print('error with inputs of player #' + str(self.player.playerID))
