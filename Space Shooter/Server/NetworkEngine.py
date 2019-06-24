@@ -48,7 +48,7 @@ class NetworkEngine:
         self.LOSCounter = 0
 
     # Set the dependencies
-    def setDependencies(self,port, address, socket):
+    def setDependencies(self, port, address, socket):
         self.port = port
         self.address = address
         self.socket = socket
@@ -78,7 +78,7 @@ class NetworkEngine:
         # While the whole message has not been sent
         while totalsent < len(msg):
             try:
-                sent = self.socket.send(msg[totalsent:])
+                sent = self.socket.sendto(msg[totalsent:], (self.address, self.port))
             except socket.timeout:
             #print ("Quantite information sent : " + str(sent))
             # If nothing has been sent, it means that the connection has broken
@@ -102,7 +102,7 @@ class NetworkEngine:
 
         while len(header) < self.headerLength:
             try:
-                receivedHeader = self.socket.recv(self.headerLength)
+                receivedHeader = self.socket.recvfrom(self.headerLength)
             #print("Le header recu : " + str(receivedHeader))
             except socket.timeout:
 
@@ -128,7 +128,7 @@ class NetworkEngine:
 
         while len(dataStream) < dataStreamLength:
             try:
-                receivedData = self.socket.recv(dataStreamLength)
+                receivedData = self.socket.recvfrom(dataStreamLength)
             #print ("Information dataStream recv : " + str(receivedData))
 
             # If receivedData is null, then an error has occurred
@@ -147,7 +147,7 @@ class NetworkEngine:
         # Store the received data
         self.lastDataReceived = data
 
-        # Return the object received
+        # Everything went well
         return True
 
 class ServerNetworkingThread (threading.Thread):

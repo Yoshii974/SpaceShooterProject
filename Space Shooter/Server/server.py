@@ -46,14 +46,15 @@ def mainServerFunction():
 
 
 ##############################################GLOBAL VARIABLES#######################################################################################
-TCPSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-Port = 5890
+listeningSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+port = 5890
 clientsThreads = []
 players = []
 inputEngines = []
 threadID = 0
 clientID = 0
 NB_MIN_PLAYER = 1
+NETWORK_BUFFER_SIZE = 2048
 
 # TODO : C'est de la merde, parce que 0.016 signifie executer la fonction juste apres l'appel Threading.Timer
 # TODO : Ne veut pas dire "repeter" tous les 0.016 secondes
@@ -76,45 +77,49 @@ print ("Launching  Game Server ...")
 
 # Bind socket and listen to port
 print ("hostname : " + socket.gethostname())
-TCPSocket.bind(("localhost", Port))
+listeningSocket.bind(("localhost", port))
+#listeningSocket.setblocking(0)
 
 # Max 4 players at the same time
-TCPSocket.listen(4)
+#TCPSocket.listen(4)
 
 # Main Accept loop
 while True:
     # Receiving connection
-    (clientSocket, clientInfo) = TCPSocket.accept()
+    #(clientSocket, clientInfo) = TCPSocket.accept()
+    data, clientInfo = listeningSocket.recvfrom(NETWORK_BUFFER_SIZE)
+    if data != 0:
+        clientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    # Create a thread to interact with the client
-    clientThread = NetworkEngine.ServerNetworkingThread()
-    print("New Connected Client. The client infos are : ")
-    print(clientInfo)
-    # TEST:
-    clientThread.setDependencies(threadID, 
-                                 clientSocket, 
-                                 clientInfo[1], 
-                                 clientInfo[0], 
-                                 clientID)
+        # Create a thread to interact with the client
+        clientThread = NetworkEngine.ServerNetworkingThread()
+        print("New Connected Client. The client infos are : ")
+        print(clientInfo)
+        # TEST:
+        clientThread.setDependencies(threadID, 
+                                    clientSocket, 
+                                    clientInfo[1], 
+                                    clientInfo[0], 
+                                    clientID)
 
-    # Initialize thread
-    clientThread.initialization()
+        # Initialize thread
+        clientThread.initialization()
 
-    # Add the client to the list of clients
-    clientsThreads.append(clientThread)
+        # Add the client to the list of clients
+        clientsThreads.append(clientThread)
 
-    # Increment thread count
-    threadID += 1
-    
-    # Increment client count
-    clientID += 1
-
-    # If the number of players have reached the desired number, then the multiplayer game starts
-    if (len(clientsThreads) >= NB_MIN_PLAYER):
-        print("Game Starting ...")
+        # Increment thread count
+        threadID += 1
         
-        # Stop receiving connection
-        break
+        # Increment client count
+        clientID += 1
+
+        # If the number of players have reached the desired number, then the multiplayer game starts
+        if (len(clientsThreads) >= NB_MIN_PLAYER):
+            print("Game Starting ...")
+            
+            # Stop receiving connection
+            break
 
 # Here, create server objects
 initialPos = 50
