@@ -17,11 +17,11 @@ from commonclasses import *
 # import io
 
 # Since a packet is usually 1518 bytes and since we're using TCP, we'd rather make sure our buffer will fullfill the payload of each frame/packet to its maximum size
-BUFFER_SIZE = 2048
+BUFFER_SIZE = 1024
 
 # Macro which defines the header length. In this application protocol, it has been decided to use a 4-bytes header which explains
 # how long the payload is.
-HEADER_LENGTH = 4
+HEADER_LENGTH = 10
 
 # Macro which defines the repeat time (every 32 ms means about 30 Hz)
 THREADING_REPEAT_TIME = 0.032
@@ -38,6 +38,7 @@ class NetworkEngine:
         self.socket: socket.socket
         self.lastDataReceived: object
         self.LOSCounter: int
+        self.messageID: int
     
     # The Server is gonna talk to each Client via TCP Protocol
     def initialization(self):
@@ -46,6 +47,7 @@ class NetworkEngine:
         self.headerLength = HEADER_LENGTH
         self.lastDataReceived = None
         self.LOSCounter = 0
+        self.messageID = 0
 
     # Set the dependencies
     def setDependencies(self, port, address, socket):
@@ -53,43 +55,93 @@ class NetworkEngine:
         self.address = address
         self.socket = socket
 
-    # Serialize data
-    def encodeData(self, data):
+    # Create fragments for the data
+    def createFragments(self, data):
+        listOfFragments = []
+
+        # Insert header which contains the length of the payload
+
+        # Converts the size of the data stream onto 4 bytes (with default reading is "big endian")
+
+        # The final message is as follow : MSG = [ [Message_ID (4 bytes)] [Current_Fragment_Index (CFI, 2 bytes)] [Maximum_Fragment_Index (MFI, 2 bytes)] [Fragment_Payload_Length (2 bytes)] [Fragment_Payload (variables length)] ]
+
         # print('Les donnees serializer : {!r}'.format(pickle.dumps(data)))
         # Put into a Stream, the binary representation of our data
         dataStream = pickle.dumps(data)
-
-        # Insert header which contains the length of the payload
         dataStreamLength = len(dataStream)
+        
+        numberOfBytesToReadFromDataStream = self.bufferSize - self.headerLength
+        maximumFragmentIndex = dataStreamLength / numberOfBytesToReadFromDataStream
+        currentFragmentIndex = 0
+        offset = 0
+        fragment = b""
 
-        # Converts the size of the data stream onto 4 bytes (with default reading is "big endian")
-        header = dataStreamLength.to_bytes(4, 'big')
+        if maximumFragmentIndex == 0:
+            fragmentPayload = dataStream[:numberOfBytesToReadFromDataStream]
 
-        # The final message is as follow : MSG = [ [Header] [PayLoad] ]
-        # With Header always of a 4-bytes size and the Payload is of variable size
-        msg = header + dataStream
-        #print('Ce que contient header : ' + str(header))
-        #print('Ce que contient dataStream : ' + str(dataStream))
-        #print('Ce que contient msg : ' + str(msg))
+            msgID = self.messageID.to_bytes(4, 'big')
+            fragment += msgID
 
-        # Send the data to the socket
-        totalsent = 0
+            fragment += int(0).to_bytes(2, 'big')
+            fragment += int(0).to_bytes(2, 'big')
 
-        # While the whole message has not been sent
-        while totalsent < len(msg):
-            try:
-                sent = self.socket.sendto(msg[totalsent:], (self.address, self.port))
-            except socket.timeout:
-            #print ("Quantite information sent : " + str(sent))
-            # If nothing has been sent, it means that the connection has broken
-            #if sent == 0:
-                print("Error : NetworkEngine --> encodeData(), First While, Sending Data. The socket was not ready to send any data. ")
-                return False
-            except socket.error:
-                return False
-            # Else, it means that we still need to send the data
-            else:
-                totalsent = totalsent + sent
+            fragmentPayloadLength = len(fragmentPayload)
+            fragment += fragmentPayloadLength.to_bytes(2, 'big')
+
+            fragment += fragmentPayload
+
+            # Add the fragment to the list of fragments
+            listOfFragments.append(fragment)
+        else:
+            for i in range(0, maximumFragmentIndex):
+                fragmentPayload = dataStream[offset:offset + numberOfBytesToReadFromDataStream]
+
+                msgID = self.messageID.to_bytes(4, 'big')
+                fragment += msgID
+                
+                fragment += currentFragmentIndex.to_bytes(2, 'big')
+                fragment += maximumFragmentIndex.to_bytes(2, 'big')
+
+                fragmentPayloadLength = len(fragmentPayload)
+                fragment += fragmentPayloadLength.to_bytes(2, 'big')
+
+                fragment += fragmentPayload
+
+                # Add the fragment to the list of fragments
+                listOfFragments.append(fragment)
+
+                # Do all increments
+                currentFragmentIndex += 1
+                offset += numberOfBytesToReadFromDataStream
+
+        # Increment the message ID counter
+        self.messageID += 1
+
+        return listOfFragments
+
+    # Serialize data
+    def encodeData(self, data):
+        listOfFragments = self.createFragments(data)
+
+        for fragment in listOfFragments:
+            # Send the data to the socket
+            totalsent = 0
+
+            # While the whole message has not been sent
+            while totalsent < len(fragment):
+                try:
+                    sent = self.socket.sendto(fragment[totalsent:], (self.address, self.port))
+                except socket.timeout:
+                #print ("Quantite information sent : " + str(sent))
+                # If nothing has been sent, it means that the connection has broken
+                #if sent == 0:
+                    print("Error : NetworkEngine --> encodeData(), First While, Sending Data. The socket was not ready to send any data. ")
+                    return False
+                except socket.error:
+                    return False
+                # Else, it means that we still need to send the data
+                else:
+                    totalsent = totalsent + sent
         
         # Everything went well
         return True
