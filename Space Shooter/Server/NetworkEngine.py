@@ -39,6 +39,7 @@ class NetworkEngine:
         self.lastDataReceived: object
         self.LOSCounter: int
         self.messageID: int
+        self.listOfReceivedFragments: []
     
     # The Server is gonna talk to each Client via TCP Protocol
     def initialization(self):
@@ -48,6 +49,7 @@ class NetworkEngine:
         self.lastDataReceived = None
         self.LOSCounter = 0
         self.messageID = 0
+        self.listOfReceivedFragments = []
 
     # Set the dependencies
     def setDependencies(self, port, address, socket):
@@ -146,6 +148,64 @@ class NetworkEngine:
         # Everything went well
         return True
     
+    # Retrieve the original message from all the fragments 
+    def retrieveMessage(self):
+        message = b""
+        listOfFragmentInfo = []
+
+        currentMessageID = -1
+        currentFragmentIndex = 0
+        maximumFragmentIndex = 0
+
+        msgIdLength = 4
+        currentFragmentIndexLength = 2
+        maximumFragmentIndexLength = 2
+        fragmentPayloadLengthSize = 2
+
+        # Step 1 : Process all Fragments received
+        for fragment in self.listOfReceivedFragments:
+            offset = 0
+
+            messageID = int.from_bytes(fragment[offset:offset + msgIdLength], 'big')
+            offset += msgIdLength
+
+            if currentMessageID == -1:
+                currentMessageID = messageID
+
+            currentFragmentIndex = int.from_bytes(fragment[offset:offset + currentFragmentIndexLength], 'big')
+            offset += currentFragmentIndexLength
+
+            maximumFragmentIndex = int.from_bytes(fragment[offset:offset + maximumFragmentIndexLength], 'big')
+            offset += maximumFragmentIndexLength
+
+            fragmentPayloadLength = int.from_bytes(fragment[offset:offset + fragmentPayloadLengthSize], 'big')
+            offset += fragmentPayloadLengthSize
+
+            fragmentPayload = int.from_bytes(fragment[offset:offset + fragmentPayloadLength], 'big')
+
+            fragmentInfo = (messageID, currentFragmentIndex, maximumFragmentIndex, fragmentPayload)
+            listOfFragmentInfo.append(fragmentInfo)
+
+        # Step 2 : re-ordering the fragments and make sure none of them is missing
+        listOfFragmentInfo.sort(key = lambda fragmentInfo : fragmentInfo[1])
+        
+        currentFragmentIndex = 0
+
+        for fragmentInfo in listOfFragmentInfo:
+            if fragmentInfo[0] != currentMessageID:
+                return []
+            
+            if fragmentInfo[1] != currentFragmentIndex:
+                return []
+            
+            #if fragmentInfo[2] == maximumFragmentIndex and currentFragmentIndex != maximumFragmentIndex:
+            #    return False
+
+            currentFragmentIndex += 1
+            message += fragmentInfo[3]
+
+        return message
+
     # De-Serialize data
     def decodeData(self):
         # First, we need to receive the header of the message (which is always a 4-bytes size header),
