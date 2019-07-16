@@ -149,72 +149,82 @@ class NetworkEngine:
         return True
     
     # Retrieve the original message from all the fragments 
-    def retrieveMessage(self):
-        message = b""
-        listOfFragmentInfo = []
+    def retrieveMessage(self, listOfFragmentsOrdered):
+    #     message = b""
+    #     listOfFragmentInfo = []
 
-        currentMessageID = -1
-        currentFragmentIndex = 0
-        maximumFragmentIndex = 0
+    #     currentMessageID = -1
+    #     currentFragmentIndex = 0
+    #     maximumFragmentIndex = 0
 
+    #     # Step 1 : Process all Fragments received
+    #     for fragment in self.listOfReceivedFragments:
+    #         fragmentInfo = self.processFragment(fragment)
+
+    #         if currentMessageID == -1:
+    #             currentMessageID = messageID
+
+    #         listOfFragmentInfo.append(fragmentInfo)
+
+    #     # Step 2 : re-ordering the fragments and make sure none of them is missing
+    #     listOfFragmentInfo.sort(key = lambda fragmentInfo : fragmentInfo[1])
+        
+    #     currentFragmentIndex = 0
+
+    #     for fragmentInfo in listOfFragmentInfo:
+    #         if fragmentInfo[0] != currentMessageID:
+    #             return []
+            
+    #         if fragmentInfo[1] != currentFragmentIndex:
+    #             return []
+            
+    #         #if fragmentInfo[2] == maximumFragmentIndex and currentFragmentIndex != maximumFragmentIndex:
+    #         #    return False
+
+    #         currentFragmentIndex += 1
+    #         message += fragmentInfo[3]
+
+    #     return message
+        pass
+
+    def processFragment(self, fragment):
         msgIdLength = 4
         currentFragmentIndexLength = 2
         maximumFragmentIndexLength = 2
         fragmentPayloadLengthSize = 2
 
-        # Step 1 : Process all Fragments received
-        for fragment in self.listOfReceivedFragments:
-            offset = 0
+        offset = 0
 
-            messageID = int.from_bytes(fragment[offset:offset + msgIdLength], 'big')
-            offset += msgIdLength
+        messageID = int.from_bytes(fragment[offset:offset + msgIdLength], 'big')
+        offset += msgIdLength
 
-            if currentMessageID == -1:
-                currentMessageID = messageID
+        currentFragmentIndex = int.from_bytes(fragment[offset:offset + currentFragmentIndexLength], 'big')
+        offset += currentFragmentIndexLength
 
-            currentFragmentIndex = int.from_bytes(fragment[offset:offset + currentFragmentIndexLength], 'big')
-            offset += currentFragmentIndexLength
+        maximumFragmentIndex = int.from_bytes(fragment[offset:offset + maximumFragmentIndexLength], 'big')
+        offset += maximumFragmentIndexLength
 
-            maximumFragmentIndex = int.from_bytes(fragment[offset:offset + maximumFragmentIndexLength], 'big')
-            offset += maximumFragmentIndexLength
+        fragmentPayloadLength = int.from_bytes(fragment[offset:offset + fragmentPayloadLengthSize], 'big')
+        offset += fragmentPayloadLengthSize
 
-            fragmentPayloadLength = int.from_bytes(fragment[offset:offset + fragmentPayloadLengthSize], 'big')
-            offset += fragmentPayloadLengthSize
+        fragmentPayload = int.from_bytes(fragment[offset:offset + fragmentPayloadLength], 'big')
+        fragmentInfo = (messageID, currentFragmentIndex, maximumFragmentIndex, fragmentPayload)
 
-            fragmentPayload = int.from_bytes(fragment[offset:offset + fragmentPayloadLength], 'big')
+        return fragmentInfo
 
-            fragmentInfo = (messageID, currentFragmentIndex, maximumFragmentIndex, fragmentPayload)
-            listOfFragmentInfo.append(fragmentInfo)
-
-        # Step 2 : re-ordering the fragments and make sure none of them is missing
-        listOfFragmentInfo.sort(key = lambda fragmentInfo : fragmentInfo[1])
-        
-        currentFragmentIndex = 0
-
-        for fragmentInfo in listOfFragmentInfo:
-            if fragmentInfo[0] != currentMessageID:
-                return []
-            
-            if fragmentInfo[1] != currentFragmentIndex:
-                return []
-            
-            #if fragmentInfo[2] == maximumFragmentIndex and currentFragmentIndex != maximumFragmentIndex:
-            #    return False
-
-            currentFragmentIndex += 1
-            message += fragmentInfo[3]
-
-        return message
+    def reorderFragments(self, listOfFragments):
+        pass
 
     # De-Serialize data
     def decodeData(self):
         # First, we need to receive the header of the message (which is always a 4-bytes size header),
         # Then, we receive the payload
-        header = b""
+        firstFragment = b""
+        fragmentLength = self.headerLength + self.bufferSize
 
-        while len(header) < self.headerLength:
+        while len(firstFragment) < fragmentLength:
             try:
-                receivedHeader = self.socket.recvfrom(self.headerLength)
+                receivedFirstFragment = self.socket.recvfrom(fragmentLength)
             #print("Le header recu : " + str(receivedHeader))
             except socket.timeout:
 
@@ -229,32 +239,50 @@ class NetworkEngine:
                 return False
             else:
                 self.LOSCounter = 0
-                header += receivedHeader
+                firstFragment += receivedFirstFragment
         
+        # Now, we received the first fragment, we have all the information concerning the current message
+        firstFragmentInfo = self.processFragment(firstFragment)
+
+        messageID = firstFragmentInfo[0]
+        currentFragmentIndex = firstFragmentInfo[1]
+        maximumFragmentIndex = firstFragmentInfo[2]
+
         # Once the header has been retrieved, we now therefor know how long the payload is
-        dataStreamLength = int.from_bytes(header, 'big')
+        #dataStreamLength = int.from_bytes(header, 'big')
         #print('Taille du data Stream (base sur linterpretation du header) : ' + str(dataStreamLength))
 
+        listOfFragments = []
+
         # The data Stream container to received the chunks of data
-        dataStream = b""
+        #dataStream = b""
+        for i in range (0, maximumFragmentIndex):
+            fragment = b""
 
-        while len(dataStream) < dataStreamLength:
-            try:
-                receivedData = self.socket.recvfrom(dataStreamLength)
-            #print ("Information dataStream recv : " + str(receivedData))
+            while len(fragment) < fragmentLength:
+                try:
+                    receivedFragment = self.socket.recvfrom(fragmentLength)
+                #print ("Information dataStream recv : " + str(receivedData))
 
-            # If receivedData is null, then an error has occurred
-            #if len(receivedData) == 0:
-            except socket.timeout:
-                print("Error : NetworkEngine --> decodeData(), Second While(). receivedData = 0 after having received a header ")
-                return False
-            except socket.error:
-                return False
-            else:
-                dataStream += bytes(receivedData)
+                # If receivedData is null, then an error has occurred
+                #if len(receivedData) == 0:
+                except socket.timeout:
+                    print("Error : NetworkEngine --> decodeData(), Second While(). receivedData = 0 after having received a header ")
+                    return False
+                except socket.error:
+                    return False
+                else:
+                    fragment += bytes(receivedFragment)
 
+            listOfFragments.append(fragment)
+
+        # Now, it is time to re-ordering the fragments
+        listOfFragmentReordered = self.reorderFragments(listOfFragments)
+
+        message = self.retrieveMessage(listOfFragmentReordered)
+        
         # Recreate the original object from the received data
-        data = pickle.loads(dataStream)
+        data = pickle.loads(message)
 
         # Store the received data
         self.lastDataReceived = data
