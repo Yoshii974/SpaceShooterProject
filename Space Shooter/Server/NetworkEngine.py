@@ -39,8 +39,10 @@ class NetworkEngine:
         self.lastDataReceived: object
         self.LOSCounter: int
         self.messageID: int
+        self.headerErrorPtr: int
+        self.payloadErrorPtr: int
     
-    # The Server is gonna talk to each Client via TCP Protocol
+    # The Server is gonna talk to each Client via UDP Protocol
     def initialization(self):
         #self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.bufferSize = BUFFER_SIZE
@@ -48,6 +50,8 @@ class NetworkEngine:
         self.lastDataReceived = None
         self.LOSCounter = 0
         self.messageID = 0
+        self.headerErrorPtr = 0
+        self.payloadErrorPtr = 0
 
     # Set the dependencies
     def setDependencies(self, port, address, socket):
@@ -198,28 +202,33 @@ class NetworkEngine:
         # Then, we receive the payload
         firstFragmentPayload = b""
         # fragmentLength = self.headerLength + self.bufferSize
+        currentFragmentIndex = -1
 
-        receivedFirstFragmentHeader = self.socket.recvfrom(self.headerLength)
-        firstFragmentInfo = self.processFragmentHeader(receivedFirstFragmentHeader)
+        while currentFragmentIndex != 0:
+            receivedFirstFragmentHeader = self.socket.recvfrom(self.headerLength)
+            firstFragmentInfo = self.processFragmentHeader(receivedFirstFragmentHeader)
 
-        while len(firstFragmentPayload) < firstFragmentInfo[3]:
-            try:
-                receivedFirstFragment = self.socket.recvfrom(firstFragmentInfo[3])
-            #print("Le header recu : " + str(receivedHeader))
-            except socket.timeout:
-
-            # If receivedHeader is null, then an error has occurred
-            #if len(receivedHeader) == 0:
-                #print("Error : NetworkEngine --> Impossible to receive data from self.socket. Connection broken ")
-                # If no Header has been retrieved, then it is useless to keep checking for any other incoming bytes
-                # And, we increment the LOS counter
-                self.LOSCounter += 1
-                return False
-            except socket.error:
-                return False
-            else:
-                self.LOSCounter = 0
-                firstFragmentPayload += receivedFirstFragment
+            while len(firstFragmentPayload) < firstFragmentInfo[3]:
+                try:
+                    receivedFirstFragment = self.socket.recvfrom(firstFragmentInfo[3])
+                except socket.timeout:
+                # If receivedHeader is null, then an error has occurred
+                #if len(receivedHeader) == 0:
+                    #print("Error : NetworkEngine --> Impossible to receive data from self.socket. Connection broken ")
+                    # If no Header has been retrieved, then it is useless to keep checking for any other incoming bytes
+                    # And, we increment the LOS counter
+                    self.LOSCounter += 1
+                    # return False
+                    pass
+                except socket.error:
+                    # return False
+                    pass
+                else:
+                    self.LOSCounter = 0
+                    firstFragmentPayload += receivedFirstFragment
+            
+            if firstFragmentInfo[1] == 0:
+                currentFragmentIndex = 0
         
         firstFragment = (firstFragmentInfo, firstFragmentPayload)
 
@@ -248,10 +257,12 @@ class NetworkEngine:
                 # If receivedData is null, then an error has occurred
                 #if len(receivedData) == 0:
                 except socket.timeout:
-                    print("Error : NetworkEngine --> decodeData(), Second While(). receivedData = 0 after having received a header ")
-                    return False
+                #    print("Error : NetworkEngine --> decodeData(), Second While(). receivedData = 0 after having received a header ")
+                #    return False
+                    pass
                 except socket.error:
-                    return False
+                #    return False
+                    pass
                 else:
                     fragmentPayload += bytes(receivedFragment)
 
@@ -281,6 +292,36 @@ class NetworkEngine:
 
         # Everything went well
         return True
+
+    # Read the socket pipe with the desired length
+    # In case of problems, increase the LOS Counter and returns the empty message buffer
+    def readSocket(self, length, header):
+        read = b""
+        lengthToRead = 0
+
+        if self.headerErrorPtr != 0:
+            lengthToRead = length - self.headerErrorPtr
+        elif self.payloadErrorPtr != 0:
+            lengthToRead = length - self.payloadErrorPtr
+
+        while len(read) < lengthToRead:
+            try:
+                bytesRead = self.socket.recvfrom(length)
+            except socket.error:
+                self.LOSCounter += 1
+                read = b""
+                return read
+
+            read += bytesRead
+            if header == True:
+                self.headerErrorPtr += len(bytesRead)
+            else:
+                self.payloadErrorPtr += len(bytesRead)
+
+        self.LOSCounter = 0
+        self.headerErrorPtr = 0
+        self.payloadErrorPtr = 0
+        return read
 
 class ServerNetworkingThread (threading.Thread):
     """This class is instantiate any time a new connection to the main server socket is accepted."""
