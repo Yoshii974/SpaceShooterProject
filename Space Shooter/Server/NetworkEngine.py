@@ -205,27 +205,10 @@ class NetworkEngine:
         currentFragmentIndex = -1
 
         while currentFragmentIndex != 0:
-            receivedFirstFragmentHeader = self.socket.recvfrom(self.headerLength)
-            firstFragmentInfo = self.processFragmentHeader(receivedFirstFragmentHeader)
+            firstFragmentHeader = self.readSocket(self.headerLength)
+            firstFragmentInfo = self.processFragmentHeader(firstFragmentHeader)
 
-            while len(firstFragmentPayload) < firstFragmentInfo[3]:
-                try:
-                    receivedFirstFragment = self.socket.recvfrom(firstFragmentInfo[3])
-                except socket.timeout:
-                # If receivedHeader is null, then an error has occurred
-                #if len(receivedHeader) == 0:
-                    #print("Error : NetworkEngine --> Impossible to receive data from self.socket. Connection broken ")
-                    # If no Header has been retrieved, then it is useless to keep checking for any other incoming bytes
-                    # And, we increment the LOS counter
-                    self.LOSCounter += 1
-                    # return False
-                    pass
-                except socket.error:
-                    # return False
-                    pass
-                else:
-                    self.LOSCounter = 0
-                    firstFragmentPayload += receivedFirstFragment
+            firstFragmentPayload = self.readSocket(firstFragmentInfo[3])
             
             if firstFragmentInfo[1] == 0:
                 currentFragmentIndex = 0
@@ -234,38 +217,16 @@ class NetworkEngine:
 
         maximumFragmentIndex = firstFragment[0][2]
 
-        # Once the header has been retrieved, we now therefor know how long the payload is
-        #dataStreamLength = int.from_bytes(header, 'big')
-        #print('Taille du data Stream (base sur linterpretation du header) : ' + str(dataStreamLength))
-
         listOfFragments = []
         listOfFragments.append(firstFragment)
 
         # The data Stream container to received the chunks of data
         #dataStream = b""
         for i in range (1, maximumFragmentIndex):
-            receivedFragmentHeader = self.socket.recvfrom(self.headerLength)
-            fragmentInfo = self.processFragmentHeader(receivedFragmentHeader)
-
-            fragmentPayload = b""
-
-            while len(fragmentPayload) < fragmentInfo[3]:
-                try:
-                    receivedFragment = self.socket.recvfrom(fragmentInfo[3])
-                #print ("Information dataStream recv : " + str(receivedData))
-
-                # If receivedData is null, then an error has occurred
-                #if len(receivedData) == 0:
-                except socket.timeout:
-                #    print("Error : NetworkEngine --> decodeData(), Second While(). receivedData = 0 after having received a header ")
-                #    return False
-                    pass
-                except socket.error:
-                #    return False
-                    pass
-                else:
-                    fragmentPayload += bytes(receivedFragment)
-
+            fragmentHeader = self.readSocket(self.headerLength)
+            fragmentInfo = self.processFragmentHeader(fragmentHeader)
+            
+            fragmentPayload = self.readSocket(fragmentInfo[3])
             fragment = (fragmentInfo, fragmentPayload)
             
             listOfFragments.append(fragment)
@@ -295,32 +256,20 @@ class NetworkEngine:
 
     # Read the socket pipe with the desired length
     # In case of problems, increase the LOS Counter and returns the empty message buffer
-    def readSocket(self, length, header):
+    def readSocket(self, length):
         read = b""
-        lengthToRead = 0
 
-        if self.headerErrorPtr != 0:
-            lengthToRead = length - self.headerErrorPtr
-        elif self.payloadErrorPtr != 0:
-            lengthToRead = length - self.payloadErrorPtr
-
-        while len(read) < lengthToRead:
+        while len(read) < length:
             try:
-                bytesRead = self.socket.recvfrom(length)
+                bytesRead, address = self.socket.recvfrom(length)
             except socket.error:
                 self.LOSCounter += 1
                 read = b""
                 return read
 
             read += bytesRead
-            if header == True:
-                self.headerErrorPtr += len(bytesRead)
-            else:
-                self.payloadErrorPtr += len(bytesRead)
 
         self.LOSCounter = 0
-        self.headerErrorPtr = 0
-        self.payloadErrorPtr = 0
         return read
 
 class ServerNetworkingThread (threading.Thread):
