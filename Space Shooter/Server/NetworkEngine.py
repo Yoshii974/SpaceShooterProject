@@ -75,7 +75,7 @@ class NetworkEngine:
         dataStreamLength = len(dataStream)
         
         numberOfBytesToReadFromDataStream = self.bufferSize - self.headerLength
-        maximumFragmentIndex = dataStreamLength / numberOfBytesToReadFromDataStream
+        maximumFragmentIndex = (dataStreamLength // numberOfBytesToReadFromDataStream) + 1
         currentFragmentIndex = 0
         offset = 0
         fragment = b""
@@ -205,13 +205,20 @@ class NetworkEngine:
         currentFragmentIndex = -1
 
         while currentFragmentIndex != 0:
-            firstFragmentHeader = self.readSocket(self.headerLength)
-            firstFragmentInfo = self.processFragmentHeader(firstFragmentHeader)
+            # TCP implements a stream ptrocol then you ask for how much bytes you want to process.
+            # UDP implements a message protocol. Thus, you ask for enough bytes to cover the message or it'll be dropped.
+            # See : https://stackoverflow.com/questions/36115971/recv-and-recvfrom-socket-programming-using-python
+            firstFragment = self.readSocket(self.bufferSize)
 
-            firstFragmentPayload = self.readSocket(firstFragmentInfo[3])
+            if firstFragment != b"":
+                firstFragmentInfo = self.processFragmentHeader(firstFragment[:self.headerLength])
+
+                firstFragmentPayload = self.readSocket(firstFragmentInfo[3])
             
-            if firstFragmentInfo[1] == 0:
-                currentFragmentIndex = 0
+                if firstFragmentInfo[1] == 0:
+                    currentFragmentIndex = 0
+            else:
+                return False
         
         firstFragment = (firstFragmentInfo, firstFragmentPayload)
 
@@ -223,12 +230,16 @@ class NetworkEngine:
         # The data Stream container to received the chunks of data
         #dataStream = b""
         for i in range (1, maximumFragmentIndex):
-            fragmentHeader = self.readSocket(self.headerLength)
-            fragmentInfo = self.processFragmentHeader(fragmentHeader)
+            fragment = self.readSocket(self.bufferSize)
+
+            if fragment != b"":
+                fragmentInfo = self.processFragmentHeader(fragment[:self.headerLength])
+
+                fragmentPayload = self.readSocket(fragmentInfo[3])
+            else:
+                return False
             
-            fragmentPayload = self.readSocket(fragmentInfo[3])
             fragment = (fragmentInfo, fragmentPayload)
-            
             listOfFragments.append(fragment)
 
         # Step 0 : check if none of the fragment is missing
@@ -267,6 +278,7 @@ class NetworkEngine:
                 read = b""
                 return read
 
+            print (len(read))
             read += bytesRead
 
         self.LOSCounter = 0
