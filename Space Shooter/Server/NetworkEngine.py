@@ -212,8 +212,7 @@ class NetworkEngine:
 
             if firstFragment != b"":
                 firstFragmentInfo = self.processFragmentHeader(firstFragment[:self.headerLength])
-
-                firstFragmentPayload = self.readSocket(firstFragmentInfo[3])
+                firstFragmentPayload = firstFragment[self.headerLength:]
             
                 if firstFragmentInfo[1] == 0:
                     currentFragmentIndex = 0
@@ -268,21 +267,16 @@ class NetworkEngine:
     # Read the socket pipe with the desired length
     # In case of problems, increase the LOS Counter and returns the empty message buffer
     def readSocket(self, length):
-        read = b""
+        try:
+            bytesRead, address = self.socket.recvfrom(length)
+            print (len(bytesRead))
+            self.LOSCounter = 0
+            return bytesRead
 
-        while len(read) < length:
-            try:
-                bytesRead, address = self.socket.recvfrom(length)
-            except socket.error:
-                self.LOSCounter += 1
-                read = b""
-                return read
-
-            print (len(read))
-            read += bytesRead
-
-        self.LOSCounter = 0
-        return read
+        except socket.error:
+            self.LOSCounter += 1
+            bytesRead = b""
+            return bytesRead
 
 class ServerNetworkingThread (threading.Thread):
     """This class is instantiate any time a new connection to the main server socket is accepted."""

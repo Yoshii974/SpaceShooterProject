@@ -28,4 +28,8 @@ data2_client = "juste une string en provenance du client"
 
 
 ne_server.encodeData(data1_server)
+ne_server.encodeData(data2_server)
 ne_client.decodeData()
+print(ne_client.lastDataReceived)
+ne_client.decodeData()
+print(ne_client.lastDataReceived)
