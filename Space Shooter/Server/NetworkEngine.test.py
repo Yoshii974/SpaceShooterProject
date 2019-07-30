@@ -33,3 +33,11 @@ ne_client.decodeData()
 print(ne_client.lastDataReceived)
 ne_client.decodeData()
 print(ne_client.lastDataReceived)
+
+ne_client.encodeData(data1_client)
+ne_client.encodeData(data2_client)
+
+ne_server.decodeData()
+print(ne_server.lastDataReceived)
+ne_server.decodeData()
+print(ne_server.lastDataReceived)

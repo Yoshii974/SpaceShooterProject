@@ -23,6 +23,11 @@ BUFFER_SIZE = 1024
 # how long the payload is.
 HEADER_LENGTH = 10
 
+MESSAGE_LENGTH = 4
+CURRENT_FRAGMENT_INDEX_LENGTH = 2
+MAXIMUM_FRAGMENT_INDEX_LENGTH = 2
+FRAGMENT_PAYLOAD_LENGTH = 2
+
 # Macro which defines the repeat time (every 32 ms means about 30 Hz)
 THREADING_REPEAT_TIME = 0.032
 
@@ -39,8 +44,10 @@ class NetworkEngine:
         self.lastDataReceived: object
         self.LOSCounter: int
         self.messageID: int
-        self.headerErrorPtr: int
-        self.payloadErrorPtr: int
+        self.messageIDLength: int
+        self.currentFragmentIndexLength: int
+        self.maximumFragmentIndexLength: int
+        self.fragmentPayloadLength: int
     
     # The Server is gonna talk to each Client via UDP Protocol
     def initialization(self):
@@ -50,8 +57,10 @@ class NetworkEngine:
         self.lastDataReceived = None
         self.LOSCounter = 0
         self.messageID = 0
-        self.headerErrorPtr = 0
-        self.payloadErrorPtr = 0
+        self.messageIDLength = MESSAGE_LENGTH
+        self.currentFragmentIndexLength = CURRENT_FRAGMENT_INDEX_LENGTH
+        self.maximumFragmentIndexLength = MAXIMUM_FRAGMENT_INDEX_LENGTH
+        self.fragmentPayloadLength = FRAGMENT_PAYLOAD_LENGTH
 
     # Set the dependencies
     def setDependencies(self, port, address, socket):
@@ -72,22 +81,22 @@ class NetworkEngine:
         # print('Les donnees serializer : {!r}'.format(pickle.dumps(data)))
         # Put into a Stream, the binary representation of our data
         dataStream = pickle.dumps(data)
-        dataStreamLength = len(dataStream)
+        dataStreamSize = len(dataStream)
         
-        numberOfBytesToReadFromDataStream = self.bufferSize - self.headerLength
-        maximumFragmentIndex = (dataStreamLength // numberOfBytesToReadFromDataStream) + 1
+        payloadAvailableSize = self.bufferSize - self.headerLength
+        maximumFragmentIndex = (dataStreamSize // payloadAvailableSize) + 1
         currentFragmentIndex = 0
         offset = 0
         fragment = b""
 
-        if maximumFragmentIndex == 0:
-            fragmentPayload = dataStream[:numberOfBytesToReadFromDataStream]
+        for i in range(0, maximumFragmentIndex):
+            fragmentPayload = dataStream[offset:offset + payloadAvailableSize]
 
             msgID = self.messageID.to_bytes(4, 'big')
             fragment += msgID
-
-            fragment += int(0).to_bytes(2, 'big')
-            fragment += int(0).to_bytes(2, 'big')
+            
+            fragment += currentFragmentIndex.to_bytes(2, 'big')
+            fragment += maximumFragmentIndex.to_bytes(2, 'big')
 
             fragmentPayloadLength = len(fragmentPayload)
             fragment += fragmentPayloadLength.to_bytes(2, 'big')
@@ -96,27 +105,10 @@ class NetworkEngine:
 
             # Add the fragment to the list of fragments
             listOfFragments.append(fragment)
-        else:
-            for i in range(0, maximumFragmentIndex):
-                fragmentPayload = dataStream[offset:offset + numberOfBytesToReadFromDataStream]
 
-                msgID = self.messageID.to_bytes(4, 'big')
-                fragment += msgID
-                
-                fragment += currentFragmentIndex.to_bytes(2, 'big')
-                fragment += maximumFragmentIndex.to_bytes(2, 'big')
-
-                fragmentPayloadLength = len(fragmentPayload)
-                fragment += fragmentPayloadLength.to_bytes(2, 'big')
-
-                fragment += fragmentPayload
-
-                # Add the fragment to the list of fragments
-                listOfFragments.append(fragment)
-
-                # Do all increments
-                currentFragmentIndex += 1
-                offset += numberOfBytesToReadFromDataStream
+            # Do all increments
+            currentFragmentIndex += 1
+            offset += payloadAvailableSize
 
         # Increment the message ID counter
         self.messageID += 1
@@ -175,26 +167,21 @@ class NetworkEngine:
         pass
 
     def processFragmentHeader(self, header):
-        msgIdLength = 4
-        currentFragmentIndexLength = 2
-        maximumFragmentIndexLength = 2
-        fragmentPayloadLengthSize = 2
-
         offset = 0
 
-        messageID = int.from_bytes(header[offset:offset + msgIdLength], 'big')
-        offset += msgIdLength
+        messageID = int.from_bytes(header[offset:offset + self.messageIDLength], 'big')
+        offset += self.messageIDLength
 
-        currentFragmentIndex = int.from_bytes(header[offset:offset + currentFragmentIndexLength], 'big')
-        offset += currentFragmentIndexLength
+        currentFragmentIndex = int.from_bytes(header[offset:offset + self.currentFragmentIndexLength], 'big')
+        offset += self.currentFragmentIndexLength
 
-        maximumFragmentIndex = int.from_bytes(header[offset:offset + maximumFragmentIndexLength], 'big')
-        offset += maximumFragmentIndexLength
+        maximumFragmentIndex = int.from_bytes(header[offset:offset + self.maximumFragmentIndexLength], 'big')
+        offset += self.maximumFragmentIndexLength
 
-        fragmentPayloadLength = int.from_bytes(header[offset:offset + fragmentPayloadLengthSize], 'big')
-        offset += fragmentPayloadLengthSize
+        fragmentPayloadSize = int.from_bytes(header[offset:offset + self.fragmentPayloadLength], 'big')
+        offset += self.fragmentPayloadLength
 
-        return (messageID, currentFragmentIndex, maximumFragmentIndex, fragmentPayloadLength)
+        return (messageID, currentFragmentIndex, maximumFragmentIndex, fragmentPayloadSize)
 
     # De-Serialize data
     def decodeData(self):
