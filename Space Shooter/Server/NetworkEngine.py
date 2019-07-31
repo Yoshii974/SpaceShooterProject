@@ -87,19 +87,19 @@ class NetworkEngine:
         maximumFragmentIndex = (dataStreamSize // payloadAvailableSize) + 1
         currentFragmentIndex = 0
         offset = 0
-        fragment = b""
 
         for i in range(0, maximumFragmentIndex):
+            fragment = b""
             fragmentPayload = dataStream[offset:offset + payloadAvailableSize]
 
-            msgID = self.messageID.to_bytes(4, 'big')
+            msgID = self.messageID.to_bytes(self.messageIDLength, 'big')
             fragment += msgID
             
-            fragment += currentFragmentIndex.to_bytes(2, 'big')
-            fragment += maximumFragmentIndex.to_bytes(2, 'big')
+            fragment += currentFragmentIndex.to_bytes(self.currentFragmentIndexLength, 'big')
+            fragment += maximumFragmentIndex.to_bytes(self.maximumFragmentIndexLength, 'big')
 
-            fragmentPayloadLength = len(fragmentPayload)
-            fragment += fragmentPayloadLength.to_bytes(2, 'big')
+            fragmentPayloadSize = len(fragmentPayload)
+            fragment += fragmentPayloadSize.to_bytes(self.fragmentPayloadLength, 'big')
 
             fragment += fragmentPayload
 
@@ -121,23 +121,25 @@ class NetworkEngine:
 
         for fragment in listOfFragments:
             # Send the data to the socket
-            totalsent = 0
+            #totalsent = 0
 
             # While the whole message has not been sent
-            while totalsent < len(fragment):
-                try:
-                    sent = self.socket.sendto(fragment[totalsent:], (self.address, self.port))
-                except socket.timeout:
+            #while totalsent < len(fragment):
+            #    try:
+            #        sent = self.socket.sendto(fragment[totalsent:], (self.address, self.port))
+            #    except socket.timeout:
                 #print ("Quantite information sent : " + str(sent))
                 # If nothing has been sent, it means that the connection has broken
                 #if sent == 0:
-                    print("Error : NetworkEngine --> encodeData(), First While, Sending Data. The socket was not ready to send any data. ")
-                    return False
-                except socket.error:
-                    return False
+            #        print("Error : NetworkEngine --> encodeData(), First While, Sending Data. The socket was not ready to send any data. ")
+            #        return False
+            #    except socket.error:
+            #        return False
                 # Else, it means that we still need to send the data
-                else:
-                    totalsent = totalsent + sent
+            #    else:
+            #        totalsent = totalsent + sent
+            #print (fragment)
+            self.socket.sendto(fragment, (self.address, self.port))
         
         # Everything went well
         return True
@@ -221,7 +223,7 @@ class NetworkEngine:
             if fragment != b"":
                 fragmentInfo = self.processFragmentHeader(fragment[:self.headerLength])
 
-                fragmentPayload = self.readSocket(fragmentInfo[3])
+                fragmentPayload = fragment[self.headerLength:]
             else:
                 return False
             

@@ -11,7 +11,9 @@ ne_server.setDependencies(63201, "localhost", ss)
 
 data1_server = ["data from server", [-9.8234, "lala"], {'a':54, 'b':-32}]
 data2_server = "juste une string en provenance du serveur"
-
+data3_server = ""
+for i in range(0, 10000):
+    data3_server += "Ich liebe dich Piaaa "
 
 
 
@@ -27,17 +29,19 @@ data1_client = ["data from client", {'a':54, 'b':-32}, [[], "lala"]]
 data2_client = "juste une string en provenance du client"
 
 
-ne_server.encodeData(data1_server)
-ne_server.encodeData(data2_server)
-ne_client.decodeData()
-print(ne_client.lastDataReceived)
-ne_client.decodeData()
-print(ne_client.lastDataReceived)
+
+
+#ne_server.encodeData(data1_server)
+#ne_server.encodeData(data2_server)
+ne_server.encodeData(data3_server)
+
+for i in range(0, 1):
+    ne_client.decodeData()
+    print(ne_client.lastDataReceived)
 
 ne_client.encodeData(data1_client)
 ne_client.encodeData(data2_client)
 
-ne_server.decodeData()
-print(ne_server.lastDataReceived)
-ne_server.decodeData()
-print(ne_server.lastDataReceived)
+for i in range(0,2):
+    ne_server.decodeData()
+    print(ne_server.lastDataReceived)
