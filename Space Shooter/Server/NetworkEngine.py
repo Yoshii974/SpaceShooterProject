@@ -119,6 +119,7 @@ class NetworkEngine:
     def encodeData(self, data):
         listOfFragments = self.createFragments(data)
 
+        ind = 0
         for fragment in listOfFragments:
             # Send the data to the socket
             #totalsent = 0
@@ -138,8 +139,10 @@ class NetworkEngine:
                 # Else, it means that we still need to send the data
             #    else:
             #        totalsent = totalsent + sent
-            #print (fragment)
-            self.socket.sendto(fragment, (self.address, self.port))
+            # print (fragment)
+            # self.socket.sendto(fragment, (self.address, self.port))
+            ind += 1
+            self.writeSocket(fragment)
         
         # Everything went well
         return True
@@ -260,12 +263,26 @@ class NetworkEngine:
             bytesRead, address = self.socket.recvfrom(length)
             print (len(bytesRead))
             self.LOSCounter = 0
-            return bytesRead
 
         except socket.error:
             self.LOSCounter += 1
             bytesRead = b""
-            return bytesRead
+        
+        return bytesRead
+
+    # Write to the socket pipe with the desired message
+    # In case of problems, increase the LOS Counter and returns -1:
+    def writeSocket(self, data):
+        try:
+            sent = self.socket.sendto(data, (self.address, self.port))
+            self.LOSCounter = 0
+        
+        except socket.error:
+            self.LOSCounter += 1
+            sent = -1
+        
+        return sent
+
 
 class ServerNetworkingThread (threading.Thread):
     """This class is instantiate any time a new connection to the main server socket is accepted."""
