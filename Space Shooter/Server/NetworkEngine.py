@@ -23,9 +23,16 @@ BUFFER_SIZE = 1024
 # how long the payload is.
 HEADER_LENGTH = 10
 
+# Macro which defines the number of bytes to encode the message length
 MESSAGE_LENGTH = 4
+
+# Macro which defines the number of bytes to encore the current fragment index
 CURRENT_FRAGMENT_INDEX_LENGTH = 2
+
+# Macro which defines the number of bytes to encode the maximum fragment index
 MAXIMUM_FRAGMENT_INDEX_LENGTH = 2
+
+# Macro which defines the number of bytes to encode the payload length
 FRAGMENT_PAYLOAD_LENGTH = 2
 
 # Macro which defines the repeat time (every 32 ms means about 30 Hz)
@@ -69,16 +76,13 @@ class NetworkEngine:
         self.socket = socket
 
     # Create fragments for the data
+    # The final message is as follow : 
+    # MSG = [ [Message_ID (4 bytes)] [Current_Fragment_Index (CFI, 2 bytes)] [Maximum_Fragment_Index (MFI, 2 bytes)] [Fragment_Payload_Length (2 bytes)] [Fragment_Payload (variables length)] ]
     def createFragments(self, data):
         listOfFragments = []
 
-        # Insert header which contains the length of the payload
-
-        # Converts the size of the data stream onto 4 bytes (with default reading is "big endian")
-
-        # The final message is as follow : MSG = [ [Message_ID (4 bytes)] [Current_Fragment_Index (CFI, 2 bytes)] [Maximum_Fragment_Index (MFI, 2 bytes)] [Fragment_Payload_Length (2 bytes)] [Fragment_Payload (variables length)] ]
-
         # print('Les donnees serializer : {!r}'.format(pickle.dumps(data)))
+
         # Put into a Stream, the binary representation of our data
         dataStream = pickle.dumps(data)
         dataStreamSize = len(dataStream)
@@ -98,6 +102,7 @@ class NetworkEngine:
             fragment += currentFragmentIndex.to_bytes(self.currentFragmentIndexLength, 'big')
             fragment += maximumFragmentIndex.to_bytes(self.maximumFragmentIndexLength, 'big')
 
+            # Converts the size of the data stream onto 4 bytes (with default reading is "big endian")
             fragmentPayloadSize = len(fragmentPayload)
             fragment += fragmentPayloadSize.to_bytes(self.fragmentPayloadLength, 'big')
 
@@ -218,8 +223,6 @@ class NetworkEngine:
         listOfFragments = []
         listOfFragments.append(firstFragment)
 
-        # The data Stream container to received the chunks of data
-        #dataStream = b""
         for i in range (1, maximumFragmentIndex):
             fragment = self.readSocket(self.bufferSize)
 
