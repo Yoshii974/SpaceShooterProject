@@ -55,6 +55,7 @@ class NetworkEngine:
         self.currentFragmentIndexLength: int
         self.maximumFragmentIndexLength: int
         self.fragmentPayloadLength: int
+        self.lastReceivedFromAddress: object
     
     # The Server is gonna talk to each Client via UDP Protocol
     def initialization(self):
@@ -264,6 +265,7 @@ class NetworkEngine:
     def readSocket(self, length):
         try:
             bytesRead, address = self.socket.recvfrom(length)
+            self.lastReceivedFromAddress = address
             print (len(bytesRead))
             self.LOSCounter = 0
 
@@ -431,7 +433,7 @@ class ClientNetworkingThread(threading.Thread):
                                           socket.SOCK_STREAM)
 
         # Connect to remote server
-        self.serverSocket.connect((self.serverAddress, int(self.serverPort)))
+        #self.serverSocket.connect((self.serverAddress, int(self.serverPort)))
 
         # Set socket to non-blocking mode
         self.serverSocket.setblocking(0)
@@ -444,6 +446,8 @@ class ClientNetworkingThread(threading.Thread):
         # Create the timer: every 16 ms means 60FPS
         # self.timer = threading.Timer(0.016, self.threadMain())
         self.threadingRepeatTime = THREADING_REPEAT_TIME
+
+        self.networkEngine.encodeData("GAME_SESSION_JOIN")
 
     # Set the dependencies
     def setDependencies(self, ServerPort, ServerAddress):

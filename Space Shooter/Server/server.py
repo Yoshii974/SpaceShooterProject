@@ -78,7 +78,11 @@ print ("Launching  Game Server ...")
 # Bind socket and listen to port
 print ("hostname : " + socket.gethostname())
 listeningSocket.bind(("localhost", port))
-#listeningSocket.setblocking(0)
+listeningSocket.setblocking(0)
+
+ne = NetworkEngine.NetworkEngine()
+ne.initialization()
+ne.setDependencies(5890, "127.0.0.1", listeningSocket)
 
 # Max 4 players at the same time
 #TCPSocket.listen(4)
@@ -87,19 +91,19 @@ listeningSocket.bind(("localhost", port))
 while True:
     # Receiving connection
     #(clientSocket, clientInfo) = TCPSocket.accept()
-    data, clientInfo = listeningSocket.recvfrom(NETWORK_BUFFER_SIZE)
-    if data != 0:
+    #data, clientInfo = listeningSocket.recvfrom(NETWORK_BUFFER_SIZE)
+    if ne.decodeData() == True and ne.lastDataReceived == "GAME_SESSION_JOIN":
         clientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         # Create a thread to interact with the client
         clientThread = NetworkEngine.ServerNetworkingThread()
         print("New Connected Client. The client infos are : ")
-        print(clientInfo)
+        print(ne.lastReceivedFromAddress)
         # TEST:
         clientThread.setDependencies(threadID, 
                                     clientSocket, 
-                                    clientInfo[1], 
-                                    clientInfo[0], 
+                                    ne.lastReceivedFromAddress[1], 
+                                    ne.lastReceivedFromAddress[0], 
                                     clientID)
 
         # Initialize thread
