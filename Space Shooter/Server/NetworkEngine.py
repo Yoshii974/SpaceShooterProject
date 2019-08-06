@@ -283,7 +283,7 @@ class NetworkEngine:
     # In case of problems, increase the LOS Counter and returns -1:
     def writeSocket(self, data):
         try:
-            sent = self.socket.sendto(data, (self.localAddress, self.localPort))
+            sent = self.socket.sendto(data, (self.remoteAddress, self.remotePort))
             self.LOSCounter = 0
         
         except socket.error:
@@ -335,6 +335,9 @@ class ServerNetworkingThread (threading.Thread):
         # Create the timer: every 16 ms means 60FPS
         # self.timer = threading.Timer(0.016, self.threadMain())
         self.threadingRepeatTime = THREADING_REPEAT_TIME
+
+        # Send to the Client which configuration to use to communicate with the server
+        self.networkEngine.encodeData((self.serverIpAddress, self.serverPort))
     
     # Set the dependencies
     def setDependencies(self, threadID, serverSocket, serverIpAddress, serverPort, clientIpAddress, clientPort, clientID):
@@ -421,8 +424,9 @@ class ClientNetworkingThread(threading.Thread):
         self.clientSocket: socket
         self.clientIpAddress: str
         self.clientPort: int
-        self.serverAddress: str
+        self.serverIpAddress: str
         self.serverPort: int
+        self.listOfAvailablePorts: []
         self.networkEngine: NetworkEngine
         self.inputCommands: ServerNetworkingOutput
         self.outputCommands: ServerNetworkingInput
@@ -438,10 +442,16 @@ class ClientNetworkingThread(threading.Thread):
         self.inputCommands.reset()
         self.outputCommands.reset()
 
+        self.listOfAvailablePorts = [49300, 49301, 49302, 49303]
+
         # Create the local socket to connect to the server
         self.clientSocket = socket.socket(socket.AF_INET,
                                           socket.SOCK_DGRAM)
 
+        #self.clientIpAddress = socket.gethostbyname(socket.gethostname())
+        self.clientIpAddress = "localhost"
+        self.clientPort = self.listOfAvailablePorts[0]
+        self.clientSocket.bind((self.clientIpAddress, self.clientPort))
         # Connect to remote server
         #self.serverSocket.connect((self.serverAddress, int(self.serverPort)))
 
@@ -450,7 +460,7 @@ class ClientNetworkingThread(threading.Thread):
 
         # Create the network engine and set dependencies
         self.networkEngine = NetworkEngine()
-        self.networkEngine.setDependencies(self.clientSocket, self.clientIpAddress, self.clientPort, self.serverAddress, self.serverPort)
+        self.networkEngine.setDependencies(self.clientSocket, self.clientIpAddress, self.clientPort, self.serverIpAddress, self.serverPort)
         self.networkEngine.initialization()
 
         # Create the timer: every 16 ms means 60FPS
@@ -459,13 +469,22 @@ class ClientNetworkingThread(threading.Thread):
 
         self.networkEngine.encodeData("GAME_SESSION_JOIN")
 
+        # Fill-up the server's infos
+        while True:
+            if self.networkEngine.decodeData() == True:
+                self.serverIpAddress = self.networkEngine.lastReceivedFromAddress[0]
+                self.serverPort = self.networkEngine.lastReceivedFromAddress[1]
+
+                self.networkEngine.setDependencies(self.clientSocket, self.clientIpAddress, self.clientPort, self.serverIpAddress, self.serverPort)
+                break
+
     # Set the dependencies
-    def setDependencies(self, clientSocket, clientIpAddress, clientPort, ServerAddress, ServerPort):
+    def setDependencies(self, clientSocket, clientIpAddress, clientPort, serverIpAddress, serverPort):
         self.clientSocket = clientSocket
         self.clientIpAddress = clientIpAddress
         self.clientPort = clientPort
-        self.serverAddress = ServerAddress
-        self.serverPort = ServerPort
+        self.serverIpAddress = serverIpAddress
+        self.serverPort = serverPort
     
     # Get the timer
     #def getTimer(self):
@@ -481,7 +500,7 @@ class ClientNetworkingThread(threading.Thread):
 
     # Override the "run" function (due to Interface)
     def run(self):
-        print("Starting communication with server at : " + str(self.serverAddress))
+        print("Starting communication with server at : " + str(self.serverIpAddress))
         #self.startTimer()
         self.threadMain()
     
