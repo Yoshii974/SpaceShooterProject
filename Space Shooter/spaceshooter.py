@@ -83,7 +83,7 @@ def multiplayerInitialization():
 	serverPort = input('Plz, enter server port : ')
 
 	#Set client networking dependencies
-	clientNetworkingThread.setDependencies(serverPort, serverAddress)
+	clientNetworkingThread.setDependencies(int(serverPort), serverAddress)
 	clientNetworkingThread.initialization()
 
 	#Set dependencies to the client network

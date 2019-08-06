@@ -36,15 +36,17 @@ MAXIMUM_FRAGMENT_INDEX_LENGTH = 2
 FRAGMENT_PAYLOAD_LENGTH = 2
 
 # Macro which defines the repeat time (every 32 ms means about 30 Hz)
-THREADING_REPEAT_TIME = 0.032
+THREADING_REPEAT_TIME = 2#0.032
 
 class NetworkEngine:
     """Any of Networking element should be found in this class. """
 
     # Default Constructor
     def __init__(self):
-        self.port: int
-        self.address: str
+        self.localAddress: str
+        self.localPort: int
+        self.remoteAddress: str
+        self.remotePort: int
         self.bufferSize: int
         self.headerLength: int
         self.socket: socket.socket
@@ -71,10 +73,12 @@ class NetworkEngine:
         self.fragmentPayloadLength = FRAGMENT_PAYLOAD_LENGTH
 
     # Set the dependencies
-    def setDependencies(self, port, address, socket):
-        self.port = port
-        self.address = address
+    def setDependencies(self, socket, localAddress, localPort, remoteAddress, remotePort):
         self.socket = socket
+        self.localAddress = localAddress
+        self.localPort = localPort
+        self.remoteAddress = remoteAddress
+        self.remotePort = remotePort
 
     # Create fragments for the data
     # The final message is as follow : 
@@ -279,7 +283,7 @@ class NetworkEngine:
     # In case of problems, increase the LOS Counter and returns -1:
     def writeSocket(self, data):
         try:
-            sent = self.socket.sendto(data, (self.address, self.port))
+            sent = self.socket.sendto(data, (self.localAddress, self.localPort))
             self.LOSCounter = 0
         
         except socket.error:
@@ -297,9 +301,11 @@ class ServerNetworkingThread (threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.threadID: int
-        self.clientSocket: socket
-        self.clientPort: int
+        self.serverSocket: socket
+        self.serverIpAddress: str
+        self.serverPort : int
         self.clientIpAddress: str
+        self.clientPort: int
         self.clientID: int
         self.currentGameState: str
         self.inputCommands: ServerNetworkingInput
@@ -312,7 +318,7 @@ class ServerNetworkingThread (threading.Thread):
     # Initialize the thread
     def initialization(self):
         # Set socket to non-blocking mode
-        self.clientSocket.setblocking(0)
+        self.serverSocket.setblocking(0)
 
         # self.GAME_STATUS = "START"
         self.inputCommands = ServerNetworkingInput()
@@ -323,7 +329,7 @@ class ServerNetworkingThread (threading.Thread):
 
         # Create the network engine and set dependencies
         self.networkEngine = NetworkEngine()
-        self.networkEngine.setDependencies(self.clientPort, self.clientIpAddress, self.clientSocket)
+        self.networkEngine.setDependencies(self.serverSocket, self.serverIpAddress, self.serverPort, self.clientIpAddress, self.clientPort)
         self.networkEngine.initialization()
 
         # Create the timer: every 16 ms means 60FPS
@@ -331,11 +337,13 @@ class ServerNetworkingThread (threading.Thread):
         self.threadingRepeatTime = THREADING_REPEAT_TIME
     
     # Set the dependencies
-    def setDependencies(self, threadID, clientSocket, clientPort, clientIpAddress, clientID):
+    def setDependencies(self, threadID, serverSocket, serverIpAddress, serverPort, clientIpAddress, clientPort, clientID):
         self.threadID = threadID
-        self.clientSocket = clientSocket
-        self.clientPort = clientPort
+        self.serverSocket = serverSocket
+        self.serverIpAddress = serverIpAddress
+        self.serverPort = serverPort
         self.clientIpAddress = clientIpAddress
+        self.clientPort = clientPort
         self.clientID = clientID
         #self.inputCommands = inputCommands
         #self.outputCommands = outputCommands
@@ -402,7 +410,7 @@ class ServerNetworkingThread (threading.Thread):
             #    self.threadStop = True
         
         # Close socket connection
-        self.clientSocket.close()
+        self.serverSocket.close()
 
 class ClientNetworkingThread(threading.Thread):
     """This class is instantiate once per client. It allows the client to receive and send data from/to a remote server asynchronously"""
@@ -410,9 +418,11 @@ class ClientNetworkingThread(threading.Thread):
     # Default Constructor
     def __init__(self):
         threading.Thread.__init__(self)
+        self.clientSocket: socket
+        self.clientIpAddress: str
+        self.clientPort: int
         self.serverAddress: str
-        self.serverPort: str
-        self.serverSocket: socket
+        self.serverPort: int
         self.networkEngine: NetworkEngine
         self.inputCommands: ServerNetworkingOutput
         self.outputCommands: ServerNetworkingInput
@@ -429,18 +439,18 @@ class ClientNetworkingThread(threading.Thread):
         self.outputCommands.reset()
 
         # Create the local socket to connect to the server
-        self.serverSocket = socket.socket(socket.AF_INET,
-                                          socket.SOCK_STREAM)
+        self.clientSocket = socket.socket(socket.AF_INET,
+                                          socket.SOCK_DGRAM)
 
         # Connect to remote server
         #self.serverSocket.connect((self.serverAddress, int(self.serverPort)))
 
         # Set socket to non-blocking mode
-        self.serverSocket.setblocking(0)
+        self.clientSocket.setblocking(0)
 
         # Create the network engine and set dependencies
         self.networkEngine = NetworkEngine()
-        self.networkEngine.setDependencies(self.serverPort, self.serverAddress, self.serverSocket)
+        self.networkEngine.setDependencies(self.clientSocket, self.clientIpAddress, self.clientPort, self.serverAddress, self.serverPort)
         self.networkEngine.initialization()
 
         # Create the timer: every 16 ms means 60FPS
@@ -450,9 +460,12 @@ class ClientNetworkingThread(threading.Thread):
         self.networkEngine.encodeData("GAME_SESSION_JOIN")
 
     # Set the dependencies
-    def setDependencies(self, ServerPort, ServerAddress):
-        self.serverPort = ServerPort
+    def setDependencies(self, clientSocket, clientIpAddress, clientPort, ServerAddress, ServerPort):
+        self.clientSocket = clientSocket
+        self.clientIpAddress = clientIpAddress
+        self.clientPort = clientPort
         self.serverAddress = ServerAddress
+        self.serverPort = ServerPort
     
     # Get the timer
     #def getTimer(self):
@@ -513,7 +526,7 @@ class ClientNetworkingThread(threading.Thread):
         #        self.threadStop = True
         
         # Close socket connection
-        self.serverSocket.close()
+        self.clientSocket.close()
 
 class ServerNetworkingInput:
     """This class represent every input received from a remote client"""

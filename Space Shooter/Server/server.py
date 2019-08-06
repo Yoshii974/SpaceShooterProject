@@ -179,6 +179,6 @@ while True:
         for cT in clientsThreads:
             cT.threadStop = True
         break
-    time.sleep(0.032)
+    time.sleep(2) #0.032
     mainServerFunction()
 print ("That was nice Server, deh ? o_O")
