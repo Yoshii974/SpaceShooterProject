@@ -36,7 +36,7 @@ MAXIMUM_FRAGMENT_INDEX_LENGTH = 2
 FRAGMENT_PAYLOAD_LENGTH = 2
 
 # Macro which defines the repeat time (every 32 ms means about 30 Hz)
-THREADING_REPEAT_TIME = 2#0.032
+THREADING_REPEAT_TIME = 0.016
 
 class NetworkEngine:
     """Any of Networking element should be found in this class. """
@@ -270,7 +270,7 @@ class NetworkEngine:
         try:
             bytesRead, address = self.socket.recvfrom(length)
             self.lastReceivedFromAddress = address
-            print (len(bytesRead))
+            #print (len(bytesRead))
             self.LOSCounter = 0
 
         except socket.error:
@@ -448,8 +448,8 @@ class ClientNetworkingThread(threading.Thread):
         self.clientSocket = socket.socket(socket.AF_INET,
                                           socket.SOCK_DGRAM)
 
-        #self.clientIpAddress = socket.gethostbyname(socket.gethostname())
-        self.clientIpAddress = "localhost"
+        self.clientIpAddress = socket.gethostbyname(socket.gethostname())
+        #self.clientIpAddress = "localhost"
         self.clientPort = self.listOfAvailablePorts[0]
         self.clientSocket.bind((self.clientIpAddress, self.clientPort))
         # Connect to remote server

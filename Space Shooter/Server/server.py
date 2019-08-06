@@ -47,7 +47,7 @@ def mainServerFunction():
 
 ##############################################GLOBAL VARIABLES#######################################################################################
 listeningSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-serverIpAddress = "127.0.0.1"
+serverIpAddress = socket.gethostbyname(socket.gethostname())
 listeningPort = 5890
 portList = [58840, 58841, 58842, 58843]
 portAvailableIndex = 0
@@ -191,6 +191,6 @@ while True:
         for sT in serverThreads:
             sT.threadStop = True
         break
-    time.sleep(2) #0.032
+    time.sleep(0.016)
     mainServerFunction()
 print ("That was nice Server, deh ? o_O")
