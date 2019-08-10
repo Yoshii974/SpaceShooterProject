@@ -183,7 +183,8 @@ class RendererEngine:
 		
 		elif self.currentGameState == "MULTI_PLAYER":
 			#First, get data from the client networking thread
-			self.handleDataRcvdFromServer()
+			#self.handleDataRcvdFromServer()
+			self.physicEngine.simulateMultiplayerGameState()
 
 			#Animate the background
 			self.drawBackGround()
@@ -193,7 +194,7 @@ class RendererEngine:
 				self.mainWindow.blit(self.spriteManager.ListofPlayerSurface[player.SpriteKey], (player.x, player.y))
 
 			#Draw the explosions :
-			self.makingExplosions()
+			#self.makingExplosions()
 
 			"""#Draw the health bar :
 			self.updateHealthBarStatus()

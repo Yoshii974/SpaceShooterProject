@@ -66,6 +66,19 @@ class PhysicEngine:
         # Animate the ennemies groups :
         self.ennemies.animate()
 
+    def simulateMultiplayerGameState(self):
+        """Simulate the state of the different element of the game client based on authoritative server calculated positions + 
+         predictive calculated positions"""
+        
+        # TODO: 1 - iterate on all processed input in the CNT
+        # 2 - set game state with values from server
+        # 3 - remove the processed inputs from the userInputs list in the input engine 
+        # 4 - iterate on the rest of the userInputs (which is currently still to non-processed inputs by the server) and
+        # simulate game state from these inputs
+        
+        
+        pass
+
     # Detect all Collisions
     def simulateAllCollisions(self):
         #print("all collisions")

@@ -22,6 +22,8 @@ class InputEngine:
         self.currentGameState = "MENU"
         self.mainMenuOptionsSelections = [1, 0, 0]
         self.clientNetworkingThread: NetworkEngine.ClientNetworkingThread
+        self.userInputID = 0
+        self.userInputs = []
 
     #Initialization
     def initialization(self):
@@ -157,38 +159,41 @@ class InputEngine:
 
     #Handle events for the game in multi player mode
     def handleMultiPlayerGameEvents(self):
-        """Handle any related events when actually playing the game"""
+        """Handle any related events when actually playing the game in multiplayer mode"""
 
         #Inputs of the user
-        userInputs = []
+        #userInputs = []
 
         #Loop on all the event sent by pygame :
         for evt in pygame.event.get():
+            # Increment at the beginning for clarity/maintenance
+            self.userInputID += 1
+
             if evt.type == KEYDOWN:
                 if evt.key == K_DOWN:
-                    userInputs.append("KEYDOWN_DOWN")
+                    userInput = (self.userInputID, "KEYDOWN_DOWN")
                 elif evt.key == K_UP:
-                    userInputs.append("KEYDOWN_UP")
+                    userInput = (self.userInputID, "KEYDOWN_UP")
                 elif evt.key == K_LEFT:
-                    userInputs.append("KEYDOWN_LEFT")
+                    userInput = (self.userInputID, "KEYDOWN_LEFT")
                 elif evt.key == K_RIGHT:
-                    userInputs.append("KEYDOWN_RIGHT")
+                    userInput = (self.userInputID, "KEYDOWN_RIGHT")
                 elif evt.key == K_SPACE:
-                    userInputs.append("KEYDOWN_FIRESHOT")
+                    userInput = (self.userInputID, "KEYDOWN_FIRESHOT")
                 elif evt.key == K_LCTRL:
-                    userInputs.append("KEYDOWN_SHIELD")
+                    userInput = (self.userInputID, "KEYDOWN_SHIELD")
                 elif evt.key == K_F1:
-                    userInputs.append("KEYDOWN_WEAPON1")
+                    userInput = (self.userInputID, "KEYDOWN_WEAPON1")
                 elif evt.key == K_F2:
-                    userInputs.append("KEYDOWN_WEAPON2")
+                    userInput = (self.userInputID, "KEYDOWN_WEAPON2")
                 elif evt.key == K_F3:
-                    userInputs.append("KEYDOWN_WEAPON3")
+                    userInput = (self.userInputID, "KEYDOWN_WEAPON3")
 
             elif evt.type == KEYUP:
                 if evt.key == K_LEFT or evt.key == K_RIGHT:
-                    userInputs.append("KEYUP_LEFT_RIGHT")
+                    userInput = (self.userInputID, "KEYUP_LEFT_RIGHT")
                 elif evt.key == K_DOWN or evt.key == K_UP:
-                    userInputs.append("KEYUP_DOWN_UP")
+                    userInput = (self.userInputID, "KEYUP_DOWN_UP")
                 """elif evt.key == K_SPACE:
                     self.player.fireShot()
                 elif evt.key == K_LCTRL:
@@ -201,12 +206,15 @@ class InputEngine:
                     self.player.currentWeapon = "fire2"
                 elif evt.key == K_F3:
                     self.player.currentWeapon = "fire3"""
+            
+            # Add the current input into the inputs list
+            self.userInputs.append(userInput)
         
         #print ("Contenu des users inputs cote client : " + str(userInputs))
 
         #Create server input
         serverInput = NetworkEngine.ServerNetworkingInput()
-        serverInput.clientInput = userInputs
+        serverInput.clientInputs = self.userInputs
 
         #Send data to server
         self.clientNetworkingThread.outputCommands = serverInput

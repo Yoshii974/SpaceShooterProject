@@ -552,11 +552,11 @@ class ServerNetworkingInput:
 
     # Default Constructor
     def __init__(self):
-        self.clientInput = [] # list of Client string commands
+        self.clientInputs = [] # list of Client string commands
 
     # Reset the Object
     def reset(self):
-        self.clientInput = []
+        self.clientInputs = []
 
 class ServerNetworkingOutput:
     """This class represent every output processed by the server to be sent to a remote client"""
