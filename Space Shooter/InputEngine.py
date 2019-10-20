@@ -3,7 +3,7 @@
 #########################################################################################################################################################################
 ### Date : 21 Octobre 2018																																			    #
 ### Author : Yoshii_974																																					#
-### Description : This file contains every Physic Logic for the game. 																									#
+### Description : This file contains the Input Engine. It is responsible to handle every input and ouput events of the game. 											#
 #########################################################################################################################################################################
 from commonclasses import *
 from Player import *
