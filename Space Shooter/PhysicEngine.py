@@ -8,8 +8,10 @@ from __future__ import division
 from commonclasses import *
 from Player import *
 from Ennemies import *
+import InputEngine
 import pygame
 from pygame.locals import *
+from Server import NetworkEngine
 ##########################################################IMPORTS########################################################################################################
 class PhysicEngine:
     """Any of Physic element should be found in this class. """
@@ -20,6 +22,9 @@ class PhysicEngine:
         self.players: [] # list of Players
         self.listofExplosions = []
         self.currentGameState = "STOP"
+        self.inputEngine: InputEngine
+        self.clientNetworkingThread: NetworkEngine.ClientNetworkingThread
+        self.serverNetworkingThread: NetworkEngine.ServerNetworkingThread
 
     # Set the Dependencies to the Physic Engine
     def setDependencies(self, Ennemies, Players):
@@ -76,8 +81,13 @@ class PhysicEngine:
         # 4 - iterate on the rest of the userInputs (which is currently still to non-processed inputs by the server) and
         # simulate game state from these inputs
         
+        # Player 0 is always the current local player
+        self.simulateLocalPlayerPosition()
         
         pass
+
+    def simulateLocalPlayerPosition(self):
+        self.players[0].x = self.clientNetworkingThread.inputCommands.player.x + self.inputEngine
 
     # Detect all Collisions
     def simulateAllCollisions(self):

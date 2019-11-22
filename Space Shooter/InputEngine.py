@@ -171,14 +171,15 @@ class InputEngine:
 
             if evt.type == KEYDOWN:
                 if evt.key == K_DOWN:
-                    userInput = (self.userInputID, "KEYDOWN_DOWN")
+                    userInput = (self.userInputID, "KEYDOWN_DOWN", {"dy":2})
                 elif evt.key == K_UP:
-                    userInput = (self.userInputID, "KEYDOWN_UP")
+                    userInput = (self.userInputID, "KEYDOWN_UP", {"dy": -2})
                 elif evt.key == K_LEFT:
-                    userInput = (self.userInputID, "KEYDOWN_LEFT")
+                    userInput = (self.userInputID, "KEYDOWN_LEFT", {"dx": -2})
                 elif evt.key == K_RIGHT:
-                    userInput = (self.userInputID, "KEYDOWN_RIGHT")
+                    userInput = (self.userInputID, "KEYDOWN_RIGHT", {"dx": 2})
                 elif evt.key == K_SPACE:
+                    self.player.fireShot()
                     userInput = (self.userInputID, "KEYDOWN_FIRESHOT")
                 elif evt.key == K_LCTRL:
                     userInput = (self.userInputID, "KEYDOWN_SHIELD")
