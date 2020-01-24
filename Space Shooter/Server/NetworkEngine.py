@@ -563,22 +563,22 @@ class ServerNetworkingOutput:
 
     # Default Constructor
     def __init__(self):
-        self.ennemies: Ennemies
-        self.player: Player
+        self.ennemies: (int, Ennemies)
+        self.player: (int, Player)
         self.otherPlayers = [] # list of Player object
         self.listOfExplosions = [] # list of Explosions to be drawn by the clients
         #self.ennemies: [] # list of Ennemy_group object
     
     # Set Dependencies
     def setDependencies(self, Ennemies, Player, OtherPlayers, ListOfExplosions):
-        self.ennemies = Ennemies
-        self.player = Player
+        self.ennemies = (0, Ennemies)
+        self.player = (0, Player)
         self.otherPlayers = OtherPlayers
         self.listOfExplosions = ListOfExplosions
 
     # Reset the Object
     def reset(self):
-        self.ennemies = None
-        self.player = None
+        self.ennemies = (0, None)
+        self.player = (0, None)
         self.listOfExplosions = []
         self.otherPlayers = []

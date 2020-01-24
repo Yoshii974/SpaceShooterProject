@@ -162,7 +162,7 @@ class InputEngine:
         """Handle any related events when actually playing the game in multiplayer mode"""
 
         #Inputs of the user
-        #userInputs = []
+        #self.userInputs = []
 
         #Loop on all the event sent by pygame :
         for evt in pygame.event.get():
@@ -179,7 +179,7 @@ class InputEngine:
                 elif evt.key == K_RIGHT:
                     userInput = (self.userInputID, "KEYDOWN_RIGHT", {"dx": 2})
                 elif evt.key == K_SPACE:
-                    self.player.fireShot()
+                    #self.player.fireShot()
                     userInput = (self.userInputID, "KEYDOWN_FIRESHOT")
                 elif evt.key == K_LCTRL:
                     userInput = (self.userInputID, "KEYDOWN_SHIELD")

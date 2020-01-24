@@ -81,13 +81,22 @@ class PhysicEngine:
         # 4 - iterate on the rest of the userInputs (which is currently still to non-processed inputs by the server) and
         # simulate game state from these inputs
         
+        # First, dequeue the inputs of the local user from the Input Engine
+        localPlayerInputs = self.inputEngine.userInputs
+        serverReceivedInputs = self.clientNetworkingThread.
+
+        for serverInput in serverReceivedInputs:
+            for localInput in localPlayerInputs:
+                if (localInput[0] != serverInput[0]):
+                    break
+
         # Player 0 is always the current local player
         self.simulateLocalPlayerPosition()
         
         pass
 
     def simulateLocalPlayerPosition(self):
-        self.players[0].x = self.clientNetworkingThread.inputCommands.player.x + self.inputEngine
+        self.players[0].x = self.clientNetworkingThread.inputCommands.player.x + self.inputEngine.userInputs
 
     # Detect all Collisions
     def simulateAllCollisions(self):
