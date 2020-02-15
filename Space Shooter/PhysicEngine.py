@@ -81,14 +81,25 @@ class PhysicEngine:
         # 4 - iterate on the rest of the userInputs (which is currently still to non-processed inputs by the server) and
         # simulate game state from these inputs
         
-        # First, dequeue the inputs of the local user from the Input Engine
-        localPlayerInputs = self.inputEngine.userInputs
-        serverReceivedInputs = self.clientNetworkingThread.
+        # 1 - Dequeue what the server has responded
+        lastAuthoritativeServerPosition = (self.clientNetworkingThread.inputCommands.player[0], self.clientNetworkingThread.inputCommands.player[1].x, self.clientNetworkingThread.inputCommands.player[1].y)
 
-        for serverInput in serverReceivedInputs:
-            for localInput in localPlayerInputs:
-                if (localInput[0] != serverInput[0]):
-                    break
+        # 2 - Dequeue the inputs of the local user from the Input Engine
+        clientSideDesiredPlayerDeltas = self.inputEngine.userInputs
+
+        #for serverInput in serverReceivedInputs:
+        #    for localInput in clientSidePredictionPlayerPositions:
+        #        if (localInput[0] != serverInput[0]):
+        #            break
+
+        # 3 - Loop through the client side inputs to seek for the dx corresponding to the latest received position from the server
+        for desiredDelta in clientSideDesiredPlayerDeltas:
+            if desiredDelta[0] == lastAuthoritativeServerPosition[0]:
+                newUserInputs = [clientSideDesiredPlayerDeltas]
+                break
+        
+        # 4 - Remove from the userInputs list the deltas which are useless now
+
 
         # Player 0 is always the current local player
         self.simulateLocalPlayerPosition()
