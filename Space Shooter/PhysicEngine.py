@@ -87,28 +87,39 @@ class PhysicEngine:
         # 2 - Dequeue the inputs of the local user from the Input Engine
         clientSideDesiredPlayerDeltas = self.inputEngine.userInputs
 
-        #for serverInput in serverReceivedInputs:
-        #    for localInput in clientSidePredictionPlayerPositions:
-        #        if (localInput[0] != serverInput[0]):
-        #            break
-
         # 3 - Loop through the client side inputs to seek for the dx corresponding to the latest received position from the server
-        for desiredDelta in clientSideDesiredPlayerDeltas:
+        newUserInputs = []
+
+        for index, desiredDelta in enumerate(clientSideDesiredPlayerDeltas):
             if desiredDelta[0] == lastAuthoritativeServerPosition[0]:
-                newUserInputs = [clientSideDesiredPlayerDeltas]
+                newUserInputs = clientSideDesiredPlayerDeltas[index:]
                 break
-        
+
         # 4 - Remove from the userInputs list the deltas which are useless now
+        self.inputEngine.userInputs = newUserInputs
 
-
-        # Player 0 is always the current local player
-        self.simulateLocalPlayerPosition()
+        # 5 - Calculate the current local player position based on predictions
+        self.simulateClientSidePredictionForLocalPlayerPosition(lastAuthoritativeServerPosition)
         
+        # 6 - Calculate the current local fireshots positions based on predictions
         pass
 
-    def simulateLocalPlayerPosition(self):
-        self.players[0].x = self.clientNetworkingThread.inputCommands.player.x + self.inputEngine.userInputs
+    # The last authoritative position is given as an argument because when the call to the below function is made,
+    # it is possible that the last authoritative value from the server has already been updated, if we were to get this value from the CNT !
+    def simulateClientSidePredictionForLocalPlayerPosition(self, lastAuthoritativeServerPosition):
+        # Start position
+        self.players[0].x = lastAuthoritativeServerPosition[1]
+        self.players[0].y = lastAuthoritativeServerPosition[2]
 
+        # For each deltas in current Input Engine, calculate the futur position based on the latest authoritative server known position
+        for userInput in self.inputEngine.userInputs:
+            if "dx" in userInput[2]:
+                self.players[0].x += userInput[2]["dx"]
+            elif "dy" in userInput[2]:
+                self.players[0].y += userInput[2]["dy"]
+            else:
+                pass
+    
     # Detect all Collisions
     def simulateAllCollisions(self):
         #print("all collisions")

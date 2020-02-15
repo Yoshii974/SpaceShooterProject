@@ -171,7 +171,7 @@ class InputEngine:
 
             if evt.type == KEYDOWN:
                 if evt.key == K_DOWN:
-                    userInput = (self.userInputID, "KEYDOWN_DOWN", {"dy":2})
+                    userInput = (self.userInputID, "KEYDOWN_DOWN", {"dy": 2})
                 elif evt.key == K_UP:
                     userInput = (self.userInputID, "KEYDOWN_UP", {"dy": -2})
                 elif evt.key == K_LEFT:
