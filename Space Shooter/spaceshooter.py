@@ -90,6 +90,7 @@ def multiplayerInitialization():
 	#Set dependencies to the client network
 	rendererEngine.clientNetworkingThread = clientNetworkingThread
 	inputEngine.clientNetworkingThread = clientNetworkingThread
+	physicEngine.clientNetworkingThread = clientNetworkingThread
 
 	clientNetworkingThread.inputCommands.ennemies = ennemies
 	clientNetworkingThread.inputCommands.player = player
@@ -108,6 +109,7 @@ def multiplayerInitialization():
 #Set the ennemies and player references to the sprite and sound managers :
 physicEngine.setDependencies(ennemies,
 							 listOfPlayers)
+physicEngine.inputEngine = inputEngine
 
 rendererEngine.setDependencies(spriteManager,
 							   musicAndSoundManager,

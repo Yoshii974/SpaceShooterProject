@@ -11,7 +11,7 @@ import socket
 import time
 import os, sys
 #import pygame
-sys.path.insert(0, os.path.abspath(".."))
+#sys.path.insert(0, os.path.abspath(".."))
 from Player import *
 from Ennemies import *
 from PhysicEngine import *
@@ -26,8 +26,9 @@ def mainServerFunction():
     # Already there in the clients Threads !
 
     # 1 - Process players inputs
+    listOfProcessedInputForPlayers = []
     for index in range(0, len(serverThreads)):
-        inputEngines[index].processPlayerInput(serverThreads[index].inputCommands.clientInput)
+        listOfProcessedInputForPlayers.append(inputEngines[index].processPlayerInput(serverThreads[index].inputCommands.clientInput))
 
     # 2 - Do the Physics Processing
     physicEngine.simulateGameState()
@@ -41,6 +42,7 @@ def mainServerFunction():
         sendData.player = players[index]
         sendData.listOfExplosions = physicEngine.listofExplosions
         sendData.otherPlayers = [p for p in players if p != players[index]]
+        sendData.listOfProcessedInputs = listOfProcessedInputForPlayers[index]
 
         serverThreads[index].outputCommands = sendData
 

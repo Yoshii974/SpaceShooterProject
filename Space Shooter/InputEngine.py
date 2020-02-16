@@ -161,13 +161,11 @@ class InputEngine:
     def handleMultiPlayerGameEvents(self):
         """Handle any related events when actually playing the game in multiplayer mode"""
 
-        #Inputs of the user
-        #self.userInputs = []
-
         #Loop on all the event sent by pygame :
         for evt in pygame.event.get():
             # Increment at the beginning for clarity/maintenance
             self.userInputID += 1
+            userInput = (-1, -1, -1)
 
             if evt.type == KEYDOWN:
                 if evt.key == K_DOWN:
@@ -209,7 +207,8 @@ class InputEngine:
                     self.player.currentWeapon = "fire3"""
             
             # Add the current input into the inputs list
-            self.userInputs.append(userInput)
+            if userInput != (-1, -1, -1):
+                self.userInputs.append(userInput)
         
         #print ("Contenu des users inputs cote client : " + str(userInputs))
 
@@ -242,34 +241,41 @@ class InputEngine:
     def processPlayerInput(self, playerInputs):
         """Process the player inputs"""
 
+        listOfPlayerInputsID = []
+
         if self.player.timeBeforeShieldIsDeactivated > 0:
             self.player.timeBeforeShieldIsDeactivated -= 1
 
         for input in playerInputs:
-            if input == "KEYUP_LEFT_RIGHT":
+            listOfPlayerInputsID.append(input[0])
+
+            if input[1] == "KEYUP_LEFT_RIGHT":
                 self.player.dx = 0
-            elif input == "KEYDOWN_LEFT":
+            elif input[1] == "KEYDOWN_LEFT":
                 self.player.dx = -2
-            elif input == "KEYDOWN_RIGHT":
+            elif input[1] == "KEYDOWN_RIGHT":
                 self.player.dx = 2
-            elif input == "KEYUP_DOWN_UP":
+            elif input[1] == "KEYUP_DOWN_UP":
                 self.player.dy = 0
-            elif input == "KEYDOWN_UP":
+            elif input[1] == "KEYDOWN_UP":
                 self.player.dy = -2
-            elif input == "KEYDOWN_DOWN":
+            elif input[1] == "KEYDOWN_DOWN":
                 self.player.dy = 2
-            elif input == "KEYDOWN_FIRESHOT":
+            elif input[1] == "KEYDOWN_FIRESHOT":
                 self.player.fireShot()
-            elif input == "KEYDOWN_SHIELD":
+            elif input[1] == "KEYDOWN_SHIELD":
                 if self.player.timeBeforeShieldIsDeactivated == 0 and self.player.nbTimesShieldAllowed > 0:
                         self.player.timeBeforeShieldIsDeactivated = 500
                         self.player.nbTimesShieldAllowed -= 1
-            elif input == "KEYDOWN_WEAPON1":
+            elif input[1] == "KEYDOWN_WEAPON1":
                 self.player.currentWeapon = "fire1"
-            elif input == "KEYDOWN_WEAPON2":
+            elif input[1] == "KEYDOWN_WEAPON2":
                 self.player.currentWeapon = "fire2"
-            elif input == "KEYDOWN_WEAPON3":
+            elif input[1] == "KEYDOWN_WEAPON3":
                 self.player.currentWeapon = "fire3"
             else:
                 print('error with inputs of player #' + str(self.player.playerID))
+        
+        # Return the ID of the processed input
+        return listOfPlayerInputsID
     

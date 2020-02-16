@@ -379,11 +379,12 @@ class ServerNetworkingThread (threading.Thread):
 
             # Decode data from the client
             if self.networkEngine.decodeData() == False:
-                # print ("Probleme lors de la reception de donnee en provenance du client : " + str(self.clientID) + " dans le thread no : " + str(self.threadID))
+                print ("Probleme lors de la reception de donnee en provenance du client : " + str(self.clientID) + " dans le thread no : " + str(self.threadID))
                 pass
             else:
                 # TODO: Verifier que dans le message recu, il n'y ait pas une demande fermeture de la connection.
                 self.inputCommands = self.networkEngine.lastDataReceived
+                print ("DEBUG - received from client : " + str(self.inputCommands))
             # No particular data has been retrieved. The server will just process and simulate with the latest values he received.
             # Also, increment the LOS Counter
             
@@ -563,22 +564,24 @@ class ServerNetworkingOutput:
 
     # Default Constructor
     def __init__(self):
-        self.ennemies: (int, Ennemies)
-        self.player: (int, Player)
+        self.ennemies: Ennemies
+        self.player: Player
         self.otherPlayers = [] # list of Player object
         self.listOfExplosions = [] # list of Explosions to be drawn by the clients
-        #self.ennemies: [] # list of Ennemy_group object
+        self.listOfProcessedInputs: []
     
     # Set Dependencies
-    def setDependencies(self, Ennemies, Player, OtherPlayers, ListOfExplosions):
-        self.ennemies = (0, Ennemies)
-        self.player = (0, Player)
+    def setDependencies(self, Ennemies, Player, OtherPlayers, ListOfExplosions, ListOfProcessedInputs):
+        self.ennemies = Ennemies
+        self.player = Player
         self.otherPlayers = OtherPlayers
         self.listOfExplosions = ListOfExplosions
+        self.listOfProcessedInputs = ListOfProcessedInputs
 
     # Reset the Object
     def reset(self):
-        self.ennemies = (0, None)
-        self.player = (0, None)
+        self.ennemies = None
+        self.player = None
         self.listOfExplosions = []
         self.otherPlayers = []
+        self.listOfProcessedInputs = []
