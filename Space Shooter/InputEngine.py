@@ -212,13 +212,6 @@ class InputEngine:
         
         #print ("Contenu des users inputs cote client : " + str(userInputs))
 
-        #Create server input
-        serverInput = NetworkEngine.ServerNetworkingInput()
-        serverInput.clientInputs = self.userInputs
-
-        #Send data to server
-        self.clientNetworkingThread.outputCommands = serverInput
-
     #TODO: Faire quelque chose avec ce truc ...
     """def joystick(self):
         #TEST JOYSTICK :
@@ -241,41 +234,42 @@ class InputEngine:
     def processPlayerInput(self, playerInputs):
         """Process the player inputs"""
 
-        listOfPlayerInputsID = []
+        listOfProcessedPlayerInputsID = []
 
         if self.player.timeBeforeShieldIsDeactivated > 0:
             self.player.timeBeforeShieldIsDeactivated -= 1
 
-        for input in playerInputs:
-            listOfPlayerInputsID.append(input[0])
+        for playerInput in playerInputs:
+            # Add the current input ID into the list of processed inputs 
+            listOfProcessedPlayerInputsID.append(playerInput[0])
 
-            if input[1] == "KEYUP_LEFT_RIGHT":
+            if playerInput[1] == "KEYUP_LEFT_RIGHT":
                 self.player.dx = 0
-            elif input[1] == "KEYDOWN_LEFT":
-                self.player.dx = -2
-            elif input[1] == "KEYDOWN_RIGHT":
-                self.player.dx = 2
-            elif input[1] == "KEYUP_DOWN_UP":
+            elif playerInput[1] == "KEYDOWN_LEFT":
+                self.player.dx += -2
+            elif playerInput[1] == "KEYDOWN_RIGHT":
+                self.player.dx += 2
+            elif playerInput[1] == "KEYUP_DOWN_UP":
                 self.player.dy = 0
-            elif input[1] == "KEYDOWN_UP":
-                self.player.dy = -2
-            elif input[1] == "KEYDOWN_DOWN":
-                self.player.dy = 2
-            elif input[1] == "KEYDOWN_FIRESHOT":
+            elif playerInput[1] == "KEYDOWN_UP":
+                self.player.dy += -2
+            elif playerInput[1] == "KEYDOWN_DOWN":
+                self.player.dy += 2
+            elif playerInput[1] == "KEYDOWN_FIRESHOT":
                 self.player.fireShot()
-            elif input[1] == "KEYDOWN_SHIELD":
+            elif playerInput[1] == "KEYDOWN_SHIELD":
                 if self.player.timeBeforeShieldIsDeactivated == 0 and self.player.nbTimesShieldAllowed > 0:
                         self.player.timeBeforeShieldIsDeactivated = 500
                         self.player.nbTimesShieldAllowed -= 1
-            elif input[1] == "KEYDOWN_WEAPON1":
+            elif playerInput[1] == "KEYDOWN_WEAPON1":
                 self.player.currentWeapon = "fire1"
-            elif input[1] == "KEYDOWN_WEAPON2":
+            elif playerInput[1] == "KEYDOWN_WEAPON2":
                 self.player.currentWeapon = "fire2"
-            elif input[1] == "KEYDOWN_WEAPON3":
+            elif playerInput[1] == "KEYDOWN_WEAPON3":
                 self.player.currentWeapon = "fire3"
             else:
                 print('error with inputs of player #' + str(self.player.playerID))
         
-        # Return the ID of the processed input
-        return listOfPlayerInputsID
+        # Return the list of processed inputs
+        return listOfProcessedPlayerInputsID
     

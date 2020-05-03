@@ -186,6 +186,9 @@ class RendererEngine:
 			#self.handleDataRcvdFromServer()
 			self.physicEngine.simulateMultiplayerGameState()
 
+			# After client side prediction simulation, then send local player inputs to game server
+			self.physicEngine.sendDataToServer()
+
 			#Animate the background
 			self.drawBackGround()
 
@@ -232,7 +235,6 @@ class RendererEngine:
 				self.players[i] = self.clientNetworkingThread.inputCommands.otherPlayers[i]
 		except:
 			pass"""
-
 
 	# Render Background
 	def drawBackGround(self):

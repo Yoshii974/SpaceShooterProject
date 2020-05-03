@@ -80,12 +80,21 @@ class PhysicEngine:
         # 3 - remove the processed inputs from the userInputs list in the input engine 
         # 4 - iterate on the rest of the userInputs (which is currently still to non-processed inputs by the server) and
         # simulate game state from these inputs
+
+        listOfActionsToSimulate = []
         
+        serverProcessedInputs = self.clientNetworkingThread.inputCommands.listOfProcessedInputs
+
         # 1 - Dequeue what the server has responded
-        if len(self.clientNetworkingThread.inputCommands.listOfProcessedInputs) != 0:
-            lastAuthoritativeServerPosition = (self.clientNetworkingThread.inputCommands.listOfProcessedInputs[-1], self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
-        else:
-            lastAuthoritativeServerPosition = (-1, self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
+        if len(serverProcessedInputs) != 0:
+            #lastAuthoritativeServerPosition = (self.clientNetworkingThread.inputCommands.listOfProcessedInputs[-1], self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
+        #else:
+            #lastAuthoritativeServerPosition = (-1, self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
+            for i in range(0, len(serverProcessedInputs)):
+                if self.inputEngine.userInputs[i][0] == serverProcessedInputs[i]:
+                    # If the current action has been checked by the server, then it means we can safely use this action to simulate the current game state
+                    listOfActionsToSimulate.append(self.inputEngine.userInputs[i])
+                elif 
 
         # 2 - Dequeue the inputs of the local user from the Input Engine
         clientSideDesiredPlayerDeltas = self.inputEngine.userInputs
@@ -94,9 +103,9 @@ class PhysicEngine:
         newUserInputs = []
 
         if (lastAuthoritativeServerPosition[0] != -1):
-            for index, desiredDelta in enumerate(clientSideDesiredPlayerDeltas):
+            for i, desiredDelta in enumerate(clientSideDesiredPlayerDeltas):
                 if desiredDelta[0] == lastAuthoritativeServerPosition[0]:
-                    newUserInputs = clientSideDesiredPlayerDeltas[index:]
+                    newUserInputs = clientSideDesiredPlayerDeltas[i:]
                     break
 
         # 4 - Remove from the userInputs list the deltas which are useless now
@@ -124,6 +133,15 @@ class PhysicEngine:
             else:
                 pass
     
+	# Send the local data to the server
+	def sendDataToServer(self):
+        #Create server input
+        serverInput = NetworkEngine.ServerNetworkingInput()
+        serverInput.clientInputs = self.userInputs
+
+        #Send data to server
+        self.clientNetworkingThread.outputCommands = serverInput
+
     # Detect all Collisions
     def simulateAllCollisions(self):
         #print("all collisions")
