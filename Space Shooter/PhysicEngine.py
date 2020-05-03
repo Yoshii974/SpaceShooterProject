@@ -81,10 +81,16 @@ class PhysicEngine:
         # 4 - iterate on the rest of the userInputs (which is currently still to non-processed inputs by the server) and
         # simulate game state from these inputs
 
-        listOfActionsToSimulate = []
+        # listOfActionsToSimulate = []
         
         # Atm this is written, the InputEngine on the server side is only sending back the greatest player input ID. So the lst below always contain only 1 element ! 
         serverProcessedInputs = self.clientNetworkingThread.inputCommands.listOfProcessedInputs
+
+        # Set last authoritative server received position
+        lastAuthoritativeServerPosition = (self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
+
+        # Set sublist start index : if nothing has been processed by the server, then we need to re-simulate every local player input
+        subListStartIndex = -1
 
         # 1 - Dequeue what the server has responded
         if len(serverProcessedInputs) != 0:
@@ -95,27 +101,33 @@ class PhysicEngine:
             #    if self.inputEngine.userInputs[i][0] == serverProcessedInputs[i]:
             #        # If the current action has been checked by the server, then it means we can safely use this action to simulate the current game state
             #        listOfActionsToSimulate.append(self.inputEngine.userInputs[i])
-            #    elif 
+            #    elif
+            
             for input in self.inputEngine.userInputs:
                 if input[0] == serverProcessedInputs[0]:
+                    subListStartIndex = self.inputEngine.userInputs.index(input)
+                    break
                     # Maintenant on retire tous les local inputs qui ont un ID inferieur a l'ID renvoyé par le serveur (y compris, l'action qui a cet ID lui-meme)
                     # On créer la sous-liste a partir des elements restant des inputs locaux
                     # Cela correspond aux actions a simuler durant cette frame
 
+        # The element at position subListStartIndex has also been processed by the server, so we can safely remove it from our local inputs list
+        self.inputEngine.userInputs = self.inputEngine.userInputs[subListStartIndex + 1:]
+
         # 2 - Dequeue the inputs of the local user from the Input Engine
-        clientSideDesiredPlayerDeltas = self.inputEngine.userInputs
+        #clientSideDesiredPlayerDeltas = self.inputEngine.userInputs
 
         # 3 - Loop through the client side inputs to seek for the dx/dy corresponding to the latest received position from the server
-        newUserInputs = []
+        #newUserInputs = []
 
-        if (lastAuthoritativeServerPosition[0] != -1):
-            for i, desiredDelta in enumerate(clientSideDesiredPlayerDeltas):
-                if desiredDelta[0] == lastAuthoritativeServerPosition[0]:
-                    newUserInputs = clientSideDesiredPlayerDeltas[i:]
-                    break
+        #if (lastAuthoritativeServerPosition[0] != -1):
+        #    for i, desiredDelta in enumerate(clientSideDesiredPlayerDeltas):
+        #        if desiredDelta[0] == lastAuthoritativeServerPosition[0]:
+        #            newUserInputs = clientSideDesiredPlayerDeltas[i:]
+        #            break
 
         # 4 - Remove from the userInputs list the deltas which are useless now
-        self.inputEngine.userInputs = newUserInputs
+        #self.inputEngine.userInputs = newUserInputs
 
         # 5 - Calculate the current local player position based on predictions
         self.simulateClientSidePredictionForLocalPlayerPosition(lastAuthoritativeServerPosition)
@@ -140,7 +152,7 @@ class PhysicEngine:
                 pass
     
 	# Send the local data to the server
-	def sendDataToServer(self):
+    def sendDataToServer(self):
         #Create server input
         serverInput = NetworkEngine.ServerNetworkingInput()
         serverInput.clientInputs = self.userInputs
