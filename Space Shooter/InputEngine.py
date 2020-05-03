@@ -231,17 +231,20 @@ class InputEngine:
 
     #This function should only be used by a game server !
     #This is for multiplayer mode use only
-    def processPlayerInput(self, playerInputs):
+    def processPlayerInputs(self, playerInputs):
         """Process the player inputs"""
 
-        listOfProcessedPlayerInputsID = []
+        #listOfProcessedPlayerInputsID = []
+        greatestPlayerInputID = -1
 
         if self.player.timeBeforeShieldIsDeactivated > 0:
             self.player.timeBeforeShieldIsDeactivated -= 1
 
         for playerInput in playerInputs:
             # Add the current input ID into the list of processed inputs 
-            listOfProcessedPlayerInputsID.append(playerInput[0])
+            #listOfProcessedPlayerInputsID.append(playerInput[0])
+            if playerInput[0] > greatestPlayerInputID:
+                greatestPlayerInputID = playerInput[0]
 
             if playerInput[1] == "KEYUP_LEFT_RIGHT":
                 self.player.dx = 0
@@ -271,5 +274,8 @@ class InputEngine:
                 print('error with inputs of player #' + str(self.player.playerID))
         
         # Return the list of processed inputs
-        return listOfProcessedPlayerInputsID
+        # return listOfProcessedPlayerInputsID
+
+        # Return the latest action processed by the server
+        return greatestPlayerInputID
     

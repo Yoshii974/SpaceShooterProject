@@ -83,6 +83,7 @@ class PhysicEngine:
 
         listOfActionsToSimulate = []
         
+        # Atm this is written, the InputEngine on the server side is only sending back the greatest player input ID. So the lst below always contain only 1 element ! 
         serverProcessedInputs = self.clientNetworkingThread.inputCommands.listOfProcessedInputs
 
         # 1 - Dequeue what the server has responded
@@ -90,11 +91,16 @@ class PhysicEngine:
             #lastAuthoritativeServerPosition = (self.clientNetworkingThread.inputCommands.listOfProcessedInputs[-1], self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
         #else:
             #lastAuthoritativeServerPosition = (-1, self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
-            for i in range(0, len(serverProcessedInputs)):
-                if self.inputEngine.userInputs[i][0] == serverProcessedInputs[i]:
-                    # If the current action has been checked by the server, then it means we can safely use this action to simulate the current game state
-                    listOfActionsToSimulate.append(self.inputEngine.userInputs[i])
-                elif 
+            #for i in range(0, len(self.inputEngine.userInputs)):
+            #    if self.inputEngine.userInputs[i][0] == serverProcessedInputs[i]:
+            #        # If the current action has been checked by the server, then it means we can safely use this action to simulate the current game state
+            #        listOfActionsToSimulate.append(self.inputEngine.userInputs[i])
+            #    elif 
+            for input in self.inputEngine.userInputs:
+                if input[0] == serverProcessedInputs[0]:
+                    # Maintenant on retire tous les local inputs qui ont un ID inferieur a l'ID renvoyé par le serveur (y compris, l'action qui a cet ID lui-meme)
+                    # On créer la sous-liste a partir des elements restant des inputs locaux
+                    # Cela correspond aux actions a simuler durant cette frame
 
         # 2 - Dequeue the inputs of the local user from the Input Engine
         clientSideDesiredPlayerDeltas = self.inputEngine.userInputs
