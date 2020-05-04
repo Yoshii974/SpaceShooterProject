@@ -104,7 +104,7 @@ class PhysicEngine:
             #    elif
             
             for input in self.inputEngine.userInputs:
-                if input[0] == lastProcessedInput[0]:
+                if input[0] == lastProcessedInput:
                     subListStartIndex = self.inputEngine.userInputs.index(input)
                     break
                     # Maintenant on retire tous les local inputs qui ont un ID inferieur a l'ID renvoyé par le serveur (y compris, l'action qui a cet ID lui-meme)
@@ -113,6 +113,11 @@ class PhysicEngine:
 
         # The element at position subListStartIndex has also been processed by the server, so we can safely remove it from our local inputs list
         self.inputEngine.userInputs = self.inputEngine.userInputs[subListStartIndex + 1:]
+        #print ("Inputs dans le input engine : " + str(self.inputEngine.userInputs))
+
+        # If there is a too much number of unprocessed inputs, then we removed the head of the local player inputs
+        # if len(self.inputEngine.userInputs) > 5:
+        #    self.inputEngine.userInputs = self.inputEngine.userInputs[1:]
 
         # 2 - Dequeue the inputs of the local user from the Input Engine
         #clientSideDesiredPlayerDeltas = self.inputEngine.userInputs
@@ -138,6 +143,7 @@ class PhysicEngine:
     # The last authoritative position is given as an argument because when the call to the below function is made,
     # it is possible that the last authoritative value from the server has already been updated, if we were to get this value from the CNT !
     def simulateClientSidePredictionForLocalPlayerPosition(self, lastAuthoritativeServerPosition):
+        #print ("Derniere position en provenance du server : " + str(lastAuthoritativeServerPosition))
         # Start position
         self.players[0].x = lastAuthoritativeServerPosition[0]
         self.players[0].y = lastAuthoritativeServerPosition[1]

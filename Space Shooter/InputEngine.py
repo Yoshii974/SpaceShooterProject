@@ -169,30 +169,30 @@ class InputEngine:
 
             if evt.type == KEYDOWN:
                 if evt.key == K_DOWN:
-                    userInput = (self.userInputID, "KEYDOWN_DOWN", {"dy": 2})
+                    userInput = (self.userInputID, "KEYDOWN_DOWN", {"dy": 1})
                 elif evt.key == K_UP:
-                    userInput = (self.userInputID, "KEYDOWN_UP", {"dy": -2})
+                    userInput = (self.userInputID, "KEYDOWN_UP", {"dy": -1})
                 elif evt.key == K_LEFT:
-                    userInput = (self.userInputID, "KEYDOWN_LEFT", {"dx": -2})
+                    userInput = (self.userInputID, "KEYDOWN_LEFT", {"dx": -1})
                 elif evt.key == K_RIGHT:
-                    userInput = (self.userInputID, "KEYDOWN_RIGHT", {"dx": 2})
+                    userInput = (self.userInputID, "KEYDOWN_RIGHT", {"dx": 1})
                 elif evt.key == K_SPACE:
                     #self.player.fireShot()
-                    userInput = (self.userInputID, "KEYDOWN_FIRESHOT")
+                    userInput = (self.userInputID, "KEYDOWN_FIRESHOT", {})
                 elif evt.key == K_LCTRL:
-                    userInput = (self.userInputID, "KEYDOWN_SHIELD")
+                    userInput = (self.userInputID, "KEYDOWN_SHIELD", {})
                 elif evt.key == K_F1:
-                    userInput = (self.userInputID, "KEYDOWN_WEAPON1")
+                    userInput = (self.userInputID, "KEYDOWN_WEAPON1", {})
                 elif evt.key == K_F2:
-                    userInput = (self.userInputID, "KEYDOWN_WEAPON2")
+                    userInput = (self.userInputID, "KEYDOWN_WEAPON2", {})
                 elif evt.key == K_F3:
-                    userInput = (self.userInputID, "KEYDOWN_WEAPON3")
+                    userInput = (self.userInputID, "KEYDOWN_WEAPON3", {})
 
             elif evt.type == KEYUP:
                 if evt.key == K_LEFT or evt.key == K_RIGHT:
-                    userInput = (self.userInputID, "KEYUP_LEFT_RIGHT")
+                    userInput = (self.userInputID, "KEYUP_LEFT_RIGHT", {})
                 elif evt.key == K_DOWN or evt.key == K_UP:
-                    userInput = (self.userInputID, "KEYUP_DOWN_UP")
+                    userInput = (self.userInputID, "KEYUP_DOWN_UP", {})
                 """elif evt.key == K_SPACE:
                     self.player.fireShot()
                 elif evt.key == K_LCTRL:
