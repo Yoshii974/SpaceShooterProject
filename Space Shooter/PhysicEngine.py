@@ -84,7 +84,7 @@ class PhysicEngine:
         # listOfActionsToSimulate = []
         
         # Atm this is written, the InputEngine on the server side is only sending back the greatest player input ID. So the lst below always contain only 1 element ! 
-        serverProcessedInputs = self.clientNetworkingThread.inputCommands.listOfProcessedInputs
+        lastProcessedInput = self.clientNetworkingThread.inputCommands.listOfProcessedInputs
 
         # Set last authoritative server received position
         lastAuthoritativeServerPosition = (self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
@@ -93,7 +93,7 @@ class PhysicEngine:
         subListStartIndex = -1
 
         # 1 - Dequeue what the server has responded
-        if len(serverProcessedInputs) != 0:
+        if lastProcessedInput != -1:
             #lastAuthoritativeServerPosition = (self.clientNetworkingThread.inputCommands.listOfProcessedInputs[-1], self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
         #else:
             #lastAuthoritativeServerPosition = (-1, self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
@@ -104,7 +104,7 @@ class PhysicEngine:
             #    elif
             
             for input in self.inputEngine.userInputs:
-                if input[0] == serverProcessedInputs[0]:
+                if input[0] == lastProcessedInput[0]:
                     subListStartIndex = self.inputEngine.userInputs.index(input)
                     break
                     # Maintenant on retire tous les local inputs qui ont un ID inferieur a l'ID renvoyé par le serveur (y compris, l'action qui a cet ID lui-meme)
@@ -139,8 +139,8 @@ class PhysicEngine:
     # it is possible that the last authoritative value from the server has already been updated, if we were to get this value from the CNT !
     def simulateClientSidePredictionForLocalPlayerPosition(self, lastAuthoritativeServerPosition):
         # Start position
-        self.players[0].x = lastAuthoritativeServerPosition[1]
-        self.players[0].y = lastAuthoritativeServerPosition[2]
+        self.players[0].x = lastAuthoritativeServerPosition[0]
+        self.players[0].y = lastAuthoritativeServerPosition[1]
 
         # For each deltas in current Input Engine, calculate the futur position based on the latest authoritative server known position
         for userInput in self.inputEngine.userInputs:
@@ -155,7 +155,7 @@ class PhysicEngine:
     def sendDataToServer(self):
         #Create server input
         serverInput = NetworkEngine.ServerNetworkingInput()
-        serverInput.clientInputs = self.userInputs
+        serverInput.clientInputs = self.inputEngine.userInputs
 
         #Send data to server
         self.clientNetworkingThread.outputCommands = serverInput
