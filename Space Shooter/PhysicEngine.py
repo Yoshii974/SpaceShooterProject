@@ -106,6 +106,7 @@ class PhysicEngine:
             for input in self.inputEngine.userInputs:
                 if input[0] == lastProcessedInput:
                     subListStartIndex = self.inputEngine.userInputs.index(input)
+                    print ("Valeur de subListStartIndex : " + str(subListStartIndex))
                     break
                     # Maintenant on retire tous les local inputs qui ont un ID inferieur a l'ID renvoyé par le serveur (y compris, l'action qui a cet ID lui-meme)
                     # On créer la sous-liste a partir des elements restant des inputs locaux
@@ -151,14 +152,21 @@ class PhysicEngine:
         # For each deltas in current Input Engine, calculate the futur position based on the latest authoritative server known position
         for userInput in self.inputEngine.userInputs:
             if "dx" in userInput[2]:
-                self.players[0].x += userInput[2]["dx"]
+                self.players[0].dx = userInput[2]["dx"]
             elif "dy" in userInput[2]:
-                self.players[0].y += userInput[2]["dy"]
+                self.players[0].dy = userInput[2]["dy"]
+            elif userInput[1] == "KEYUP_LEFT_RIGHT":
+                self.players[0].dx = 0
+            elif userInput[1] == "KEYUP_DOWN_UP":
+                self.players[0].dy = 0
             else:
                 pass
+        
+        self.players[0].animate()
     
 	# Send the local data to the server
     def sendDataToServer(self):
+        #print ("On est bien dans la fonction sendDataToServer")
         #Create server input
         serverInput = NetworkEngine.ServerNetworkingInput()
         serverInput.clientInputs = self.inputEngine.userInputs
