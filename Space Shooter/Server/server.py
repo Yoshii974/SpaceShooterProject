@@ -58,7 +58,7 @@ players = []
 inputEngines = []
 threadID = 0
 clientID = 0
-NB_MIN_PLAYER = 2
+NB_MIN_PLAYER = 1
 NETWORK_BUFFER_SIZE = 1024
 
 # TODO : C'est de la merde, parce que 0.016 signifie executer la fonction juste apres l'appel Threading.Timer
@@ -193,6 +193,6 @@ while True:
         for sT in serverThreads:
             sT.threadStop = True
         break
-    time.sleep(0.016)
+    time.sleep(0.032)
     mainServerFunction()
 print ("That was nice Server, deh ? o_O")
