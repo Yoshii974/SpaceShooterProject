@@ -190,9 +190,9 @@ class InputEngine:
 
             elif evt.type == KEYUP:
                 if evt.key == K_LEFT or evt.key == K_RIGHT:
-                    userInput = (self.userInputID, "KEYUP_LEFT_RIGHT", {})
+                    userInput = (self.userInputID, "KEYUP_LEFT_RIGHT", {}, {"xLocal": -1, "yLocal": -1})
                 elif evt.key == K_DOWN or evt.key == K_UP:
-                    userInput = (self.userInputID, "KEYUP_DOWN_UP", {})
+                    userInput = (self.userInputID, "KEYUP_DOWN_UP", {}, {"xLocal": -1, "yLocal": -1})
                 """elif evt.key == K_SPACE:
                     self.player.fireShot()
                 elif evt.key == K_LCTRL:

@@ -193,6 +193,6 @@ while True:
         for sT in serverThreads:
             sT.threadStop = True
         break
-    time.sleep(0.032)
+    time.sleep(0.016)
     mainServerFunction()
 print ("That was nice Server, deh ? o_O")

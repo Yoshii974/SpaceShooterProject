@@ -16,7 +16,7 @@ from Ennemies import *
 from commonclasses import *
 # import io
 
-# Since a packet is usually 1518 bytes and since we're using TCP, we'd rather make sure our buffer will fullfill the payload of each frame/packet to its maximum size
+# Since a packet is usually 1518 bytes and since we're using UDP, we'd rather make sure our buffer will fullfill the payload of each frame/packet to its maximum size
 BUFFER_SIZE = 1024
 
 # Macro which defines the header length. In this application protocol, it has been decided to use a 4-bytes header which explains
@@ -36,7 +36,7 @@ MAXIMUM_FRAGMENT_INDEX_LENGTH = 2
 FRAGMENT_PAYLOAD_LENGTH = 2
 
 # Macro which defines the repeat time (every 32 ms means about 30 Hz)
-THREADING_REPEAT_TIME = 0.032#0.016
+THREADING_REPEAT_TIME = 0.016#0.032
 
 class NetworkEngine:
     """Any of Networking element should be found in this class. """

@@ -88,7 +88,7 @@ class PhysicEngine:
 
         # Set last authoritative server received position
         lastAuthoritativeServerPosition = (self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
-        # print ("Last autorithative server position : " + str(lastAuthoritativeServerPosition))
+        print ("Last autorithative server position : " + str(lastAuthoritativeServerPosition))
         # Set sublist start index : if nothing has been processed by the server, then we need to re-simulate every local player input
         subListStartIndex = -1
 
@@ -146,8 +146,8 @@ class PhysicEngine:
     def simulateClientSidePredictionForLocalPlayerPosition(self, lastAuthoritativeServerPosition):
         #print ("Derniere position en provenance du server : " + str(lastAuthoritativeServerPosition))
         # Start position
-        #self.players[0].x = lastAuthoritativeServerPosition[0]
-        #self.players[0].y = lastAuthoritativeServerPosition[1]
+        # self.players[0].x = lastAuthoritativeServerPosition[0]
+        # self.players[0].y = lastAuthoritativeServerPosition[1]
 
         lastPredictedPlayerPosition = {"xLocal": self.players[0].x, "yLocal": self.players[0].y}
         # For each deltas in current Input Engine, calculate the futur position based on the latest authoritative server known position
