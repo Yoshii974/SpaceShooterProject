@@ -165,17 +165,17 @@ class InputEngine:
         for evt in pygame.event.get():
             # Increment at the beginning for clarity/maintenance
             self.userInputID += 1
-            userInput = (-1, -1, -1)
+            userInput = (-1, -1, -1, -1)
 
             if evt.type == KEYDOWN:
                 if evt.key == K_DOWN:
-                    userInput = (self.userInputID, "KEYDOWN_DOWN", {"dy": 1}, {"xLocal": -1, "yLocal": -1})
+                    userInput = (self.userInputID, "KEYDOWN_DOWN", {"dy": 2}, {"xLocal": -1, "yLocal": -1})
                 elif evt.key == K_UP:
-                    userInput = (self.userInputID, "KEYDOWN_UP", {"dy": -1}, {"xLocal": -1, "yLocal": -1})
+                    userInput = (self.userInputID, "KEYDOWN_UP", {"dy": -2}, {"xLocal": -1, "yLocal": -1})
                 elif evt.key == K_LEFT:
-                    userInput = (self.userInputID, "KEYDOWN_LEFT", {"dx": -1}, {"xLocal": -1, "yLocal": -1})
+                    userInput = (self.userInputID, "KEYDOWN_LEFT", {"dx": -2}, {"xLocal": -1, "yLocal": -1})
                 elif evt.key == K_RIGHT:
-                    userInput = (self.userInputID, "KEYDOWN_RIGHT", {"dx": 1}, {"xLocal": -1, "yLocal": -1})
+                    userInput = (self.userInputID, "KEYDOWN_RIGHT", {"dx": 2}, {"xLocal": -1, "yLocal": -1})
                 elif evt.key == K_SPACE:
                     #self.player.fireShot()
                     userInput = (self.userInputID, "KEYDOWN_FIRESHOT", {})
@@ -207,7 +207,7 @@ class InputEngine:
                     self.player.currentWeapon = "fire3"""
             
             # Add the current input into the inputs list
-            if userInput != (-1, -1, -1):
+            if userInput != (-1, -1, -1, -1):
                 self.userInputs.append(userInput)
         
         #print ("Contenu des users inputs cote client : " + str(userInputs))
