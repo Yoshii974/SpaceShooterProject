@@ -90,10 +90,10 @@ class PhysicEngine:
         lastAuthoritativeServerPosition = (self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
         #print ("Last autorithative server position : " + str(lastAuthoritativeServerPosition))
         # Set sublist start index : if nothing has been processed by the server, then we need to re-simulate every local player input
-        subListStartIndex = -1
+        #subListStartIndex = -1
 
         # 1 - Dequeue what the server has responded
-        if lastProcessedInput != -1:
+        #if lastProcessedInput != -1:
             #lastAuthoritativeServerPosition = (self.clientNetworkingThread.inputCommands.listOfProcessedInputs[-1], self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
         #else:
             #lastAuthoritativeServerPosition = (-1, self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
@@ -103,17 +103,17 @@ class PhysicEngine:
             #        listOfActionsToSimulate.append(self.inputEngine.userInputs[i])
             #    elif
             
-            for input in self.inputEngine.userInputs:
-                if input[0] == lastProcessedInput:
-                    subListStartIndex = self.inputEngine.userInputs.index(input)
+        #    for input in self.inputEngine.userInputs:
+        #        if input[0] == lastProcessedInput:
+        #            subListStartIndex = self.inputEngine.userInputs.index(input)
                     # print ("Valeur de subListStartIndex : " + str(subListStartIndex))
-                    break
+        #            break
                     # Maintenant on retire tous les local inputs qui ont un ID inferieur a l'ID renvoyé par le serveur (y compris, l'action qui a cet ID lui-meme)
                     # On créer la sous-liste a partir des elements restant des inputs locaux
                     # Cela correspond aux actions a simuler durant cette frame
 
         # The element at position subListStartIndex has also been processed by the server, so we can safely remove it from our local inputs list
-        self.inputEngine.userInputs = self.inputEngine.userInputs[subListStartIndex + 1:]
+        #self.inputEngine.userInputs = self.inputEngine.userInputs[subListStartIndex + 1:]
         #print ("Inputs dans le input engine : " + str(self.inputEngine.userInputs))
 
         # If there is a too much number of unprocessed inputs, then we removed the head of the local player inputs
@@ -178,8 +178,11 @@ class PhysicEngine:
         self.players[0].x = lastPredictedPlayerPosition["xLocal"]
         self.players[0].y = lastPredictedPlayerPosition["yLocal"]
 
-        self.players[0].dx = 0
-        self.players[0].dy = 0
+        print ("current local player position x : " + str(self.players[0].x))
+        print ("current local player position y : " + str(self.players[0].y))
+
+        #self.players[0].dx = 0
+        #self.players[0].dy = 0
 
         self.players[0].animate()
     
@@ -188,7 +191,14 @@ class PhysicEngine:
         #print ("On est bien dans la fonction sendDataToServer")
         #Create server input
         serverInput = NetworkEngine.ServerNetworkingInput()
-        serverInput.clientInputs = self.inputEngine.userInputs
+        listOfInputCommandsToSend = []
+
+        for userInput in self.inputEngine.userInputs:
+            if userInput[4][0] == False:
+                listOfInputCommandsToSend.append(userInput)
+                userInput[4][0] = True
+
+        serverInput.clientInputs = listOfInputCommandsToSend
 
         #Send data to server
         self.clientNetworkingThread.outputCommands = serverInput

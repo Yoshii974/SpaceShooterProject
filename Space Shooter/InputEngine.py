@@ -165,34 +165,34 @@ class InputEngine:
         for evt in pygame.event.get():
             # Increment at the beginning for clarity/maintenance
             self.userInputID += 1
-            userInput = (-1, -1, -1, -1)
+            userInput = (-1, -1, -1, -1, -1)
 
             if evt.type == KEYDOWN:
                 if evt.key == K_DOWN:
-                    userInput = (self.userInputID, "KEYDOWN_DOWN", {"dy": 2}, {"xLocal": -1, "yLocal": -1})
+                    userInput = (self.userInputID, "KEYDOWN_DOWN", {"dy": 2}, {"xLocal": -1, "yLocal": -1}, [False])
                 elif evt.key == K_UP:
-                    userInput = (self.userInputID, "KEYDOWN_UP", {"dy": -2}, {"xLocal": -1, "yLocal": -1})
+                    userInput = (self.userInputID, "KEYDOWN_UP", {"dy": -2}, {"xLocal": -1, "yLocal": -1}, [False])
                 elif evt.key == K_LEFT:
-                    userInput = (self.userInputID, "KEYDOWN_LEFT", {"dx": -2}, {"xLocal": -1, "yLocal": -1})
+                    userInput = (self.userInputID, "KEYDOWN_LEFT", {"dx": -2}, {"xLocal": -1, "yLocal": -1}, [False])
                 elif evt.key == K_RIGHT:
-                    userInput = (self.userInputID, "KEYDOWN_RIGHT", {"dx": 2}, {"xLocal": -1, "yLocal": -1})
+                    userInput = (self.userInputID, "KEYDOWN_RIGHT", {"dx": 2}, {"xLocal": -1, "yLocal": -1}, [False])
                 elif evt.key == K_SPACE:
                     #self.player.fireShot()
-                    userInput = (self.userInputID, "KEYDOWN_FIRESHOT", {})
+                    userInput = (self.userInputID, "KEYDOWN_FIRESHOT", {}, {"xLocal": -1, "yLocal": -1}, [False])
                 elif evt.key == K_LCTRL:
-                    userInput = (self.userInputID, "KEYDOWN_SHIELD", {})
+                    userInput = (self.userInputID, "KEYDOWN_SHIELD", {}, {"xLocal": -1, "yLocal": -1}, [False])
                 elif evt.key == K_F1:
-                    userInput = (self.userInputID, "KEYDOWN_WEAPON1", {})
+                    userInput = (self.userInputID, "KEYDOWN_WEAPON1", {}, {"xLocal": -1, "yLocal": -1}, [False])
                 elif evt.key == K_F2:
-                    userInput = (self.userInputID, "KEYDOWN_WEAPON2", {})
+                    userInput = (self.userInputID, "KEYDOWN_WEAPON2", {}, {"xLocal": -1, "yLocal": -1}, [False])
                 elif evt.key == K_F3:
-                    userInput = (self.userInputID, "KEYDOWN_WEAPON3", {})
+                    userInput = (self.userInputID, "KEYDOWN_WEAPON3", {}, {"xLocal": -1, "yLocal": -1}, [False])
 
             elif evt.type == KEYUP:
                 if evt.key == K_LEFT or evt.key == K_RIGHT:
-                    userInput = (self.userInputID, "KEYUP_LEFT_RIGHT", {}, {"xLocal": -1, "yLocal": -1})
+                    userInput = (self.userInputID, "KEYUP_LEFT_RIGHT", {}, {"xLocal": -1, "yLocal": -1}, [False])
                 elif evt.key == K_DOWN or evt.key == K_UP:
-                    userInput = (self.userInputID, "KEYUP_DOWN_UP", {}, {"xLocal": -1, "yLocal": -1})
+                    userInput = (self.userInputID, "KEYUP_DOWN_UP", {}, {"xLocal": -1, "yLocal": -1}, [False])
                 """elif evt.key == K_SPACE:
                     self.player.fireShot()
                 elif evt.key == K_LCTRL:
@@ -207,7 +207,7 @@ class InputEngine:
                     self.player.currentWeapon = "fire3"""
             
             # Add the current input into the inputs list
-            if userInput != (-1, -1, -1, -1):
+            if userInput != (-1, -1, -1, -1, -1):
                 self.userInputs.append(userInput)
         
         #print ("Contenu des users inputs cote client : " + str(userInputs))
@@ -234,6 +234,7 @@ class InputEngine:
     def processPlayerInputs(self, playerInputs):
         """Process the player inputs"""
 
+        print ("player Inputs : " + str(playerInputs))
         #listOfProcessedPlayerInputsID = []
         greatestPlayerInputID = -1
 
@@ -277,5 +278,11 @@ class InputEngine:
         # return listOfProcessedPlayerInputsID
 
         # Return the latest action processed by the server
+        print ("Final Player State at exit of Input Engine : ")
+        print ("Final Player x : " + str(self.player.x))
+        print ("Final Player y : " + str(self.player.y))
+        print ("Final Player dx : " + str(self.player.dx))
+        print ("Final Player dy : " + str(self.player.dy))
+
         return greatestPlayerInputID
     
