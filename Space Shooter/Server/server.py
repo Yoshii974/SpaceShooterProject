@@ -29,6 +29,7 @@ def mainServerFunction():
     listOfProcessedInputForPlayers = []
     for index in range(0, len(serverThreads)):
         listOfProcessedInputForPlayers.append(inputEngines[index].processPlayerInputs(serverThreads[index].inputCommands.clientInputs))
+        serverThreads[index].inputCommands = None
 
     # 2 - Do the Physics Processing
     physicEngine.simulateGameState()
