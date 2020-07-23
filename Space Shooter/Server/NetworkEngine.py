@@ -379,12 +379,12 @@ class ServerNetworkingThread (threading.Thread):
 
             # Decode data from the client
             if self.networkEngine.decodeData() == False:
-                print ("Probleme lors de la reception de donnee en provenance du client : " + str(self.clientID) + " dans le thread no : " + str(self.threadID))
+                #print ("Probleme lors de la reception de donnee en provenance du client : " + str(self.clientID) + " dans le thread no : " + str(self.threadID))
                 pass
             else:
                 # TODO: Verifier que dans le message recu, il n'y ait pas une demande fermeture de la connection.
                 self.inputCommands = self.networkEngine.lastDataReceived
-                print ("DEBUG - received from client : " + str(self.inputCommands.clientInputs))
+                #print ("DEBUG - received from client : " + str(self.inputCommands.clientInputs))
             # No particular data has been retrieved. The server will just process and simulate with the latest values he received.
             # Also, increment the LOS Counter
             
@@ -535,7 +535,7 @@ class ClientNetworkingThread(threading.Thread):
 
             # Create local data to send to the server
             sendData = self.outputCommands
-
+            #print ("Valeur envoye au serveur : " + str(sendData.clientInputs))
             # Send data to the server
             if self.networkEngine.encodeData(sendData) == False:
                 # print ("Probleme lors de l'envoie des donnees au Serveur.")
