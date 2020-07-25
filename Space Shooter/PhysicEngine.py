@@ -187,6 +187,9 @@ class PhysicEngine:
         #self.players[0].dy = 0
 
         self.players[0].animate()
+        
+        for p in self.clientNetworkingThread.inputCommands.otherPlayers:
+            self.players[1] = p
     
 	# Send the local data to the server
     def sendDataToServer(self):
