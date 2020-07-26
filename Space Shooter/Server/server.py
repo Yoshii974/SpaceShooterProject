@@ -28,8 +28,11 @@ def mainServerFunction():
     # 1 - Process players inputs
     listOfProcessedInputForPlayers = []
     for index in range(0, len(serverThreads)):
-        listOfProcessedInputForPlayers.append(inputEngines[index].processPlayerInputs(serverThreads[index].inputCommands.clientInputs))
-        serverThreads[index].inputCommands = None
+        if serverThreads[index].inputCommands != None:
+            listOfProcessedInputForPlayers.append(inputEngines[index].processPlayerInputs(serverThreads[index].inputCommands.clientInputs))
+            serverThreads[index].inputCommands = None
+        else:
+            listOfProcessedInputForPlayers.append(-1)
 
     # 2 - Do the Physics Processing
     physicEngine.simulateGameState()
@@ -59,7 +62,7 @@ players = []
 inputEngines = []
 threadID = 0
 clientID = 0
-NB_MIN_PLAYER = 1
+NB_MIN_PLAYER = 2
 NETWORK_BUFFER_SIZE = 1024
 
 # TODO : C'est de la merde, parce que 0.016 signifie executer la fonction juste apres l'appel Threading.Timer

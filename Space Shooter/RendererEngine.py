@@ -189,6 +189,9 @@ class RendererEngine:
 			# After client side prediction simulation, then send local player inputs to game server
 			self.physicEngine.sendDataToServer()
 
+			# Update Renderer Engine players list
+			self.players = self.physicEngine.players
+
 			#Animate the background
 			self.drawBackGround()
 

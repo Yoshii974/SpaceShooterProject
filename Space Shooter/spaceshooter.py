@@ -101,11 +101,11 @@ def multiplayerInitialization():
 	clientNetworkingThread.start()
 	#clientNetworkingThread.join()
 
-	player2 = Player(256,452)
-	player2.playerID = 1
-	player2.initialization()
-	physicEngine.players.append(player2)
-	rendererEngine.players.append(player2)
+	#player2 = Player(256,452)
+	#player2.playerID = 1
+	#player2.initialization()
+	#physicEngine.players.append(player2)
+	#rendererEngine.players.append(player2)
 
 	#No need to get into this part of the code once the multiplayer mode has been already initialized
 	isMultiplayerInitialized = True
