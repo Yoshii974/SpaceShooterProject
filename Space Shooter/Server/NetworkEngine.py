@@ -568,7 +568,7 @@ class ServerNetworkingOutput:
         self.player: Player
         self.otherPlayers = [] # list of Player object
         self.listOfExplosions = [] # list of Explosions to be drawn by the clients
-        self.listOfProcessedInputs: []
+        self.listOfProcessedInputs: -1
     
     # Set Dependencies
     def setDependencies(self, Ennemies, Player, OtherPlayers, ListOfExplosions, ListOfProcessedInputs):
@@ -584,4 +584,4 @@ class ServerNetworkingOutput:
         self.player = None
         self.listOfExplosions = []
         self.otherPlayers = []
-        self.listOfProcessedInputs = []
+        self.listOfProcessedInputs = -1

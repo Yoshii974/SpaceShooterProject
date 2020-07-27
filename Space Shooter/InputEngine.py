@@ -163,11 +163,11 @@ class InputEngine:
 
         #Loop on all the event sent by pygame :
         for evt in pygame.event.get():
-            # Increment at the beginning for clarity/maintenance
-            self.userInputID += 1
             userInput = (-1, -1, -1, -1, -1)
 
             if evt.type == KEYDOWN:
+                self.userInputID += 1
+            
                 if evt.key == K_DOWN:
                     userInput = (self.userInputID, "KEYDOWN_DOWN", {"dy": 2}, {"xLocal": -1, "yLocal": -1}, [False])
                 elif evt.key == K_UP:
@@ -189,6 +189,8 @@ class InputEngine:
                     userInput = (self.userInputID, "KEYDOWN_WEAPON3", {}, {"xLocal": -1, "yLocal": -1}, [False])
 
             elif evt.type == KEYUP:
+                self.userInputID += 1
+
                 if evt.key == K_LEFT or evt.key == K_RIGHT:
                     userInput = (self.userInputID, "KEYUP_LEFT_RIGHT", {}, {"xLocal": -1, "yLocal": -1}, [False])
                 elif evt.key == K_DOWN or evt.key == K_UP:
@@ -235,8 +237,10 @@ class InputEngine:
         """Process the player inputs"""
 
         #print ("player Inputs : " + str(playerInputs))
-        #listOfProcessedPlayerInputsID = []
+        #listOfProcessedPlayerInputs = []
         greatestPlayerInputID = -1
+
+        #lastAuthoritativeServerPosition = (self.player.x, self.player.y)
 
         if self.player.timeBeforeShieldIsDeactivated > 0:
             self.player.timeBeforeShieldIsDeactivated -= 1
@@ -249,16 +253,22 @@ class InputEngine:
 
             if playerInput[1] == "KEYUP_LEFT_RIGHT":
                 self.player.dx = 0
+            #    processedInput = (playerInput[0], {"xServer": self.player.x, "yServer": self.player.y})
             elif playerInput[1] == "KEYDOWN_LEFT":
                 self.player.dx += -2
+            #    processedInput = (playerInput[0], {"xServer": self.player.x + self.player.dx, "yServer": self.player.y})
             elif playerInput[1] == "KEYDOWN_RIGHT":
                 self.player.dx += 2
+            #    processedInput = (playerInput[0], {"xServer": self.player.x + self.player.dx, "yServer": self.player.y})
             elif playerInput[1] == "KEYUP_DOWN_UP":
                 self.player.dy = 0
+            #    processedInput = (playerInput[0], {"xServer": self.player.x, "yServer": self.player.y})
             elif playerInput[1] == "KEYDOWN_UP":
                 self.player.dy += -2
+            #    processedInput = (playerInput[0], {"xServer": self.player.x, "yServer": self.player.y + self.player.dy})
             elif playerInput[1] == "KEYDOWN_DOWN":
                 self.player.dy += 2
+            #    processedInput = (playerInput[0], {"xServer": self.player.x, "yServer": self.player.y + self.player.dy})
             elif playerInput[1] == "KEYDOWN_FIRESHOT":
                 self.player.fireShot()
             elif playerInput[1] == "KEYDOWN_SHIELD":
@@ -273,9 +283,11 @@ class InputEngine:
                 self.player.currentWeapon = "fire3"
             else:
                 print('error with inputs of player #' + str(self.player.playerID))
+            
+            #listOfProcessedPlayerInputs.append(processedInput)
         
         # Return the list of processed inputs
-        # return listOfProcessedPlayerInputsID
+        #return listOfProcessedPlayerInputsID
 
         # Return the latest action processed by the server
         #print ("Final Player State at exit of Input Engine : ")

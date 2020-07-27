@@ -96,16 +96,16 @@ class PhysicEngine:
             self.players.append(p)
         
         # Atm this is written, the InputEngine on the server side is only sending back the greatest player input ID. So the lst below always contain only 1 element ! 
-        lastProcessedInput = self.clientNetworkingThread.inputCommands.listOfProcessedInputs
+        lastProcessedInputs = self.clientNetworkingThread.inputCommands.listOfProcessedInputs
         #print("LasteProcessedInput by the server : " + str(lastProcessedInput))
         # Set last authoritative server received position
         lastAuthoritativeServerPosition = (self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
-        #print ("Last autorithative server position : " + str(lastAuthoritativeServerPosition))
+        print ("Last autorithative server position : " + str(lastAuthoritativeServerPosition))
         # Set sublist start index : if nothing has been processed by the server, then we need to re-simulate every local player input
         subListStartIndex = 0
 
         # 1 - Dequeue what the server has responded
-        if lastProcessedInput != -1:
+        if lastProcessedInputs != -1:
             #lastAuthoritativeServerPosition = (self.clientNetworkingThread.inputCommands.listOfProcessedInputs[-1], self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
         #else:
             #lastAuthoritativeServerPosition = (-1, self.clientNetworkingThread.inputCommands.player.x, self.clientNetworkingThread.inputCommands.player.y)
@@ -114,9 +114,12 @@ class PhysicEngine:
             #        # If the current action has been checked by the server, then it means we can safely use this action to simulate the current game state
             #        listOfActionsToSimulate.append(self.inputEngine.userInputs[i])
             #    elif
-            
+
+            #for processedInput in lastProcessedInputs:
+            #    if processedInput[1]
+
             for userInput in self.inputEngine.userInputs:
-                if userInput[0] == lastProcessedInput:
+                if userInput[0] == lastProcessedInputs:
                     subListStartIndex = self.inputEngine.userInputs.index(userInput)
                     #print ("Valeur de subListStartIndex : " + str(subListStartIndex))
                     break
@@ -126,7 +129,20 @@ class PhysicEngine:
 
         # The element at position subListStartIndex has also been processed by the server, so we can safely remove it from our local inputs list
         #print ("input Engine list before : " + str(self.inputEngine.userInputs))
+        
+        
+        
+        # Je ne peux pas mettre ecrire : self.inputEngine.userInputs = self.inputEngine.userInputs[subListStartIndex + 1:]
+        # Car cela veut dire : renvoie moi la liste courante moins le 1er element
+        # Je suis donc en train de rendre ma liste plus petite a chaque appel !!!
+        # Et comme on fait cette simulation 60x par second ...
         self.inputEngine.userInputs = self.inputEngine.userInputs[subListStartIndex:]
+        if len (self.inputEngine.userInputs) != 0:
+            print ("id 1er element inputs : " + str(self.inputEngine.userInputs[0][0]))
+            print ("X 1er element inputs : " + str(self.inputEngine.userInputs[0][3]["xLocal"]))
+            print ("Y 1er element inputs : " + str(self.inputEngine.userInputs[0][3]["yLocal"]))
+        
+        
         #print ("input Engine list after : " + str(self.inputEngine.userInputs))
         #print ("Inputs dans le input engine : " + str(self.inputEngine.userInputs))
 
@@ -163,35 +179,49 @@ class PhysicEngine:
         # self.players[0].x = lastAuthoritativeServerPosition[0]
         # self.players[0].y = lastAuthoritativeServerPosition[1]
 
-        lastPredictedPlayerPosition = {"xLocal": self.players[0].x, "yLocal": self.players[0].y}
+        if len (self.inputEngine.userInputs) != 0:
+            pastPredictedPlayerPosition = {"xLocal": self.inputEngine.userInputs[0][3]["xLocal"], "yLocal": self.inputEngine.userInputs[0][3]["yLocal"]}
 
-        if (lastAuthoritativeServerPosition[0] != lastPredictedPlayerPosition["xLocal"] or 
-            lastAuthoritativeServerPosition[1] != lastPredictedPlayerPosition["yLocal"]):
-            lastPredictedPlayerPosition["xLocal"] = lastAuthoritativeServerPosition[0]
-            self.players[0].x = lastAuthoritativeServerPosition[0]
+            if (lastAuthoritativeServerPosition[0] != pastPredictedPlayerPosition["xLocal"] or 
+                lastAuthoritativeServerPosition[1] != pastPredictedPlayerPosition["yLocal"]):
 
-            lastPredictedPlayerPosition["yLocal"] = lastAuthoritativeServerPosition[1]
-            self.players[0].y = lastAuthoritativeServerPosition[1]
-        
-        # For each deltas in current Input Engine, calculate the futur position based on the latest authoritative server known position
-        for userInput in self.inputEngine.userInputs:
-            if userInput[4][0] == False:
-                if "dx" in userInput[2]:
-                    self.players[0].dx += userInput[2]["dx"]
-                    lastPredictedPlayerPosition["xLocal"] += userInput[2]["dx"]
-                    userInput[3]["xLocal"] = lastPredictedPlayerPosition["xLocal"] #+ userInput[2]["dx"]
-                elif "dy" in userInput[2]:
-                    self.players[0].dy += userInput[2]["dy"]
-                    lastPredictedPlayerPosition["yLocal"] += userInput[2]["dy"]
-                    userInput[3]["yLocal"] = lastPredictedPlayerPosition["yLocal"] #+ userInput[2]["dy"]
-                elif userInput[1] == "KEYUP_LEFT_RIGHT":
-                    self.players[0].dx = 0
-                    userInput[3]["xLocal"] = lastPredictedPlayerPosition["xLocal"]
-                elif userInput[1] == "KEYUP_DOWN_UP":
-                    self.players[0].dy = 0
-                    userInput[3]["yLocal"] = lastPredictedPlayerPosition["yLocal"]
-                else:
-                    pass
+                # This represent the latest state of the game sent by the server
+                userInput = (self.inputEngine.userInputs[0][0], -1, {}, {"xLocal": -1, "yLocal": -1}, [True])
+
+                self.inputEngine.userInputs = [userInput] + self.inputEngine.userInputs
+
+                self.inputEngine.userInputs[0][3]["xLocal"] = lastAuthoritativeServerPosition[0]
+                pastPredictedPlayerPosition["xLocal"] = lastAuthoritativeServerPosition[0]
+                self.players[0].x = lastAuthoritativeServerPosition[0]
+                self.players[0].dx = 0
+
+                self.inputEngine.userInputs[0][3]["yLocal"] = lastAuthoritativeServerPosition[1]
+                pastPredictedPlayerPosition["yLocal"] = lastAuthoritativeServerPosition[1]
+                self.players[0].y = lastAuthoritativeServerPosition[1]
+                self.players[0].dy = 0
+            
+                # For each deltas in current Input Engine, calculate the futur position based on the latest authoritative server known position
+                for userInput in self.inputEngine.userInputs:
+                    #if userInput[4][0] == False:
+                    if "dx" in userInput[2]:
+                        self.players[0].dx += userInput[2]["dx"]
+                        pastPredictedPlayerPosition["xLocal"] += userInput[2]["dx"]
+                        #userInput[3]["xLocal"] = pastPredictedPlayerPosition["xLocal"] #+ userInput[2]["dx"]
+                    elif "dy" in userInput[2]:
+                        self.players[0].dy += userInput[2]["dy"]
+                        pastPredictedPlayerPosition["yLocal"] += userInput[2]["dy"]
+                        #userInput[3]["yLocal"] = pastPredictedPlayerPosition["yLocal"] #+ userInput[2]["dy"]
+                    elif userInput[1] == "KEYUP_LEFT_RIGHT":
+                        self.players[0].dx = 0
+                        #userInput[3]["xLocal"] = pastPredictedPlayerPosition["xLocal"]
+                    elif userInput[1] == "KEYUP_DOWN_UP":
+                        self.players[0].dy = 0
+                        #userInput[3]["yLocal"] = pastPredictedPlayerPosition["yLocal"]
+                    else:
+                        pass
+
+                    userInput[3]["xLocal"] = pastPredictedPlayerPosition["xLocal"] #+ userInput[2]["dx"]
+                    userInput[3]["yLocal"] = pastPredictedPlayerPosition["yLocal"] #+ userInput[2]["dy"]
 
         #self.players[0].x = lastPredictedPlayerPosition["xLocal"]
         #self.players[0].y = lastPredictedPlayerPosition["yLocal"]
@@ -202,8 +232,8 @@ class PhysicEngine:
         #self.players[0].dx = 0
         #self.players[0].dy = 0
 
-        # Animate the local player
-        self.players[0].animate()
+                # Animate the local player
+                self.players[0].animate()
 
     # Send the local data to the server
     def sendDataToServer(self):
