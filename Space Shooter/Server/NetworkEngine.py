@@ -308,8 +308,8 @@ class ServerNetworkingThread (threading.Thread):
         self.clientPort: int
         self.clientID: int
         self.currentGameState: str
-        self.inputCommands: ServerNetworkingInput
-        self.outputCommands: ServerNetworkingOutput
+        self.inputCommands: []#ServerNetworkingInput
+        self.outputCommands: []#ServerNetworkingOutput
         self.networkEngine: NetworkEngine
         #self.timer: threading.Timer
         self.threadingRepeatTime: float
@@ -321,11 +321,11 @@ class ServerNetworkingThread (threading.Thread):
         self.serverSocket.setblocking(0)
 
         # self.GAME_STATUS = "START"
-        self.inputCommands = ServerNetworkingInput()
-        self.outputCommands = ServerNetworkingOutput()
+        self.inputCommands = []#ServerNetworkingInput()
+        self.outputCommands = []#ServerNetworkingOutput()
 
-        self.inputCommands.reset()
-        self.outputCommands.reset()
+        #self.inputCommands.reset()
+        #self.outputCommands.reset()
 
         # Create the network engine and set dependencies
         self.networkEngine = NetworkEngine()
@@ -383,7 +383,8 @@ class ServerNetworkingThread (threading.Thread):
                 pass
             else:
                 # TODO: Verifier que dans le message recu, il n'y ait pas une demande fermeture de la connection.
-                self.inputCommands = self.networkEngine.lastDataReceived
+                self.inputCommands.append(self.networkEngine.lastDataReceived)
+                self.networkEngine.lastDataReceived = None
                 #print ("DEBUG - received from client : " + str(self.inputCommands.clientInputs))
             # No particular data has been retrieved. The server will just process and simulate with the latest values he received.
             # Also, increment the LOS Counter
@@ -402,10 +403,13 @@ class ServerNetworkingThread (threading.Thread):
             #    self.inputCommands = clientInput.clientInput
 
             # Create local data to send to the client
-            sendData = self.outputCommands
+            sendData = None
+
+            if len(self.outputCommands) != 0:
+                sendData = self.outputCommands.pop(0)
 
             # Send data to the client
-            if self.networkEngine.encodeData(sendData) == False:
+            if sendData == None or self.networkEngine.encodeData(sendData) == False:
                 # print ("Probleme lors de l'envoie de donnee aux Clients.")
                 pass
         
@@ -429,19 +433,19 @@ class ClientNetworkingThread(threading.Thread):
         self.serverPort: int
         self.listOfAvailablePorts: []
         self.networkEngine: NetworkEngine
-        self.inputCommands: ServerNetworkingOutput
-        self.outputCommands: ServerNetworkingInput
+        self.inputCommands: []#ServerNetworkingOutput
+        self.outputCommands: []#ServerNetworkingInput
         # self.timer: threading.Timer
         self.threadingRepeatTime: float
         self.threadStop = False
     
     # Initialize the thread
     def initialization(self):
-        self.inputCommands = ServerNetworkingOutput()
-        self.outputCommands = ServerNetworkingInput()
+        self.inputCommands = []#ServerNetworkingOutput()
+        self.outputCommands = []#ServerNetworkingInput()
 
-        self.inputCommands.reset()
-        self.outputCommands.reset()
+        #self.inputCommands.reset()
+        #self.outputCommands.reset()
 
         self.listOfAvailablePorts = [49300, 49301, 49302, 49303]
 
@@ -518,7 +522,8 @@ class ClientNetworkingThread(threading.Thread):
                 # print ("Probleme lors de la reception de donnee en provenance du Serveur.")
                 pass
             else:
-                self.inputCommands = self.networkEngine.lastDataReceived
+                self.inputCommands.append(self.networkEngine.lastDataReceived)
+                self.networkEngine.lastDataReceived = None
     #        except:
     #            pass
             
@@ -534,10 +539,13 @@ class ClientNetworkingThread(threading.Thread):
             #    self.inputCommands = recvData
 
             # Create local data to send to the server
-            sendData = self.outputCommands
+            sendData = None
+
+            if len(self.outputCommands) != 0:
+                sendData = self.outputCommands.pop(0)
             #print ("Valeur envoye au serveur : " + str(sendData.clientInputs))
             # Send data to the server
-            if self.networkEngine.encodeData(sendData) == False:
+            if sendData == None or self.networkEngine.encodeData(sendData) == False:
                 # print ("Probleme lors de l'envoie des donnees au Serveur.")
                 pass
         #except:

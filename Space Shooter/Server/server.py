@@ -28,9 +28,9 @@ def mainServerFunction():
     # 1 - Process players inputs
     listOfProcessedInputForPlayers = []
     for index in range(0, len(serverThreads)):
-        if serverThreads[index].inputCommands != None:
-            listOfProcessedInputForPlayers.append(inputEngines[index].processPlayerInputs(serverThreads[index].inputCommands.clientInputs))
-            serverThreads[index].inputCommands = None
+        if len(serverThreads[index].inputCommands) != 0:
+            clientData = serverThreads[index].inputCommands.pop(0)
+            listOfProcessedInputForPlayers.append(inputEngines[index].processPlayerInputs(clientData.clientInputs))
         else:
             listOfProcessedInputForPlayers.append(-1)
 
@@ -48,7 +48,7 @@ def mainServerFunction():
         sendData.otherPlayers = [p for p in players if p != players[index]]
         sendData.listOfProcessedInputs = listOfProcessedInputForPlayers[index]
 
-        serverThreads[index].outputCommands = sendData
+        serverThreads[index].outputCommands.append(sendData)
 
 
 ##############################################GLOBAL VARIABLES#######################################################################################
@@ -62,7 +62,7 @@ players = []
 inputEngines = []
 threadID = 0
 clientID = 0
-NB_MIN_PLAYER = 2
+NB_MIN_PLAYER = 1
 NETWORK_BUFFER_SIZE = 1024
 
 # TODO : C'est de la merde, parce que 0.016 signifie executer la fonction juste apres l'appel Threading.Timer
@@ -178,10 +178,13 @@ physicEngine.setDependencies(ennemies, players)
 # Initialization of all the outputCommands for each client thread
 for index in range(0, len(players)):
     # Give dependencies to the list of clients Thread outputs commands
-    serverThreads[index].outputCommands.ennemies = ennemies
-    serverThreads[index].outputCommands.listOfExplosions = physicEngine.listofExplosions
-    serverThreads[index].outputCommands.player = players[index]
-    serverThreads[index].outputCommands.otherPlayers = [p for p in players if p != players[index]]
+    clientNetworkInput = NetworkEngine.ServerNetworkingOutput()
+    clientNetworkInput.ennemies = ennemies
+    clientNetworkInput.listOfExplosions = physicEngine.listofExplosions
+    clientNetworkInput.player = players[index]
+    clientNetworkInput.otherPlayers = [p for p in players if p != players[index]]
+    clientNetworkInput.listOfProcessedInputs = -1
+    serverThreads[index].outputCommands.append(clientNetworkInput)
 
 # Starts all the clients Threads
 for sT in serverThreads:

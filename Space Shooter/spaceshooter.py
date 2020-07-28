@@ -92,10 +92,13 @@ def multiplayerInitialization():
 	inputEngine.clientNetworkingThread = clientNetworkingThread
 	physicEngine.clientNetworkingThread = clientNetworkingThread
 
-	clientNetworkingThread.inputCommands.ennemies = ennemies
-	clientNetworkingThread.inputCommands.player = player
-	clientNetworkingThread.inputCommands.otherPlayers = []
-	clientNetworkingThread.inputCommands.listOfExplosions = physicEngine.listofExplosions
+	clientNetworkInput = NetworkEngine.ServerNetworkingOutput()
+	clientNetworkInput.ennemies = ennemies
+	clientNetworkInput.player = player
+	clientNetworkInput.otherPlayers = []
+	clientNetworkInput.listOfExplosions = physicEngine.listofExplosions
+	clientNetworkInput.listOfProcessedInputs = -1
+	clientNetworkingThread.inputCommands.append(clientNetworkInput)
 
 	#Start the network thread
 	clientNetworkingThread.start()
