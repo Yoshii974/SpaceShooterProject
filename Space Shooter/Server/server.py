@@ -62,7 +62,7 @@ players = []
 inputEngines = []
 threadID = 0
 clientID = 0
-NB_MIN_PLAYER = 1
+NB_MIN_PLAYER = 2
 NETWORK_BUFFER_SIZE = 1024
 
 # TODO : C'est de la merde, parce que 0.016 signifie executer la fonction juste apres l'appel Threading.Timer

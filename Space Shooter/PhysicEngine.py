@@ -25,11 +25,14 @@ class PhysicEngine:
         self.inputEngine: InputEngine
         self.clientNetworkingThread: NetworkEngine.ClientNetworkingThread
         self.serverNetworkingThread: NetworkEngine.ServerNetworkingThread
+        self.lastAuthoritativeServerPosition: ()
 
     # Set the Dependencies to the Physic Engine
     def setDependencies(self, Ennemies, Players):
         self.ennemies = Ennemies
         self.players = Players
+
+        self.lastAuthoritativeServerPosition = (self.players[0].x, self.players[0].y)
     
     # Set the current game state
     def setCurrentGameState(self, state):
@@ -81,22 +84,11 @@ class PhysicEngine:
         # 4 - iterate on the rest of the userInputs (which is currently still to non-processed inputs by the server) and
         # simulate game state from these inputs
 
-        # listOfActionsToSimulate = []
-
-        #if len(self.clientNetworkingThread.inputCommands.otherPlayers) + 1 != len(self.players):
-        #    for p in self.clientNetworkingThread.inputCommands.otherPlayers:
-        #        self.players.append(p)
-        #tmp = []
-        #tmp.append(self.players[0])
-        #self.players = tmp
-
         ##### self.players = [self.players[0]]
 
         lastDataFromServer = None
         # Set sublist start index : if nothing has been processed by the server, then we need to re-simulate every local player input
         subListStartIndex = 0
-
-        lastAuthoritativeServerPosition = (self.players[0].x, self.players[0].y)
         
         if len(self.clientNetworkingThread.inputCommands) != 0:
             lastDataFromServer = self.clientNetworkingThread.inputCommands.pop(0)
@@ -104,15 +96,15 @@ class PhysicEngine:
             self.players = [self.players[0]]
             for p in lastDataFromServer.otherPlayers:
                 #print ("player 2 infos - x : " + str(p.x))
-                #print ("player 2 infos - x : " + str(p.y))
+                #print ("player 2 infos - y : " + str(p.y))
                 self.players.append(p)
         
             # Atm this is written, the InputEngine on the server side is only sending back the greatest player input ID. So the lst below always contain only 1 element ! 
             lastProcessedInputs = lastDataFromServer.listOfProcessedInputs
             #print("LasteProcessedInput by the server : " + str(lastProcessedInput))
             # Set last authoritative server received position
-            lastAuthoritativeServerPosition = (lastDataFromServer.player.x, lastDataFromServer.player.y)
-            print ("Last autorithative server position : " + str(lastAuthoritativeServerPosition))
+            self.lastAuthoritativeServerPosition = (lastDataFromServer.player.x, lastDataFromServer.player.y)
+            #print ("Last autorithative server position : " + str(self.lastAuthoritativeServerPosition))
             
 
             # 1 - Dequeue what the server has responded
@@ -148,10 +140,10 @@ class PhysicEngine:
         # Je suis donc en train de rendre ma liste plus petite a chaque appel !!!
         # Et comme on fait cette simulation 60x par second ...
         self.inputEngine.userInputs = self.inputEngine.userInputs[subListStartIndex:]
-        if len (self.inputEngine.userInputs) != 0:
-            print ("id 1er element inputs : " + str(self.inputEngine.userInputs[0][0]))
-            print ("X 1er element inputs : " + str(self.inputEngine.userInputs[0][3]["xLocal"]))
-            print ("Y 1er element inputs : " + str(self.inputEngine.userInputs[0][3]["yLocal"]))
+        #if len (self.inputEngine.userInputs) != 0:
+        #    print ("id 1er element inputs : " + str(self.inputEngine.userInputs[0][0]))
+        #    print ("X 1er element inputs : " + str(self.inputEngine.userInputs[0][3]["xLocal"]))
+        #    print ("Y 1er element inputs : " + str(self.inputEngine.userInputs[0][3]["yLocal"]))
         
         
         #print ("input Engine list after : " + str(self.inputEngine.userInputs))
@@ -178,7 +170,7 @@ class PhysicEngine:
 
         # 5 - Calculate the current local player position based on predictions
         if len (self.inputEngine.userInputs) != 0:
-            self.simulateClientSidePredictionForLocalPlayerPosition(lastAuthoritativeServerPosition)
+            self.simulateClientSidePredictionForLocalPlayerPosition(self.lastAuthoritativeServerPosition)
         
         # 6 - Calculate the current local fireshots positions based on predictions
         pass
@@ -217,41 +209,30 @@ class PhysicEngine:
                 if "dx" in userInput[2]:
                     self.players[0].dx += userInput[2]["dx"]
                     pastPredictedPlayerPosition["xLocal"] += userInput[2]["dx"]
-                    #userInput[3]["xLocal"] = pastPredictedPlayerPosition["xLocal"] #+ userInput[2]["dx"]
                 elif "dy" in userInput[2]:
                     self.players[0].dy += userInput[2]["dy"]
                     pastPredictedPlayerPosition["yLocal"] += userInput[2]["dy"]
-                    #userInput[3]["yLocal"] = pastPredictedPlayerPosition["yLocal"] #+ userInput[2]["dy"]
                 elif userInput[1] == "KEYUP_LEFT_RIGHT":
                     self.players[0].dx = 0
-                    #userInput[3]["xLocal"] = pastPredictedPlayerPosition["xLocal"]
                 elif userInput[1] == "KEYUP_DOWN_UP":
                     self.players[0].dy = 0
-                    #userInput[3]["yLocal"] = pastPredictedPlayerPosition["yLocal"]
                 else:
                     pass
 
-                userInput[3]["xLocal"] = pastPredictedPlayerPosition["xLocal"] #+ userInput[2]["dx"]
-                userInput[3]["yLocal"] = pastPredictedPlayerPosition["yLocal"] #+ userInput[2]["dy"]
-
-    #self.players[0].x = lastPredictedPlayerPosition["xLocal"]
-    #self.players[0].y = lastPredictedPlayerPosition["yLocal"]
-
-    #print ("current local player position x : " + str(self.players[0].x))
-    #print ("current local player position y : " + str(self.players[0].y))
-
-    #self.players[0].dx = 0
-    #self.players[0].dy = 0
+                userInput[3]["xLocal"] = pastPredictedPlayerPosition["xLocal"]
+                userInput[3]["yLocal"] = pastPredictedPlayerPosition["yLocal"]
 
             # Animate the local player
             self.players[0].animate()
 
+            #print ("current local player position x : " + str(self.players[0].x))
+            #print ("current local player position y : " + str(self.players[0].y))
+
     # Send the local data to the server
     def sendDataToServer(self):
         #print ("On est bien dans la fonction sendDataToServer")
-        #Create server input
-        #self.clientNetworkingThread.outputCommands = None
 
+        #Create server input
         serverInput = NetworkEngine.ServerNetworkingInput()
         listOfInputCommandsToSend = []
 
@@ -263,9 +244,6 @@ class PhysicEngine:
                 userInput[4][0] = True
 
         #print ("Contenu listOfInputCommandsToSend : " + str(listOfInputCommandsToSend))
-
-        #if self.clientNetworkingThread.outputCommands != None and len(self.clientNetworkingThread.outputCommands.clientInputs) != 0:
-        #    serverInput.clientInputs.extend(self.clientNetworkingThread.outputCommands.clientInputs)
         
         #serverInput.clientInputs.extend(listOfInputCommandsToSend)
         serverInput.clientInputs = listOfInputCommandsToSend
