@@ -74,6 +74,12 @@ class RendererEngine:
 		elif self.currentGameState == "SINGLE_PLAYER":
 			#Animate the background :
 			self.drawBackGround()
+    
+            # Destroy the player's fireshot which lifespan has been reached :
+			self.players[0].destroyFireShots()
+        
+            # Check for the animation of the player :
+			self.players[0].animate()
 
 			#Update game state
 			self.physicEngine.simulateGameState()

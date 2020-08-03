@@ -297,5 +297,9 @@ class InputEngine:
         #print ("Final Player dy : " + str(self.player.dy))
         #print ("Final Player Input ID : " + str(greatestPlayerInputID))
 
+        # Update player's positions
+        self.player.destroyFireShots()
+        self.player.animate()
+
         return greatestPlayerInputID
     

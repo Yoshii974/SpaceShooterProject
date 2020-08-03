@@ -36,7 +36,7 @@ MAXIMUM_FRAGMENT_INDEX_LENGTH = 2
 FRAGMENT_PAYLOAD_LENGTH = 2
 
 # Macro which defines the repeat time (every 32 ms means about 30 Hz)
-THREADING_REPEAT_TIME = 0.016#0.032
+THREADING_REPEAT_TIME = 0.032
 
 class NetworkEngine:
     """Any of Networking element should be found in this class. """
@@ -384,8 +384,8 @@ class ServerNetworkingThread (threading.Thread):
             else:
                 # TODO: Verifier que dans le message recu, il n'y ait pas une demande fermeture de la connection.
                 self.inputCommands.append(self.networkEngine.lastDataReceived)
+                #print ("DEBUG - received from client : " + str(self.networkEngine.lastDataReceived.clientInputs))
                 self.networkEngine.lastDataReceived = None
-                #print ("DEBUG - received from client : " + str(self.inputCommands.clientInputs))
             # No particular data has been retrieved. The server will just process and simulate with the latest values he received.
             # Also, increment the LOS Counter
             
@@ -519,10 +519,11 @@ class ClientNetworkingThread(threading.Thread):
             #try:
             # Decode data from the server
             if self.networkEngine.decodeData() == False:
-                # print ("Probleme lors de la reception de donnee en provenance du Serveur.")
+                #print ("Probleme lors de la reception de donnee en provenance du Serveur.")
                 pass
             else:
                 self.inputCommands.append(self.networkEngine.lastDataReceived)
+                #print ("DEBUG - received data from server !")
                 self.networkEngine.lastDataReceived = None
     #        except:
     #            pass

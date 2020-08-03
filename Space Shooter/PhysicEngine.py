@@ -53,14 +53,7 @@ class PhysicEngine:
     # Update current game State
     def simulateGameState(self):
         """Update the state of the different elements of the game """
-        for player in self.players:
-
-            # Destroy the player's fireshot which lifespan has been reached :
-            player.destroyFireShots()
         
-            # Check for the animation of the player :
-            player.animate()
-
         # Update the wave of ennemies :
         self.ennemies.updateEnnemiesWave()
 
