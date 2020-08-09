@@ -36,7 +36,7 @@ MAXIMUM_FRAGMENT_INDEX_LENGTH = 2
 FRAGMENT_PAYLOAD_LENGTH = 2
 
 # Macro which defines the repeat time (every 32 ms means about 30 Hz)
-THREADING_REPEAT_TIME = 0.032
+THREADING_REPEAT_TIME = 0.016
 
 class NetworkEngine:
     """Any of Networking element should be found in this class. """

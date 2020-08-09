@@ -81,6 +81,9 @@ class Player:
 		#Move the fireshots if any :
 		for shot_id, shot in self.ListofFireShot.items():
 			shot.y = shot.y - 4
+		
+		#self.dx = 0
+		#self.dy = 0
 
 	#Set up and animate a fire shot :
 	def fireShot(self):
