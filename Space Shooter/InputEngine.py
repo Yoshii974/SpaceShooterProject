@@ -290,12 +290,12 @@ class InputEngine:
         #return listOfProcessedPlayerInputsID
 
         # Return the latest action processed by the server
-        print ("Final Player State at exit of Input Engine : ")
-        print ("Final Player x : " + str(self.player.x))
-        print ("Final Player y : " + str(self.player.y))
+        #print ("Final Player State at exit of Input Engine : ")
+        #print ("Final Player x : " + str(self.player.x))
+        #print ("Final Player y : " + str(self.player.y))
         #print ("Final Player dx : " + str(self.player.dx))
         #print ("Final Player dy : " + str(self.player.dy))
-        print ("Final Player Input ID : " + str(greatestPlayerInputID))
+        #print ("Final Player Input ID : " + str(greatestPlayerInputID))
 
         # Update player's positions
         self.player.destroyFireShots()
